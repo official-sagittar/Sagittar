@@ -9,7 +9,7 @@ namespace sagittar {
 
     namespace search {
 
-        constexpr u32 INFINITY   = 50000;
+        constexpr u32 INF        = 50000;
         constexpr u32 MATE_VALUE = 49000;
         constexpr u32 MATE_SCORE = 48000;
         constexpr u8  MAX_DEPTH  = 64;

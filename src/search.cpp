@@ -30,7 +30,7 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            i32        max = -INFINITY;
+            i32        max = -INF;
             move::Move bestmovesofar;
 
             std::vector<move::Move> moves;
