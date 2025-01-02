@@ -16,17 +16,30 @@ namespace sagittar {
             }
         }
 
-        i32 Searcher::search(board::Board& board, const SearchInfo& info, SearchResult* result) {
+        i32 Searcher::search(board::Board&     board,
+                             i8                depth,
+                             const SearchInfo& info,
+                             SearchResult*     result) {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
             }
+
+            if (depth <= 0)
+            {
+                return eval::evaluateBoard(board);
+            }
+
+            i32        max = -INFINITY;
+            move::Move bestmovesofar;
+
             std::vector<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            result->bestmove = moves.at(0);
+
             for (const auto& move : moves)
             {
                 const board::DoMoveResult do_move_result = board.doMove(move);
+
                 if (do_move_result == board::DoMoveResult::ILLEGAL)
                 {
                     board.undoMove();
@@ -36,16 +49,27 @@ namespace sagittar {
                 {
                     continue;
                 }
+
                 result->nodes++;
+
+                const i32 score = -search(board, depth - 1, info, result);
+
                 board.undoMove();
+
                 if (stop.load(std::memory_order_relaxed))
                 {
-                    return eval::evaluateBoard(board);
+                    return 0;
                 }
-                result->bestmove = move;
-                break;
+
+                if (score > max)
+                {
+                    max           = score;
+                    bestmovesofar = move;
+                }
             }
-            return eval::evaluateBoard(board);
+
+            result->bestmove = bestmovesofar;
+            return max;
         }
 
         SearchResult Searcher::searchRoot(
@@ -53,23 +77,33 @@ namespace sagittar {
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-            SearchResult result{};
+            SearchResult bestresult{};
 
-            const u64 starttime = utils::currtimeInMilliseconds();
-            i32       score     = search(board, info, &result);
-            const u64 time      = utils::currtimeInMilliseconds() - starttime;
+            for (u8 currdepth = 1; currdepth <= info.depth; currdepth++)
+            {
+                SearchResult result{};
+                const u64    starttime = utils::currtimeInMilliseconds();
+                i32          score     = search(board, currdepth, info, &result);
+                const u64    time      = utils::currtimeInMilliseconds() - starttime;
+                if (stop.load(std::memory_order_relaxed))
+                {
+                    break;
+                }
 
-            result.score   = score;
-            result.is_mate = false;
-            result.mate_in = 0;
-            result.depth   = 1;
-            result.time    = time;
-            result.pv      = {};
+                bestresult = result;
 
-            searchProgressReportHandler(result);
-            searchCompleteReportHander(result);
+                result.score   = score;
+                result.is_mate = false;
+                result.mate_in = 0;
+                result.depth   = currdepth;
+                result.time    = time;
+                result.pv      = {result.bestmove};
+                searchProgressReportHandler(result);
+            }
 
-            return result;
+            searchCompleteReportHander(bestresult);
+
+            return bestresult;
         }
 
         void Searcher::reset() { stop.store(false, std::memory_order_relaxed); }

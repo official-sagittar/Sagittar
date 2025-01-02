@@ -29,7 +29,7 @@ namespace sagittar {
             u64                     nodes;
             u64                     time;
             std::vector<move::Move> pv;
-            move::Move              bestmove;
+            move::Move              bestmove{};
         };
 
         class Searcher {
@@ -38,7 +38,7 @@ namespace sagittar {
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
-            i32  search(board::Board&, const SearchInfo&, SearchResult*);
+            i32  search(board::Board&, i8 depth, const SearchInfo&, SearchResult*);
             SearchResult
             searchRoot(board::Board&                                    board,
                        const SearchInfo&                                info,

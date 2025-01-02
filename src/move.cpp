@@ -13,6 +13,13 @@ namespace sagittar {
             flag(MOVE_QUIET),
             score(0) {}
 
+        Move::Move(const Move& other) :
+            from(other.from),
+            to(other.to),
+            captured(other.captured),
+            flag(other.flag),
+            score(other.score) {}
+
         Move::Move(const Square from, const Square to, const Piece captured, const MoveFlag flag) :
             from(from),
             to(to),
@@ -49,6 +56,15 @@ namespace sagittar {
             std::stringstream ss;
             toString(ss);
             std::cout << ss.str() << std::flush;
+        }
+
+        Move& Move::operator=(Move const& rhs) {
+            from     = rhs.from;
+            to       = rhs.to;
+            captured = rhs.captured;
+            flag     = rhs.flag;
+            score    = rhs.score;
+            return *this;
         }
 
         bool Move::operator==(Move const& rhs) { return id() == rhs.id(); }

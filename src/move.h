@@ -34,6 +34,7 @@ namespace sagittar {
 
            public:
             Move();
+            Move(const Move&);
             Move(const Square from, const Square to, const Piece captured, const MoveFlag flag);
             void     setScore(const u32);
             Square   getFrom() const;
@@ -44,6 +45,7 @@ namespace sagittar {
             u32      id() const;
             void     toString(std::stringstream&) const;
             void     display() const;
+            Move&    operator=(Move const&);
             bool     operator==(Move const& rhs);
         };
 
