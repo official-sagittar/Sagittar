@@ -47,27 +47,22 @@ namespace sagittar {
 
         struct MoveHistoryEntry {
             move::Move move;
+            Piece      captured;
             u8         casteling_rights;
             Square     enpassant_target;
             u8         half_move_clock;
             u8         full_move_number;
             u64        hash;
 
-            MoveHistoryEntry() :
-                move(move::Move()),
-                casteling_rights(CastleFlag::NOCA),
-                enpassant_target(Square::NO_SQ),
-                half_move_clock(0),
-                full_move_number(0),
-                hash(0ULL) {}
-
             MoveHistoryEntry(const move::Move move,
-                             u8               casteling_rights,
-                             Square           enpassant_target,
-                             u8               half_move_clock,
-                             u8               full_move_number,
-                             u64              hash) :
+                             const Piece      captured,
+                             const u8         casteling_rights,
+                             const Square     enpassant_target,
+                             const u8         half_move_clock,
+                             const u8         full_move_number,
+                             const u64        hash) :
                 move(move),
+                captured(captured),
                 casteling_rights(casteling_rights),
                 enpassant_target(enpassant_target),
                 half_move_clock(half_move_clock),
