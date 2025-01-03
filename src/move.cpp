@@ -46,7 +46,7 @@ namespace sagittar {
             ss << (int) (sq2rank(from) + 1);
             ss << (char) FILE_STR[sq2file(to)];
             ss << (int) (sq2rank(to) + 1);
-            if (flag >= MoveFlag::MOVE_PROMOTION_KNIGHT)
+            if (isPromotion(flag))
             {
                 ss << (char) PROMOTION_PIECE_STR[flag];
             }
