@@ -28,20 +28,18 @@ namespace sagittar {
            private:
             Square   from;
             Square   to;
-            Piece    captured;
             MoveFlag flag;
-            u32      score;
+            u16      score;
 
            public:
             Move();
             Move(const Move&);
-            Move(const Square from, const Square to, const Piece captured, const MoveFlag flag);
-            void     setScore(const u32);
+            Move(const Square from, const Square to, const MoveFlag flag);
+            void     setScore(const u16);
             Square   getFrom() const;
             Square   getTo() const;
-            Piece    getCaptured() const;
             MoveFlag getFlag() const;
-            u32      getScore() const;
+            u16      getScore() const;
             u32      id() const;
             void     toString(std::stringstream&) const;
             void     display() const;

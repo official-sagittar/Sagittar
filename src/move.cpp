@@ -9,37 +9,32 @@ namespace sagittar {
         Move::Move() :
             from(Square::NO_SQ),
             to(Square::NO_SQ),
-            captured(Piece::NO_PIECE),
             flag(MOVE_QUIET),
             score(0) {}
 
         Move::Move(const Move& other) :
             from(other.from),
             to(other.to),
-            captured(other.captured),
             flag(other.flag),
             score(other.score) {}
 
-        Move::Move(const Square from, const Square to, const Piece captured, const MoveFlag flag) :
+        Move::Move(const Square from, const Square to, const MoveFlag flag) :
             from(from),
             to(to),
-            captured(captured),
             flag(flag),
             score(0) {}
 
-        void Move::setScore(const u32 s) { score = s; }
+        void Move::setScore(const u16 s) { score = s; }
 
         Square Move::getFrom() const { return from; }
 
         Square Move::getTo() const { return to; }
 
-        Piece Move::getCaptured() const { return captured; }
-
         MoveFlag Move::getFlag() const { return flag; }
 
-        u32 Move::getScore() const { return score; }
+        u16 Move::getScore() const { return score; }
 
-        u32 Move::id() const { return (flag << 16) | (captured << 12) | (to << 6) | from; }
+        u32 Move::id() const { return (score << 16) | (flag << 12) | (to << 6) | from; }
 
         void Move::toString(std::stringstream& ss) const {
             ss << (char) FILE_STR[sq2file(from)];
@@ -59,11 +54,10 @@ namespace sagittar {
         }
 
         Move& Move::operator=(Move const& rhs) {
-            from     = rhs.from;
-            to       = rhs.to;
-            captured = rhs.captured;
-            flag     = rhs.flag;
-            score    = rhs.score;
+            from  = rhs.from;
+            to    = rhs.to;
+            flag  = rhs.flag;
+            score = rhs.score;
             return *this;
         }
 
