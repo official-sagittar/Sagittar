@@ -122,8 +122,6 @@ namespace sagittar {
 
         void Searcher::stopSearch() { stop.store(true, std::memory_order_relaxed); }
 
-        Searcher& Searcher::operator=(const Searcher&) { return *this; }
-
     }
 
 }

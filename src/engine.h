@@ -15,7 +15,6 @@ namespace sagittar {
 
        public:
         Engine();
-        Engine(const Engine& engine);
         ~Engine();
         std::string         getName() const;
         std::string         getVersion() const;

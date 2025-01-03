@@ -55,7 +55,6 @@ namespace sagittar {
               std::function<void(const search::SearchResult&)> searchCompleteReportHander);
             SearchResult startSearch(board::Board& board, const SearchInfo& info);
             void         stopSearch();
-            Searcher&    operator=(const Searcher& e);
         };
 
     }

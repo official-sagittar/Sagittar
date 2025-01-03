@@ -11,13 +11,6 @@ namespace sagittar {
         board::Board::initialize();
     }
 
-    Engine::Engine(const Engine& engine) {
-        name     = engine.name;
-        version  = engine.version;
-        board    = engine.board;
-        searcher = engine.searcher;
-    }
-
     Engine::~Engine() {}
 
     std::string Engine::getName() const { return name; }
@@ -126,9 +119,8 @@ namespace sagittar {
 
         std::stringstream ss;
 
-        ss << (unsigned long long) total_nodes << " nodes ";
-        ss << (unsigned long long) time << " time ";
-        ss << (unsigned long long) ((total_nodes * 1000) / (time + 1)) << " nps";
+        ss << "nodes " << (unsigned long long) total_nodes;
+        ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
         std::cout << ss.str() << std::endl;
     }
 
