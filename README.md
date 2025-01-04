@@ -4,7 +4,7 @@ A free UCI Chess engine
 
 [![License](https://img.shields.io/github/license/codemaniac/pixie)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-![Sagittar Test](https://github.com/codemaniac/Sagittar/actions/workflows/unit-test.yml/badge.svg)
+![Sagittar Unit Test](https://github.com/codemaniac/Sagittar/actions/workflows/unit-test.yml/badge.svg)
 
 # Building Sagittar
 
