@@ -25,6 +25,16 @@ namespace sagittar {
                 shouldStopSearchNow(info);
             }
 
+            const bool is_in_check = movegen::isInCheck(board);
+
+            if (board.getPlyCount() >= MAX_DEPTH)
+            {
+                return eval::evaluateBoard(board);
+            }
+            if (is_in_check)
+            {
+                depth++;
+            }
             if (depth <= 0)
             {
                 return eval::evaluateBoard(board);
@@ -32,6 +42,7 @@ namespace sagittar {
 
             i32        max = -INF;
             move::Move bestmovesofar;
+            u32        legal_moves_count = 0;
 
             std::vector<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
@@ -51,6 +62,7 @@ namespace sagittar {
                 }
 
                 result->nodes++;
+                legal_moves_count++;
 
                 const i32 score = -search(board, depth - 1, info, result);
 
@@ -65,6 +77,18 @@ namespace sagittar {
                 {
                     max           = score;
                     bestmovesofar = move;
+                }
+            }
+
+            if (legal_moves_count == 0)
+            {
+                if (is_in_check)
+                {
+                    return -MATE_VALUE + board.getPlyCount();
+                }
+                else
+                {
+                    return 0;
                 }
             }
 
@@ -92,12 +116,25 @@ namespace sagittar {
 
                 bestresult = result;
 
-                result.score   = score;
-                result.is_mate = false;
-                result.mate_in = 0;
-                result.depth   = currdepth;
-                result.time    = time;
-                result.pv      = {result.bestmove};
+                result.score = score;
+                if (score > -MATE_VALUE && score < -MATE_SCORE)
+                {
+                    result.is_mate = true;
+                    result.mate_in = (-(score + MATE_VALUE) / 2 - 1);
+                }
+                else if (score > MATE_SCORE && score < MATE_VALUE)
+                {
+                    result.is_mate = true;
+                    result.mate_in = ((MATE_VALUE - score) / 2 + 1);
+                }
+                else
+                {
+                    result.is_mate = false;
+                    result.mate_in = 0;
+                }
+                result.depth = currdepth;
+                result.time  = time;
+                result.pv    = {result.bestmove};
                 searchProgressReportHandler(result);
             }
 
