@@ -5,6 +5,10 @@ A free UCI Chess engine
 [![License](https://img.shields.io/github/license/codemaniac/pixie)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
+# Building Sagittar
+
+See [BUILDING.md](BUILDING.md) for instructions on how to build Sagittar from source and a list of supported platforms.
+
 # Acknowledgements
 
 - https://www.chessprogramming.org for concepts

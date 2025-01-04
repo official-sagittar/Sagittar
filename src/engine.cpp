@@ -6,7 +6,7 @@
 namespace sagittar {
 
     Engine::Engine() {
-        name    = "sagittar";
+        name    = "Sagittar";
         version = "0.1.0";
         board::Board::initialize();
     }
@@ -121,7 +121,7 @@ namespace sagittar {
 
         ss << "nodes " << (unsigned long long) total_nodes;
         ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
-      
+
         std::cout << ss.str() << std::endl;
     }
 
