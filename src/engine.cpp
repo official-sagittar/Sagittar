@@ -121,6 +121,7 @@ namespace sagittar {
 
         ss << "nodes " << (unsigned long long) total_nodes;
         ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
+      
         std::cout << ss.str() << std::endl;
     }
 

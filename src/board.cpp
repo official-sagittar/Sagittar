@@ -436,6 +436,7 @@ namespace sagittar {
             const Square   to         = rf2sq(to_rank, to_file);
             const Piece    piece      = pieces[from];
             const bool     is_capture = (pieces[to] != Piece::NO_PIECE);
+          
             move::MoveFlag flag;
 
             if (piece == Piece::NO_PIECE)
@@ -585,8 +586,7 @@ namespace sagittar {
                 const Piece promoted = move::isPromotion(flag) ? pieces[to] : Piece::NO_PIECE;
                 piece =
                   move::isPromotion(flag) ? pieceCreate(PieceType::PAWN, prev_active_color) : piece;
-                undoMovePiece(piece, from, to, move::isCapture(flag), captured,
-                              move::isPromotion(flag), promoted);
+                undoMovePiece(piece, from, to, move::isCapture(flag), captured, move::isPromotion(flag), promoted);
             }
 
             if (active_color == Color::BLACK)

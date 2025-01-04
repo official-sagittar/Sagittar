@@ -17,6 +17,7 @@ TEST_SUITE("Move") {
         }
 
         SUBCASE("Comparison") {
+          
             move::Move e2e4 =
               move::Move(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
