@@ -9,7 +9,7 @@ namespace sagittar {
 
     namespace search {
 
-        constexpr u32 INFINITY   = 50000;
+        constexpr u32 INF        = 50000;
         constexpr u32 MATE_VALUE = 49000;
         constexpr u32 MATE_SCORE = 48000;
         constexpr u8  MAX_DEPTH  = 64;
@@ -29,7 +29,7 @@ namespace sagittar {
             u64                     nodes;
             u64                     time;
             std::vector<move::Move> pv;
-            move::Move              bestmove;
+            move::Move              bestmove{};
         };
 
         class Searcher {
@@ -38,7 +38,7 @@ namespace sagittar {
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
-            i32  search(board::Board&, const SearchInfo&, SearchResult*);
+            i32  search(board::Board&, i8 depth, const SearchInfo&, SearchResult*);
             SearchResult
             searchRoot(board::Board&                                    board,
                        const SearchInfo&                                info,
@@ -55,7 +55,6 @@ namespace sagittar {
               std::function<void(const search::SearchResult&)> searchCompleteReportHander);
             SearchResult startSearch(board::Board& board, const SearchInfo& info);
             void         stopSearch();
-            Searcher&    operator=(const Searcher& e);
         };
 
     }

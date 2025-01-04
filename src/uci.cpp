@@ -188,7 +188,6 @@ namespace sagittar {
             std::future<void> f = std::async(std::launch::async, [this, info,
                                                                   searchProgressReportHandler,
                                                                   searchCompleteReportHander] {
-                engine.resetForSearch();
                 (void) engine.search(info, searchProgressReportHandler, searchCompleteReportHander);
             });
 
@@ -220,6 +219,7 @@ namespace sagittar {
                 else if (input.rfind("position", 0) == 0)
                 {
                     handlePosition(input);
+                    engine.resetForSearch();
                 }
                 else if (input.rfind("go", 0) == 0)
                 {

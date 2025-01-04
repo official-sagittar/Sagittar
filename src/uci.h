@@ -10,7 +10,7 @@ namespace sagittar {
 
         class UCIHandler {
            private:
-            Engine engine;
+            Engine& engine;
 
            private:
             void              handleUCI();

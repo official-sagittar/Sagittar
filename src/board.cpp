@@ -300,18 +300,19 @@ namespace sagittar {
         }
 
         [[nodiscard]] DoMoveResult Board::doMove(const move::Move move) noexcept {
-            const Square         from  = move.getFrom();
-            const Square         to    = move.getTo();
-            const move::MoveFlag flag  = move.getFlag();
-            const Piece          piece = pieces[from];
+            const Square         from     = move.getFrom();
+            const Square         to       = move.getTo();
+            const move::MoveFlag flag     = move.getFlag();
+            const Piece          piece    = pieces[from];
+            const Piece          captured = pieces[to];
 
             if (pieceColorOf(piece) == colorFlip(active_color))
             {
                 return DoMoveResult::INVALID;
             }
 
-            history.emplace_back(move, casteling_rights, enpassant_target, half_move_clock,
-                                 full_move_number, hash);
+            history.emplace_back(move, captured, casteling_rights, enpassant_target,
+                                 half_move_clock, full_move_number, hash);
 
             enpassant_target = Square::NO_SQ;
             half_move_clock++;
@@ -434,8 +435,8 @@ namespace sagittar {
             const Square   from       = rf2sq(from_rank, from_file);
             const Square   to         = rf2sq(to_rank, to_file);
             const Piece    piece      = pieces[from];
-            Piece          captured   = pieces[to];
-            const bool     is_capture = (captured != Piece::NO_PIECE);
+            const bool     is_capture = (pieces[to] != Piece::NO_PIECE);
+          
             move::MoveFlag flag;
 
             if (piece == Piece::NO_PIECE)
@@ -461,8 +462,7 @@ namespace sagittar {
                         }
                         else if (to == enpassant_target)
                         {
-                            captured = pieceCreate(PieceType::PAWN, colorFlip(active_color));
-                            flag     = move::MoveFlag::MOVE_CAPTURE_EP;
+                            flag = move::MoveFlag::MOVE_CAPTURE_EP;
                         }
                         else
                         {
@@ -543,7 +543,7 @@ namespace sagittar {
                 flag = is_capture ? move::MoveFlag::MOVE_CAPTURE : move::MoveFlag::MOVE_QUIET;
             }
 
-            const move::Move move(from, to, captured, flag);
+            const move::Move move(from, to, flag);
 
             return doMove(move);
         }
@@ -556,6 +556,7 @@ namespace sagittar {
             const Square         to                = move.getTo();
             const move::MoveFlag flag              = move.getFlag();
             Piece                piece             = pieces[to];
+            const Piece          captured          = history_entry.captured;
             const Color          prev_active_color = colorFlip(active_color);
 
             if (flag == move::MoveFlag::MOVE_CASTLE_KING_SIDE)
@@ -585,8 +586,7 @@ namespace sagittar {
                 const Piece promoted = move::isPromotion(flag) ? pieces[to] : Piece::NO_PIECE;
                 piece =
                   move::isPromotion(flag) ? pieceCreate(PieceType::PAWN, prev_active_color) : piece;
-                undoMovePiece(piece, from, to, move::isCapture(flag), move.getCaptured(),
-                              move::isPromotion(flag), promoted);
+                undoMovePiece(piece, from, to, move::isCapture(flag), captured, move::isPromotion(flag), promoted);
             }
 
             if (active_color == Color::BLACK)
