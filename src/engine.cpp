@@ -13,9 +13,7 @@ namespace sagittar {
 
     Engine::~Engine() {}
 
-    std::string Engine::getName() const { return name; }
-
-    std::string Engine::getVersion() const { return version; }
+    std::string Engine::getName() const { return name + " " + version; }
 
     void Engine::reset() { board.reset(); }
 

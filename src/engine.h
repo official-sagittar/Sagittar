@@ -17,7 +17,6 @@ namespace sagittar {
         Engine();
         ~Engine();
         std::string         getName() const;
-        std::string         getVersion() const;
         void                reset();
         void                resetForSearch();
         void                setStartpos();
