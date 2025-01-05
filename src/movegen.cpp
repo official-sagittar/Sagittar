@@ -423,21 +423,21 @@ namespace sagittar {
         static void generatePseudolegalMovesPawn(std::vector<move::Move>* moves,
                                                  const board::Board&      board,
                                                  const MovegenType        type) {
-            const Color  active_color   = board.getActiveColor();
-            const Square ep_target      = board.getEnpassantTarget();
-            const Rank   promotion_rank = promotionRankDestOf(active_color);
-            const Piece  pawn           = pieceCreate(PieceType::PAWN, active_color);
-            auto         bb             = board.getBitboard(pawn);
+            const Color     active_color   = board.getActiveColor();
+            const Square    ep_target      = board.getEnpassantTarget();
+            const Rank      promotion_rank = promotionRankDestOf(active_color);
+            const Piece     pawn           = pieceCreate(PieceType::PAWN, active_color);
+            board::BitBoard bb             = board.getBitboard(pawn);
             while (bb)
             {
-                const Square from = static_cast<Square>(utils::bitScanForward(&bb));
-                auto         occupancy =
+                const Square    from = static_cast<Square>(utils::bitScanForward(&bb));
+                board::BitBoard occupancy =
                   board.getBitboard(board::bitboardColorSlot(colorFlip(active_color)));
                 if (ep_target != Square::NO_SQ)
                 {
                     occupancy |= (1ULL << ep_target);
                 }
-                auto attacks = getPawnAttacks(from, active_color, occupancy);
+                board::BitBoard attacks = getPawnAttacks(from, active_color, occupancy);
                 while (attacks)
                 {
                     const Square to = static_cast<Square>(utils::bitScanForward(&attacks));
@@ -502,9 +502,10 @@ namespace sagittar {
             }
         }
 
-        template<PieceType PieceTypeName, MovegenType GenType>
+        template<PieceType PieceTypeName>
         static void generatePseudolegalMovesPiece(std::vector<move::Move>* moves,
-                                                  const board::Board&      board) {
+                                                  const board::Board&      board,
+                                                  const MovegenType        type) {
             const Color     active_color = board.getActiveColor();
             const Piece     piece        = pieceCreate(PieceTypeName, active_color);
             board::BitBoard bb           = board.getBitboard(piece);
@@ -534,7 +535,7 @@ namespace sagittar {
                 {
                     const Square to       = static_cast<Square>(utils::bitScanForward(&attacks));
                     const Piece  captured = board.getPiece(to);
-                    switch (GenType)
+                    switch (type)
                     {
                         case MovegenType::ALL :
                             if (captured == Piece::NO_PIECE)
@@ -695,12 +696,15 @@ namespace sagittar {
                                       const board::Board&      board,
                                       const MovegenType        type) {
             generatePseudolegalMovesPawn(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::KNIGHT, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesPiece<PieceType::BISHOP, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesPiece<PieceType::ROOK, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesPiece<PieceType::QUEEN, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesPiece<PieceType::KING, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesCastle(moves, board);
+            generatePseudolegalMovesPiece<PieceType::KNIGHT>(moves, board, type);
+            generatePseudolegalMovesPiece<PieceType::BISHOP>(moves, board, type);
+            generatePseudolegalMovesPiece<PieceType::ROOK>(moves, board, type);
+            generatePseudolegalMovesPiece<PieceType::QUEEN>(moves, board, type);
+            generatePseudolegalMovesPiece<PieceType::KING>(moves, board, type);
+            if (type == MovegenType::ALL)
+            {
+                generatePseudolegalMovesCastle(moves, board);
+            }
         }
 
     }
