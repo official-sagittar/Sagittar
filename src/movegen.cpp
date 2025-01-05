@@ -503,55 +503,33 @@ namespace sagittar {
         }
 
         template<PieceType PieceTypeName, MovegenType GenType>
-        static void generatePseudolegalMovesLeapers(std::vector<move::Move>* moves,
-                                                    const board::Board&      board) {
-            const Color active_color = board.getActiveColor();
-            const Piece piece        = pieceCreate(PieceTypeName, active_color);
-            auto        bb           = board.getBitboard(piece);
-            const auto  attackFn     = attackFunctions.at(PieceTypeName - 2);
-            while (bb)
-            {
-                const Square    from = static_cast<Square>(utils::bitScanForward(&bb));
-                board::BitBoard occupancy =
-                  board.getBitboard(board::bitboardColorSlot(colorFlip(active_color)))
-                  | board.getBitboard(Piece::NO_PIECE);
-                board::BitBoard attacks = attackFn(from, occupancy);
-                while (attacks)
-                {
-                    const Square to       = static_cast<Square>(utils::bitScanForward(&attacks));
-                    const Piece  captured = board.getPiece(to);
-                    switch (GenType)
-                    {
-                        case MovegenType::ALL :
-                            if (captured == Piece::NO_PIECE)
-                            {
-                                moves->emplace_back(from, to, move::MoveFlag::MOVE_QUIET);
-                            }
-                            [[fallthrough]];
-                        case MovegenType::CAPTURES :
-                            if (captured != Piece::NO_PIECE
-                                && pieceColorOf(captured) != active_color)
-                            {
-                                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE);
-                            }
-                            break;
-                    }
-                }
-            }
-        }
+        static void generatePseudolegalMovesPiece(std::vector<move::Move>* moves,
+                                                  const board::Board&      board) {
+            const Color     active_color = board.getActiveColor();
+            const Piece     piece        = pieceCreate(PieceTypeName, active_color);
+            board::BitBoard bb           = board.getBitboard(piece);
+            board::BitBoard occupancy    = 0ULL;
+            const auto      attackFn     = attackFunctions.at(PieceTypeName - 2);
 
-        template<PieceType PieceTypeName, MovegenType GenType>
-        static void generatePseudolegalMovesSliders(std::vector<move::Move>* moves,
-                                                    const board::Board&      board) {
-            const Color active_color = board.getActiveColor();
-            const Piece piece        = pieceCreate(PieceTypeName, active_color);
-            auto        bb           = board.getBitboard(piece);
-            const auto  attackFn     = attackFunctions.at(PieceTypeName - 2);
+            switch (PieceTypeName)
+            {
+                case PieceType::KNIGHT :
+                case PieceType::KING :
+                    occupancy = board.getBitboard(board::bitboardColorSlot(colorFlip(active_color)))
+                              | board.getBitboard(Piece::NO_PIECE);
+                    break;
+
+                case PieceType::BISHOP :
+                case PieceType::ROOK :
+                case PieceType::QUEEN :
+                    occupancy = ~board.getBitboard(Piece::NO_PIECE);
+                    break;
+            }
+
             while (bb)
             {
-                const Square    from      = static_cast<Square>(utils::bitScanForward(&bb));
-                board::BitBoard occupancy = ~board.getBitboard(Piece::NO_PIECE);
-                board::BitBoard attacks   = attackFn(from, occupancy);
+                const Square    from    = static_cast<Square>(utils::bitScanForward(&bb));
+                board::BitBoard attacks = attackFn(from, occupancy);
                 while (attacks)
                 {
                     const Square to       = static_cast<Square>(utils::bitScanForward(&attacks));
@@ -717,14 +695,11 @@ namespace sagittar {
                                       const board::Board&      board,
                                       const MovegenType        type) {
             generatePseudolegalMovesPawn(moves, board, type);
-
-            generatePseudolegalMovesLeapers<PieceType::KNIGHT, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesLeapers<PieceType::KING, MovegenType::ALL>(moves, board);
-
-            generatePseudolegalMovesSliders<PieceType::BISHOP, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesSliders<PieceType::ROOK, MovegenType::ALL>(moves, board);
-            generatePseudolegalMovesSliders<PieceType::QUEEN, MovegenType::ALL>(moves, board);
-
+            generatePseudolegalMovesPiece<PieceType::KNIGHT, MovegenType::ALL>(moves, board);
+            generatePseudolegalMovesPiece<PieceType::BISHOP, MovegenType::ALL>(moves, board);
+            generatePseudolegalMovesPiece<PieceType::ROOK, MovegenType::ALL>(moves, board);
+            generatePseudolegalMovesPiece<PieceType::QUEEN, MovegenType::ALL>(moves, board);
+            generatePseudolegalMovesPiece<PieceType::KING, MovegenType::ALL>(moves, board);
             generatePseudolegalMovesCastle(moves, board);
         }
 
