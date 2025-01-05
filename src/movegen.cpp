@@ -5,8 +5,6 @@ namespace sagittar {
 
     namespace movegen {
 
-#define getPieceAttacks(Piece) get##Piece##Attacks(from, occupancy)
-
         static constexpr unsigned int MAGIC_MAX_TRIES = 500000;
 
         struct Magic {
