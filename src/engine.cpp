@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "eval.h"
 #include "fen.h"
 #include "types.h"
 #include "utils.h"
@@ -9,6 +10,7 @@ namespace sagittar {
         name    = "Sagittar";
         version = "0.1.0";
         board::Board::initialize();
+        eval::initialize();
     }
 
     Engine::~Engine() {}

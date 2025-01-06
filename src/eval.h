@@ -8,7 +8,8 @@ namespace sagittar {
 
     namespace eval {
 
-        i32 evaluateBoard(const board::Board&);
+        void initialize();
+        i32  evaluateBoard(const board::Board&);
 
     }
 
