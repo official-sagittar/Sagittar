@@ -2,6 +2,7 @@
 #include "containers.h"
 #include "eval.h"
 #include "movegen.h"
+#include "movepicker.h"
 #include "utils.h"
 
 namespace sagittar {
@@ -53,9 +54,13 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
+            scoreMoves(&moves, board);
 
-            for (const auto& move : moves)
+            for (u8 i = 0; i < moves.size(); i++)
             {
+                sortMoves(&moves, i);
+                const move::Move move = moves.at(i);
+
                 const board::DoMoveResult do_move_result = board.doMove(move);
 
                 if (do_move_result == board::DoMoveResult::ILLEGAL)
