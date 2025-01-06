@@ -1,4 +1,5 @@
 #include "perft.h"
+#include "containers.h"
 #include "move.h"
 #include "movegen.h"
 
@@ -11,8 +12,8 @@ namespace sagittar {
             {
                 return 1ULL;
             }
-            u64                     nodes = 0ULL;
-            std::vector<move::Move> moves;
+            u64                               nodes = 0ULL;
+            containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
             for (auto const& move : moves)
             {
@@ -35,9 +36,9 @@ namespace sagittar {
             {
                 return 1ULL;
             }
-            u64                     nodes       = 0ULL;
-            u64                     total_nodes = 0ULL;
-            std::vector<move::Move> moves;
+            u64                               nodes       = 0ULL;
+            u64                               total_nodes = 0ULL;
+            containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
             for (auto const& move : moves)
             {

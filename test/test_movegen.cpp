@@ -1,4 +1,5 @@
 #include "board.h"
+#include "containers.h"
 #include "doctest/doctest.h"
 #include "fen.h"
 #include "move.h"
@@ -33,7 +34,7 @@ TEST_SUITE("Movegen") {
         board::Board board;
         board.setStartpos();
 
-        std::vector<move::Move> moves;
+        containers::ArrayList<move::Move> moves;
         movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
         CHECK(moves.size() == 20);

@@ -1,4 +1,5 @@
 #include "search.h"
+#include "containers.h"
 #include "eval.h"
 #include "movegen.h"
 #include "utils.h"
@@ -44,7 +45,7 @@ namespace sagittar {
             move::Move bestmovesofar;
             u32        legal_moves_count = 0;
 
-            std::vector<move::Move> moves;
+            containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
             for (const auto& move : moves)

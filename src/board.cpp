@@ -432,11 +432,11 @@ namespace sagittar {
                 return DoMoveResult::INVALID;
             }
 
-            const Square   from       = rf2sq(from_rank, from_file);
-            const Square   to         = rf2sq(to_rank, to_file);
-            const Piece    piece      = pieces[from];
-            const bool     is_capture = (pieces[to] != Piece::NO_PIECE);
-          
+            const Square from       = rf2sq(from_rank, from_file);
+            const Square to         = rf2sq(to_rank, to_file);
+            const Piece  piece      = pieces[from];
+            const bool   is_capture = (pieces[to] != Piece::NO_PIECE);
+
             move::MoveFlag flag;
 
             if (piece == Piece::NO_PIECE)
@@ -549,7 +549,7 @@ namespace sagittar {
         }
 
         void Board::undoMove() {
-            const MoveHistoryEntry& history_entry = history.back();
+            const MoveHistoryEntry& history_entry = history.top();
 
             const move::Move     move              = history_entry.move;
             const Square         from              = move.getFrom();
@@ -586,7 +586,8 @@ namespace sagittar {
                 const Piece promoted = move::isPromotion(flag) ? pieces[to] : Piece::NO_PIECE;
                 piece =
                   move::isPromotion(flag) ? pieceCreate(PieceType::PAWN, prev_active_color) : piece;
-                undoMovePiece(piece, from, to, move::isCapture(flag), captured, move::isPromotion(flag), promoted);
+                undoMovePiece(piece, from, to, move::isCapture(flag), captured,
+                              move::isPromotion(flag), promoted);
             }
 
             if (active_color == Color::BLACK)
@@ -606,7 +607,7 @@ namespace sagittar {
             full_move_number = history_entry.full_move_number;
             ply_count--;
 
-            history.pop_back();
+            history.pop();
         }
 
         BitBoard Board::getBitboard(const u8 index) const { return bitboards[index]; }

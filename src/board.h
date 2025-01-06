@@ -1,5 +1,6 @@
 #pragma once
 
+#include "containers.h"
 #include "move.h"
 #include "pch.h"
 #include "types.h"
@@ -54,6 +55,15 @@ namespace sagittar {
             u8         full_move_number;
             u64        hash;
 
+            MoveHistoryEntry() :
+                move(move::Move()),
+                captured(Piece::NO_PIECE),
+                casteling_rights(CastleFlag::NOCA),
+                enpassant_target(Square::NO_SQ),
+                half_move_clock(0),
+                full_move_number(0),
+                hash(0ULL) {}
+
             MoveHistoryEntry(const move::Move move,
                              const Piece      captured,
                              const u8         casteling_rights,
@@ -72,16 +82,16 @@ namespace sagittar {
 
         class Board {
            private:
-            BitBoard                      bitboards[15];
-            Piece                         pieces[64];
-            Color                         active_color;
-            u8                            casteling_rights;
-            Square                        enpassant_target;
-            u8                            half_move_clock;
-            u8                            full_move_number;
-            i8                            ply_count;
-            u64                           hash;
-            std::vector<MoveHistoryEntry> history;
+            BitBoard                                       bitboards[15];
+            Piece                                          pieces[64];
+            Color                                          active_color;
+            u8                                             casteling_rights;
+            Square                                         enpassant_target;
+            u8                                             half_move_clock;
+            u8                                             full_move_number;
+            i8                                             ply_count;
+            u64                                            hash;
+            containers::ArrayStack<MoveHistoryEntry, 2048> history;
 
             DoMoveResult doMoveComplete();
 
