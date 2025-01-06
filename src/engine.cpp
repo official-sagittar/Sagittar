@@ -115,7 +115,7 @@ namespace sagittar {
         const u64 stoptime = utils::currtimeInMilliseconds();
         const u64 time     = stoptime - starttime;
 
-        std::stringstream ss;
+        std::ostringstream ss;
 
         ss << "nodes " << (unsigned long long) total_nodes;
         ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));

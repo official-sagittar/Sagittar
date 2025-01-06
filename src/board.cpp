@@ -646,7 +646,7 @@ namespace sagittar {
         bool Board::operator==(Board const& rhs) const { return hash == rhs.getHash(); }
 
         void Board::display() const {
-            std::stringstream ss;
+            std::ostringstream ss;
 
             for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
             {

@@ -28,7 +28,7 @@ namespace sagittar {
 
             const bool is_in_check = movegen::isInCheck(board);
 
-            if (board.getPlyCount() >= MAX_DEPTH)
+            if (board.getPlyCount() >= MAX_DEPTH) [[unlikely]]
             {
                 return eval::evaluateBoard(board);
             }

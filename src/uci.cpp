@@ -10,7 +10,7 @@ namespace sagittar {
             engine(engine) {}
 
         void UCIHandler::handleUCI() {
-            std::stringstream ss;
+            std::ostringstream ss;
             ss << "id name " << engine.getName() << "\n";
             ss << "id author the pixie developers (see AUTHORS file)\n";
             ss << "option name Hash type spin default 1 min 1 max 1\n";
@@ -26,10 +26,10 @@ namespace sagittar {
         void UCIHandler::handleDisplay() { engine.displayBoard(); }
 
         void UCIHandler::handlePosition(std::string& input) {
-            std::stringstream ss(input);
-            std::string       segment;
-            const std::size_t moves_pos      = input.find("moves");
-            bool              is_valid_input = true;
+            std::istringstream ss(input);
+            std::string        segment;
+            const std::size_t  moves_pos      = input.find("moves");
+            bool               is_valid_input = true;
 
             // Discard command
             ss >> segment;
