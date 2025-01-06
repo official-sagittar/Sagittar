@@ -66,6 +66,7 @@ namespace sagittar {
             full_move_number = 0;
             ply_count        = 0;
             hash             = 0ULL;
+            history          = {};
         }
 
         void Board::resetHash() {
