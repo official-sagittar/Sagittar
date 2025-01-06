@@ -19,6 +19,8 @@ namespace sagittar {
 
         i32 Searcher::search(board::Board&     board,
                              i8                depth,
+                             i32               alpha,
+                             i32               beta,
                              const SearchInfo& info,
                              SearchResult*     result) {
             if ((result->nodes & 2047) == 0)
@@ -45,8 +47,8 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            i32        max = -INF;
-            move::Move bestmovesofar;
+            i32        best_score = -INF;
+            move::Move best_moves_so_far;
             u32        legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
@@ -65,7 +67,7 @@ namespace sagittar {
                 result->nodes++;
                 legal_moves_count++;
 
-                const i32 score = -search(board, depth - 1, info, result);
+                const i32 score = -search(board, depth - 1, -beta, -alpha, info, result);
 
                 board.undoMove();
 
@@ -74,10 +76,18 @@ namespace sagittar {
                     return 0;
                 }
 
-                if (score > max)
+                if (score > best_score)
                 {
-                    max           = score;
-                    bestmovesofar = move;
+                    best_score = score;
+                    if (score > alpha)
+                    {
+                        alpha             = score;
+                        best_moves_so_far = move;
+                    }
+                }
+                if (score >= beta)
+                {
+                    return best_score;
                 }
             }
 
@@ -93,8 +103,8 @@ namespace sagittar {
                 }
             }
 
-            result->bestmove = bestmovesofar;
-            return max;
+            result->bestmove = best_moves_so_far;
+            return best_score;
         }
 
         SearchResult Searcher::searchRoot(
@@ -108,7 +118,7 @@ namespace sagittar {
             {
                 SearchResult result{};
                 const u64    starttime = utils::currtimeInMilliseconds();
-                i32          score     = search(board, currdepth, info, &result);
+                i32          score     = search(board, currdepth, -INF, INF, info, &result);
                 const u64    time      = utils::currtimeInMilliseconds() - starttime;
                 if (stop.load(std::memory_order_relaxed))
                 {
