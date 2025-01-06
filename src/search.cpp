@@ -32,6 +32,10 @@ namespace sagittar {
             {
                 return eval::evaluateBoard(board);
             }
+            if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
+            {
+                return 0;
+            }
             if (is_in_check)
             {
                 depth++;

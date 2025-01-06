@@ -137,6 +137,7 @@ namespace sagittar {
             i8                         getPlyCount() const;
             u64                        getHash() const;
             bool                       isValid() const;
+            bool                       hasPositionRepeated() const;
             bool                       operator==(Board const& rhs) const;
             void                       display() const;
         };

@@ -643,6 +643,17 @@ namespace sagittar {
             return check;
         }
 
+        bool Board::hasPositionRepeated() const {
+            for (u8 i = (ply_count - half_move_clock); i < ply_count - 1; ++i)
+            {
+                if (hash == history.peek(i).hash)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         bool Board::operator==(Board const& rhs) const { return hash == rhs.getHash(); }
 
         void Board::display() const {
