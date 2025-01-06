@@ -11,7 +11,7 @@ namespace sagittar {
 
         void UCIHandler::handleUCI() {
             std::stringstream ss;
-            ss << "id name " << engine.getName() << " " << engine.getVersion() << "\n";
+            ss << "id name " << engine.getName() << "\n";
             ss << "id author the pixie developers (see AUTHORS file)\n";
             ss << "option name Hash type spin default 1 min 1 max 1\n";
             ss << "option name Threads type spin default 1 min 1 max 1\n";

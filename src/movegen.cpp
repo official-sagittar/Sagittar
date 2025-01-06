@@ -642,45 +642,21 @@ namespace sagittar {
         }
 
         bool isSquareAttacked(const board::Board& board, const Square sq, const Color attacked_by) {
-            const board::BitBoard occupancy = ~(board.getBitboard(Piece::NO_PIECE));
-
-            Piece piece = pieceCreate(PieceType::QUEEN, attacked_by);
-            if (getQueenAttacks(sq, occupancy) & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            piece = pieceCreate(PieceType::ROOK, attacked_by);
-            if (getRookAttacks(sq, occupancy) & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            piece = pieceCreate(PieceType::BISHOP, attacked_by);
-            if (getBishopAttacks(sq, occupancy) & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            piece = pieceCreate(PieceType::KNIGHT, attacked_by);
-            if (ATTACK_TABLE_KNIGHT[sq] & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            piece = pieceCreate(PieceType::PAWN, attacked_by);
-            if (ATTACK_TABLE_PAWN[colorFlip(attacked_by)][sq] & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            piece = pieceCreate(PieceType::KING, attacked_by);
-            if (ATTACK_TABLE_KING[sq] & board.getBitboard(piece))
-            {
-                return true;
-            }
-
-            return false;
+            const board::BitBoard occupied = ~(board.getBitboard(Piece::NO_PIECE));
+            board::BitBoard       opPawns, opKnights, opRQ, opBQ, opKing;
+            opPawns   = board.getBitboard(pieceCreate(PieceType::PAWN, attacked_by));
+            opKnights = board.getBitboard(pieceCreate(PieceType::KNIGHT, attacked_by));
+            opRQ = opBQ = board.getBitboard(pieceCreate(PieceType::QUEEN, attacked_by));
+            opRQ |= board.getBitboard(pieceCreate(PieceType::ROOK, attacked_by));
+            opBQ |= board.getBitboard(pieceCreate(PieceType::BISHOP, attacked_by));
+            opKing = board.getBitboard(pieceCreate(PieceType::KING, attacked_by));
+            // clang-format off
+            return (getBishopAttacks(sq, occupied) & opBQ)
+                 | (getRookAttacks(sq, occupied) & opRQ)
+                 | (ATTACK_TABLE_KNIGHT[sq] & opKnights)
+                 | (ATTACK_TABLE_PAWN[colorFlip(attacked_by)][sq] & opPawns)
+                 | (ATTACK_TABLE_KING[sq] & opKing);
+            // clang-format on
         }
 
         bool isInCheck(const board::Board& board) {
