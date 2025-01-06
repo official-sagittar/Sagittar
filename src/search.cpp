@@ -18,6 +18,69 @@ namespace sagittar {
             }
         }
 
+        i32 Searcher::quiescencesearch(
+          board::Board& board, i32 alpha, i32 beta, const SearchInfo& info, SearchResult* result) {
+            if ((result->nodes & 2047) == 0)
+            {
+                shouldStopSearchNow(info);
+            }
+
+            if (board.getPlyCount() >= MAX_DEPTH)
+            {
+                return eval::evaluateBoard(board);
+            }
+
+            const i32 stand_pat = eval::evaluateBoard(board);
+            if (stand_pat >= beta)
+            {
+                return beta;
+            }
+            if (alpha < stand_pat)
+            {
+                alpha = stand_pat;
+            }
+
+            containers::ArrayList<move::Move> moves;
+            movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
+            scoreMoves(&moves, board);
+
+            for (u8 i = 0; i < moves.size(); i++)
+            {
+                sortMoves(&moves, i);
+                const move::Move move = moves.at(i);
+
+                const board::DoMoveResult do_move_result = board.doMove(move);
+
+                if (do_move_result == board::DoMoveResult::ILLEGAL)
+                {
+                    board.undoMove();
+                    continue;
+                }
+
+                result->nodes++;
+
+                const i32 score = -quiescencesearch(board, -beta, -alpha, info, result);
+
+                board.undoMove();
+
+                if (stop.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
+
+                if (score > alpha)
+                {
+                    alpha = score;
+                    if (score >= beta)
+                    {
+                        return beta;
+                    }
+                }
+            }
+
+            return alpha;
+        }
+
         i32 Searcher::search(board::Board&     board,
                              i8                depth,
                              i32               alpha,
@@ -45,7 +108,7 @@ namespace sagittar {
             }
             if (depth <= 0)
             {
-                return eval::evaluateBoard(board);
+                return quiescencesearch(board, alpha, beta, info, result);
             }
 
             i32        best_score = -INF;
