@@ -420,9 +420,9 @@ namespace sagittar {
             return ATTACK_TABLE_KING[sq] & occupancy;
         }
 
-        static void generatePseudolegalMovesPawn(std::vector<move::Move>* moves,
-                                                 const board::Board&      board,
-                                                 const MovegenType        type) {
+        static void generatePseudolegalMovesPawn(containers::ArrayList<move::Move>* moves,
+                                                 const board::Board&                board,
+                                                 const MovegenType                  type) {
             const Color     active_color   = board.getActiveColor();
             const Square    ep_target      = board.getEnpassantTarget();
             const Rank      promotion_rank = promotionRankDestOf(active_color);
@@ -503,9 +503,9 @@ namespace sagittar {
         }
 
         template<PieceType PieceTypeName>
-        static void generatePseudolegalMovesPiece(std::vector<move::Move>* moves,
-                                                  const board::Board&      board,
-                                                  const MovegenType        type) {
+        static void generatePseudolegalMovesPiece(containers::ArrayList<move::Move>* moves,
+                                                  const board::Board&                board,
+                                                  const MovegenType                  type) {
             const Color     active_color = board.getActiveColor();
             const Piece     piece        = pieceCreate(PieceTypeName, active_color);
             board::BitBoard bb           = board.getBitboard(piece);
@@ -555,8 +555,8 @@ namespace sagittar {
             }
         }
 
-        static void generatePseudolegalMovesCastle(std::vector<move::Move>* moves,
-                                                   const board::Board&      board) {
+        static void generatePseudolegalMovesCastle(containers::ArrayList<move::Move>* moves,
+                                                   const board::Board&                board) {
 
             if (isInCheck(board))
             {
@@ -668,9 +668,9 @@ namespace sagittar {
         }
 
 
-        void generatePseudolegalMoves(std::vector<move::Move>* moves,
-                                      const board::Board&      board,
-                                      const MovegenType        type) {
+        void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
+                                      const board::Board&                board,
+                                      const MovegenType                  type) {
             generatePseudolegalMovesPawn(moves, board, type);
             generatePseudolegalMovesPiece<PieceType::KNIGHT>(moves, board, type);
             generatePseudolegalMovesPiece<PieceType::BISHOP>(moves, board, type);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "board.h"
+#include "containers.h"
 #include "move.h"
 #include "pch.h"
 #include "types.h"
@@ -20,9 +21,9 @@ namespace sagittar {
 
         bool isInCheck(const board::Board& board);
 
-        void generatePseudolegalMoves(std::vector<move::Move>* moves,
-                                      const board::Board&      board,
-                                      const MovegenType        type);
+        void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
+                                      const board::Board&                board,
+                                      const MovegenType                  type);
 
     }
 
