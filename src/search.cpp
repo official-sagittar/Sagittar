@@ -57,10 +57,6 @@ namespace sagittar {
                     board.undoMove();
                     continue;
                 }
-                else if (do_move_result == board::DoMoveResult::INVALID)
-                {
-                    continue;
-                }
 
                 result->nodes++;
                 legal_moves_count++;

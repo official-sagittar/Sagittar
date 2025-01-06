@@ -22,10 +22,6 @@ namespace sagittar {
                 {
                     nodes += perft(board, depth - 1);
                 }
-                else if (result == board::DoMoveResult::INVALID)
-                {
-                    continue;
-                }
                 board.undoMove();
             }
             return nodes;
@@ -49,10 +45,6 @@ namespace sagittar {
                     total_nodes += nodes;
                     move.display();
                     std::cout << " " << (u64) nodes << std::endl;
-                }
-                else if (result == board::DoMoveResult::INVALID)
-                {
-                    continue;
                 }
                 board.undoMove();
             }
