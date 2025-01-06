@@ -307,7 +307,7 @@ namespace sagittar {
             const Piece          piece    = pieces[from];
             const Piece          captured = pieces[to];
 
-            if (pieceColorOf(piece) == colorFlip(active_color))
+            if (pieceColorOf(piece) == colorFlip(active_color)) [[unlikely]]
             {
                 return DoMoveResult::INVALID;
             }

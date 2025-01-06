@@ -36,7 +36,7 @@ namespace sagittar {
 
         u32 Move::id() const { return (score << 16) | (flag << 12) | (to << 6) | from; }
 
-        void Move::toString(std::stringstream& ss) const {
+        void Move::toString(std::ostringstream& ss) const {
             ss << (char) FILE_STR[sq2file(from)];
             ss << (int) (sq2rank(from) + 1);
             ss << (char) FILE_STR[sq2file(to)];
@@ -49,7 +49,7 @@ namespace sagittar {
         }
 
         void Move::display() const {
-            std::stringstream ss;
+            std::ostringstream ss;
             toString(ss);
             std::cout << ss.str() << std::flush;
         }

@@ -41,7 +41,7 @@ namespace sagittar {
             MoveFlag getFlag() const;
             u16      getScore() const;
             u32      id() const;
-            void     toString(std::stringstream&) const;
+            void     toString(std::ostringstream&) const;
             void     display() const;
             Move&    operator=(Move const&);
             bool     operator==(Move const& rhs);

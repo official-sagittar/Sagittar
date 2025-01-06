@@ -64,7 +64,7 @@ namespace sagittar {
                 std::string       move;
                 while (movesss >> move)
                 {
-                    if (engine.doMove(move) != board::DoMoveResult::LEGAL)
+                    if (engine.doMove(move) != board::DoMoveResult::LEGAL) [[unlikely]]
                     {
                         std::cerr << "Invalid Move!" << std::endl;
                     }
@@ -156,7 +156,7 @@ namespace sagittar {
             }
 
             auto searchProgressReportHandler = [](const search::SearchResult& result) {
-                std::stringstream ss;
+                std::ostringstream ss;
                 ss << "info score ";
                 if (result.is_mate)
                 {
@@ -180,7 +180,7 @@ namespace sagittar {
             };
 
             auto searchCompleteReportHander = [](const search::SearchResult& result) {
-                std::stringstream ss;
+                std::ostringstream ss;
                 result.bestmove.toString(ss);
                 std::cout << "bestmove " << ss.str() << std::endl;
             };

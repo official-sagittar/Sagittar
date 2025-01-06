@@ -26,7 +26,7 @@ namespace sagittar {
                 else if (isdigit(ch))
                 {
                     const u8 empty_squares = ch - '0';
-                    if (empty_squares < 1 || empty_squares > 8)
+                    if (empty_squares < 1 || empty_squares > 8) [[unlikely]]
                     {
                         throw std::invalid_argument("Invalid FEN!");
                     }
@@ -35,7 +35,7 @@ namespace sagittar {
                 else if (isalpha(ch))
                 {
                     std::size_t piece_id = PIECES_STR.find(ch);
-                    if (piece_id == std::string::npos)
+                    if (piece_id == std::string::npos) [[unlikely]]
                     {
                         throw std::invalid_argument("Invalid FEN!");
                     }
@@ -53,7 +53,7 @@ namespace sagittar {
             {
                 board->setActiveColor(Color::BLACK);
             }
-            else
+            else [[unlikely]]
             {
                 throw std::invalid_argument("Invalid FEN!");
             }
@@ -95,14 +95,14 @@ namespace sagittar {
                 const Rank rank = static_cast<Rank>((segment[1] - '0') - 1);
                 if (board->getActiveColor() == Color::WHITE)
                 {
-                    if (rank != Rank::RANK_6)
+                    if (rank != Rank::RANK_6) [[unlikely]]
                     {
                         throw std::invalid_argument("Invalid FEN!");
                     }
                 }
                 else
                 {
-                    if (rank != Rank::RANK_3)
+                    if (rank != Rank::RANK_3) [[unlikely]]
                     {
                         throw std::invalid_argument("Invalid FEN!");
                     }
