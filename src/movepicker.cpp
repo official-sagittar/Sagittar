@@ -39,9 +39,19 @@ namespace sagittar {
                 if (move::isCapture(move.getFlag()))
                 {
                     const PieceType attacker = pieceTypeOf(board.getPiece(move.getFrom()));
-                    const PieceType victim   = pieceTypeOf(board.getPiece(move.getTo()));
-                    const u16       score =
-                      MVV_LVA_TABLE[mvvlvaIdx(attacker, victim)] + MVVLVA_SCORE_OFFSET;
+                    const PieceType victim   = (move.getFlag() == move::MoveFlag::MOVE_CAPTURE_EP)
+                                               ? PieceType::PAWN
+                                               : pieceTypeOf(board.getPiece(move.getTo()));
+#ifdef DEBUG
+                    assert(attacker != 0);
+                    assert(victim != 0);
+#endif
+                    const u8  idx   = mvvlvaIdx(attacker, victim);
+                    const u16 score = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
+#ifdef DEBUG
+                    assert(idx >= 0 && idx < 36);
+                    assert(score >= 10100 && score <= 10605);
+#endif
                     moves->at(i).setScore(score);
                 }
             }
