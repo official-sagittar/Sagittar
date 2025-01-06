@@ -39,8 +39,18 @@ namespace sagittar {
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
-            i32
-            search(board::Board&, i8 depth, i32 alpha, i32 beta, const SearchInfo&, SearchResult*);
+            i32 quiescencesearch(board::Board&     board,
+                                 i32               alpha,
+                                 i32               beta,
+                                 const SearchInfo& info,
+                                 SearchResult*     result);
+
+            i32 search(board::Board&     board,
+                       i8                depth,
+                       i32               alpha,
+                       i32               beta,
+                       const SearchInfo& info,
+                       SearchResult*     result);
 
             SearchResult
             searchRoot(board::Board&                                    board,
