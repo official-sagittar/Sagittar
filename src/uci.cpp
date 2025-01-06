@@ -160,11 +160,11 @@ namespace sagittar {
                 ss << "info score ";
                 if (result.is_mate)
                 {
-                    ss << "mate " << result.mate_in;
+                    ss << "mate " << (int) result.mate_in;
                 }
                 else
                 {
-                    ss << "cp " << result.score;
+                    ss << "cp " << (int) result.score;
                 }
                 ss << " depth " << (unsigned int) result.depth;
                 ss << " nodes " << (unsigned long long) result.nodes;

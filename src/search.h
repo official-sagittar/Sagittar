@@ -24,7 +24,7 @@ namespace sagittar {
         struct SearchResult {
             i32                     score;
             bool                    is_mate;
-            u8                      mate_in;
+            i8                      mate_in;
             u8                      depth;
             u64                     nodes;
             u64                     time;
