@@ -25,18 +25,35 @@ namespace sagittar {
         };
         // clang-format on
 
+        static constexpr u16 TTMOVE_SCORE        = 30000;
         static constexpr u16 MVVLVA_SCORE_OFFSET = 10000;
 
         static constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
             return ((attacker - 1) * 6) + (victim - 1);
         }
 
-        void scoreMoves(containers::ArrayList<move::Move>* moves, const board::Board& board) {
+        void scoreMoves(containers::ArrayList<move::Move>* moves,
+                        const board::Board&                board,
+                        const TranspositionTable&          ttable) {
+            move::Move ttmove;
+            bool       ttmove_found = false;
+            TTData     ttdata;
+            const bool tthit = ttable.probe(&ttdata, board);
+            if (tthit)
+            {
+                ttmove       = ttdata.move;
+                ttmove_found = true;
+            }
+
             for (u8 i = 0; i < moves->size(); i++)
             {
                 const move::Move move = moves->at(i);
 
-                if (move::isCapture(move.getFlag()))
+                if (ttmove_found && (move == ttmove))
+                {
+                    moves->at(i).setScore(TTMOVE_SCORE);
+                }
+                else if (move::isCapture(move.getFlag()))
                 {
                     const PieceType attacker = pieceTypeOf(board.getPiece(move.getFrom()));
                     const PieceType victim   = (move.getFlag() == move::MoveFlag::MOVE_CAPTURE_EP)

@@ -1,8 +1,12 @@
 #include "tt.h"
+#include "search.h"
 
 namespace sagittar {
 
     namespace search {
+
+        TranspositionTable::TranspositionTable() :
+            TranspositionTable(DEFAULT_TT_SIZE_MB) {}
 
         TranspositionTable::TranspositionTable(const std::size_t mb) {
             setSize(mb);
@@ -26,18 +30,42 @@ namespace sagittar {
 
         void TranspositionTable::resetForSearch() { currentage++; }
 
-        void TranspositionTable::store(const u64        hash,
-                                       const u8         depth,
-                                       const TTFlag     flag,
-                                       const i32        value,
-                                       const move::Move move) {
+        void TranspositionTable::store(const board::Board& board,
+                                       const u8            depth,
+                                       const TTFlag        flag,
+                                       i32                 value,
+                                       const move::Move    move) {
+            const u64  hash  = board.getHash();
+            const u64  index = hash % size;
+            TTEntry&   entry = entries.at(index);
+            const bool replace =
+              (entry.key == 0ULL) || (entry.getAge() < currentage) || (entry.getDepth() <= depth);
+            if (!replace)
+            {
+                return;
+            }
+            if (value < -MATE_SCORE)
+            {
+                value -= board.getPlyCount();
+            }
+            else if (value > MATE_SCORE)
+            {
+                value += board.getPlyCount();
+            }
+            entry             = TTEntry(hash, depth, currentage, flag, value, move);
+            entries.at(index) = entry;
+        }
 
-            const u64 index = hash % size;
-            const u64 data  = 0ULL;
-            const u64 key   = hash ^ data;
-
-            entries[index].key  = key;
-            entries[index].data = data;
+        bool TranspositionTable::probe(TTData* data, const board::Board& board) const {
+            const u64      hash  = board.getHash();
+            const u64      index = hash % size;
+            const TTEntry& entry = entries.at(index);
+            if (entry.isValid(hash))
+            {
+                *data = entry.toTTData();
+                return true;
+            }
+            return false;
         }
 
     }

@@ -35,16 +35,17 @@ namespace sagittar {
             Move();
             Move(const Move&);
             Move(const Square from, const Square to, const MoveFlag flag);
-            void     setScore(const u16);
-            Square   getFrom() const;
-            Square   getTo() const;
-            MoveFlag getFlag() const;
-            u16      getScore() const;
-            u32      id() const;
-            void     toString(std::ostringstream&) const;
-            void     display() const;
-            Move&    operator=(Move const&);
-            bool     operator==(Move const& rhs);
+            static Move fromId(const u16 id);
+            void        setScore(const u16);
+            Square      getFrom() const;
+            Square      getTo() const;
+            MoveFlag    getFlag() const;
+            u16         getScore() const;
+            u16         id() const;
+            void        toString(std::ostringstream&) const;
+            void        display() const;
+            Move&       operator=(const Move& rhs);
+            bool        operator==(const Move& rhs) const;
         };
 
         constexpr bool isCapture(const MoveFlag m) { return (m & 0x4); }

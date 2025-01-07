@@ -16,7 +16,7 @@ clean:
 dir:
 	@mkdir -p $(OBJ_DIR)
 
-sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o uci.o utils.o
+sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o tt.o uci.o utils.o
 	@echo "==== Building sagittar ===="
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$(EXE) $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/board.o \
@@ -28,6 +28,7 @@ sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o per
 		$(OBJ_DIR)/movepicker.o \
 		$(OBJ_DIR)/perft.o \
 		$(OBJ_DIR)/search.o \
+		$(OBJ_DIR)/tt.o \
 		$(OBJ_DIR)/uci.o \
 		$(OBJ_DIR)/utils.o
 
@@ -60,6 +61,9 @@ perft.o: $(SRC_DIR)/perft.cpp $(SRC_DIR)/perft.h
 
 search.o: $(SRC_DIR)/search.cpp $(SRC_DIR)/search.h
 	@$(CXX) $(CFLAGS) -c $(SRC_DIR)/search.cpp -o $(OBJ_DIR)/search.o -MF $(OBJ_DIR)/search.d
+
+tt.o: $(SRC_DIR)/tt.cpp $(SRC_DIR)/tt.h
+	@$(CXX) $(CFLAGS) -c $(SRC_DIR)/tt.cpp -o $(OBJ_DIR)/tt.o -MF $(OBJ_DIR)/tt.d
 
 uci.o: $(SRC_DIR)/uci.cpp $(SRC_DIR)/uci.h
 	@$(CXX) $(CFLAGS) -c $(SRC_DIR)/uci.cpp -o $(OBJ_DIR)/uci.o -MF $(OBJ_DIR)/uci.d
