@@ -39,6 +39,7 @@ namespace sagittar {
            private:
             TranspositionTable tt;
             std::atomic_bool   stop;
+            move::Move         pvmove;
 
            private:
             void shouldStopSearchNow(const SearchInfo&);

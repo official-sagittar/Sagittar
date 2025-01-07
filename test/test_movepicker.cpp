@@ -22,7 +22,9 @@ TEST_SUITE("Movepicker") {
         containers::ArrayList<move::Move> moves;
         movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
-        search::scoreMoves(&moves, board, tt);
+        const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
+
+        search::scoreMoves(&moves, board, pvmove, tt);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (move::isCapture(moves.at(i).getFlag()))
