@@ -30,6 +30,10 @@ namespace sagittar {
 
     board::DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
 
+    void Engine::setTranspositionTableSize(const std::size_t size) {
+        searcher.setTranspositionTableSize(size);
+    }
+
     search::SearchResult
     Engine::search(const search::SearchInfo&                        info,
                    std::function<void(const search::SearchResult&)> searchProgressReportHandler,

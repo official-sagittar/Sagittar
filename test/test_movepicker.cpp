@@ -6,6 +6,7 @@
 #include "movegen.h"
 #include "movepicker.h"
 #include "pch.h"
+#include "tt.h"
 #include "types.h"
 
 using namespace sagittar;
@@ -13,13 +14,15 @@ using namespace sagittar;
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
+        search::TranspositionTable tt;
+
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         containers::ArrayList<move::Move> moves;
         movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
-        search::scoreMoves(&moves, board);
+        search::scoreMoves(&moves, board, tt);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (move::isCapture(moves.at(i).getFlag()))

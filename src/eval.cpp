@@ -153,6 +153,16 @@ namespace sagittar {
             i32 eval = is_end_game ? eval_eg : eval_mg;
 
             const i8 stm = 1 - (2 * board.getActiveColor());
+#ifdef DEBUG
+            if (board.getActiveColor() == Color::WHITE)
+            {
+                assert(stm == 1);
+            }
+            else
+            {
+                assert(stm == -1);
+            }
+#endif
             eval *= stm;
 
             return eval;
