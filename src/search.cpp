@@ -42,7 +42,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, tt);
+            scoreMoves(&moves, board, pvmove, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -119,7 +119,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board, tt);
+            scoreMoves(&moves, board, pvmove, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -150,6 +150,10 @@ namespace sagittar {
                 {
                     best_score        = score;
                     best_moves_so_far = move;
+                    if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+                    {
+                        pvmove = move;
+                    }
                     if (score > alpha)
                     {
                         if (score >= beta)
@@ -191,7 +195,10 @@ namespace sagittar {
                 tt.store(board, depth, flag, best_score, best_moves_so_far);
             }
 
-            result->bestmove = best_moves_so_far;
+            if (!stop.load(std::memory_order_relaxed))
+            {
+                result->bestmove = pvmove;
+            }
             return best_score;
         }
 
@@ -243,8 +250,9 @@ namespace sagittar {
         }
 
         void Searcher::reset() {
-            stop.store(false, std::memory_order_relaxed);
             tt.resetForSearch();
+            stop.store(false, std::memory_order_relaxed);
+            pvmove = move::Move();
         }
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
