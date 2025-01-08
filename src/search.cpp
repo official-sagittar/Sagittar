@@ -152,15 +152,15 @@ namespace sagittar {
                     best_score = score;
                     if (score > alpha)
                     {
-                        if (score >= beta)
-                        {
-                            break;
-                        }
                         alpha             = score;
                         best_moves_so_far = move;
                         if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
                         {
                             pvmove = move;
+                        }
+                        if (score >= beta)
+                        {
+                            break;
                         }
                     }
                 }
