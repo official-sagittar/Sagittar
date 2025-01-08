@@ -35,15 +35,18 @@ namespace sagittar {
                                        const TTFlag        flag,
                                        i32                 value,
                                        const move::Move    move) {
-            const u64  hash  = board.getHash();
-            const u64  index = hash % size;
-            TTEntry&   entry = entries.at(index);
+            const u64 hash  = board.getHash();
+            const u64 index = hash % size;
+            TTEntry&  entry = entries.at(index);
+
+            // Only handles empty indices or stale entires
             const bool replace =
               (entry.key == 0ULL) || (entry.getAge() < currentage) || (entry.getDepth() <= depth);
             if (!replace)
             {
                 return;
             }
+
             if (value < -MATE_SCORE)
             {
                 value -= board.getPlyCount();
@@ -52,7 +55,17 @@ namespace sagittar {
             {
                 value += board.getPlyCount();
             }
-            entry             = TTEntry(hash, depth, currentage, flag, value, move);
+
+            // If current entry is from the current position AND if move is a null move,
+            // DO NOT replace the move in the entry
+            move::Move move_to_replace = move;
+            if (move == move::Move() && entry.isValid(hash))
+            {
+                move_to_replace = entry.getMove();
+            }
+
+            // Store entry
+            entry             = TTEntry(hash, depth, currentage, flag, value, move_to_replace);
             entries.at(index) = entry;
         }
 
