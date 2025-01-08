@@ -35,6 +35,11 @@ namespace sagittar {
             move::Move              bestmove{};
         };
 
+        enum class NodeType {
+            NON_PV,
+            PV
+        };
+
         class Searcher {
            private:
             TranspositionTable tt;
@@ -50,6 +55,7 @@ namespace sagittar {
                                  const SearchInfo& info,
                                  SearchResult*     result);
 
+            template<NodeType nodeType>
             i32 search(board::Board&     board,
                        i8                depth,
                        i32               alpha,

@@ -81,6 +81,7 @@ namespace sagittar {
             return alpha;
         }
 
+        template<NodeType nodeType>
         i32 Searcher::search(board::Board&     board,
                              i8                depth,
                              i32               alpha,
@@ -93,6 +94,8 @@ namespace sagittar {
             }
 
             const i32 alpha_orig = alpha;
+
+            constexpr bool pvnode = nodeType != NodeType::NON_PV;
 
             const bool is_in_check = movegen::isInCheck(board);
 
@@ -137,7 +140,22 @@ namespace sagittar {
                 result->nodes++;
                 legal_moves_count++;
 
-                const i32 score = -search(board, depth - 1, -beta, -alpha, info, result);
+                i32 score;
+
+                if (legal_moves_count == 1)
+                {
+                    score = -search<nodeType>(board, depth - 1, -beta, -alpha, info, result);
+                }
+                else
+                {
+                    score =
+                      -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info, result);
+                    if (score > alpha && pvnode)
+                    {
+                        score =
+                          -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info, result);
+                    }
+                }
 
                 board.undoMove();
 
@@ -214,8 +232,8 @@ namespace sagittar {
             {
                 SearchResult result{};
                 const u64    starttime = utils::currtimeInMilliseconds();
-                i32          score     = search(board, currdepth, -INF, INF, info, &result);
-                const u64    time      = utils::currtimeInMilliseconds() - starttime;
+                i32       score = search<NodeType::PV>(board, currdepth, -INF, INF, info, &result);
+                const u64 time  = utils::currtimeInMilliseconds() - starttime;
                 if (stop.load(std::memory_order_relaxed))
                 {
                     break;
