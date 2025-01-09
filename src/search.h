@@ -68,6 +68,8 @@ namespace sagittar {
 
             void reset();
 
+            void resetForSearch();
+
             void setTranspositionTableSize(const std::size_t);
 
             SearchResult startSearch(
