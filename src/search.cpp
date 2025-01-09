@@ -250,6 +250,12 @@ namespace sagittar {
         }
 
         void Searcher::reset() {
+            tt.clear();
+            stop.store(false, std::memory_order_relaxed);
+            pvmove = move::Move();
+        }
+
+        void Searcher::resetForSearch() {
             tt.resetForSearch();
             stop.store(false, std::memory_order_relaxed);
             pvmove = move::Move();

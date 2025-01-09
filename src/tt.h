@@ -61,6 +61,7 @@ namespace sagittar {
         class TranspositionTable {
            private:
             std::vector<TTEntry> entries;
+            std::size_t          size_mb;
             std::size_t          size;
             u8                   currentage;
 

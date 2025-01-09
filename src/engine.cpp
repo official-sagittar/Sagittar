@@ -17,11 +17,14 @@ namespace sagittar {
 
     std::string Engine::getName() const { return name + " " + version; }
 
-    void Engine::reset() { board.reset(); }
+    void Engine::reset() {
+        board.reset();
+        searcher.reset();
+    }
 
     void Engine::resetForSearch() {
         board.resetPlyCount();
-        searcher.reset();
+        searcher.resetForSearch();
     }
 
     void Engine::setStartpos() { board.setStartpos(); }
@@ -114,6 +117,7 @@ namespace sagittar {
             info.starttime = utils::currtimeInMilliseconds();
             info.stoptime  = 0;
 
+            searcher.reset();
             const search::SearchResult result = search(info);
 
             total_nodes += result.nodes;
