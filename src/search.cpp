@@ -146,21 +146,22 @@ namespace sagittar {
                     return 0;
                 }
 
+                // Fail-soft
                 if (score > best_score)
                 {
-                    best_score        = score;
-                    best_moves_so_far = move;
-                    if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
-                    {
-                        pvmove = move;
-                    }
+                    best_score = score;
                     if (score > alpha)
                     {
+                        alpha             = score;
+                        best_moves_so_far = move;
+                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+                        {
+                            pvmove = move;
+                        }
                         if (score >= beta)
                         {
                             break;
                         }
-                        alpha = score;
                     }
                 }
             }
@@ -195,7 +196,7 @@ namespace sagittar {
                 tt.store(board, depth, flag, best_score, best_moves_so_far);
             }
 
-            if (!stop.load(std::memory_order_relaxed))
+            if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
             {
                 result->bestmove = pvmove;
             }

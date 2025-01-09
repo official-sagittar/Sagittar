@@ -46,6 +46,7 @@ namespace sagittar {
             void        display() const;
             Move&       operator=(const Move& rhs);
             bool        operator==(const Move& rhs) const;
+            bool        operator!=(const Move& rhs) const;
         };
 
         constexpr bool isCapture(const MoveFlag m) { return (m & 0x4); }

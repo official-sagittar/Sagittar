@@ -46,6 +46,8 @@ namespace sagittar {
 
             u8 getAge() const { return static_cast<u8>((data >> 6) & 0xFF); }
 
+            move::Move getMove() const { return move::Move::fromId((data >> 48) & 0xFFFF); }
+
             bool isValid(const u64 hash) const { return (hash ^ data) == key; }
 
             TTData toTTData() const {
