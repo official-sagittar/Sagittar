@@ -95,8 +95,6 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            constexpr bool pvnode = nodeType != NodeType::NON_PV;
-
             const bool is_in_check = movegen::isInCheck(board);
 
             if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
@@ -150,7 +148,7 @@ namespace sagittar {
                 {
                     score =
                       -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info, result);
-                    if (score > alpha && !pvnode)
+                    if (score > alpha && (beta - alpha > 1))
                     {
                         // re-search
                         score =
