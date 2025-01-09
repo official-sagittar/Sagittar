@@ -152,6 +152,7 @@ namespace sagittar {
                       -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info, result);
                     if (score > alpha && pvnode)
                     {
+                        // re-search
                         score =
                           -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info, result);
                     }
