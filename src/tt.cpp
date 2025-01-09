@@ -8,7 +8,8 @@ namespace sagittar {
         TranspositionTable::TranspositionTable() :
             TranspositionTable(DEFAULT_TT_SIZE_MB) {}
 
-        TranspositionTable::TranspositionTable(const std::size_t mb) {
+        TranspositionTable::TranspositionTable(const std::size_t mb) :
+            size_mb(mb) {
             setSize(mb);
             currentage = 0;
         }
@@ -24,7 +25,7 @@ namespace sagittar {
         std::size_t TranspositionTable::getSize() const { return size; }
 
         void TranspositionTable::clear() {
-            entries.clear();
+            setSize(size_mb);
             currentage = 0;
         }
 
