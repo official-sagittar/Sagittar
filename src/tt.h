@@ -16,6 +16,8 @@ namespace sagittar {
             EXACT
         };
 
+        constexpr i32 INF_BOUND = 52000;
+
         struct TTData {
             u8         depth;
             TTFlag     flag;
@@ -37,8 +39,9 @@ namespace sagittar {
                     const TTFlag     flag,
                     const i32        value,
                     const move::Move move) {
-                data = (static_cast<u64>(move.id()) << 48) | (value << 16) | (flag << 14)
-                     | (age << 6) | depth;
+                data = (static_cast<u64>(move.id()) << 48)
+                     | (static_cast<u64>(value + INF_BOUND) << 16) | (flag << 14) | (age << 6)
+                     | depth;
                 key = hash ^ data;
             }
 
@@ -54,7 +57,7 @@ namespace sagittar {
                 TTData ttdata;
                 ttdata.depth = getDepth();
                 ttdata.flag  = static_cast<TTFlag>((data >> 14) & 0x3);
-                ttdata.value = static_cast<i32>((data >> 16) & 0xFFFFFFFF);
+                ttdata.value = static_cast<i32>((data >> 16) & 0xFFFFFFFF) - INF_BOUND;
                 ttdata.move  = move::Move::fromId((data >> 48) & 0xFFFF);
                 return ttdata;
             }
