@@ -20,12 +20,16 @@ namespace sagittar {
             entries.clear();
             entries.resize(size);
             entries.shrink_to_fit();
+            clear();
         }
 
         std::size_t TranspositionTable::getSize() const { return size; }
 
         void TranspositionTable::clear() {
-            setSize(size_mb);
+            for (u32 i = 0; i < size; i++)
+            {
+                entries.at(i) = TTEntry();
+            }
             currentage = 0;
         }
 
