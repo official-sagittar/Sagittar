@@ -95,6 +95,50 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
+            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
+            const bool     is_pv_node      = ((beta - alpha) > 1);
+
+            if (board.getPlyCount() > 0 && !is_pv_node_type && !is_pv_node)
+            {
+                TTData     ttdata;
+                const bool tthit = tt.probe(&ttdata, board);
+                if (tthit && ttdata.depth >= depth)
+                {
+                    i32 ttvalue = ttdata.value;
+
+                    if (ttvalue < -MATE_SCORE)
+                    {
+                        ttvalue += board.getPlyCount();
+                    }
+                    else if (ttvalue > MATE_SCORE)
+                    {
+                        ttvalue -= board.getPlyCount();
+                    }
+
+                    switch (ttdata.flag)
+                    {
+                        case TTFlag::EXACT :
+                            return ttvalue;
+
+                        case TTFlag::LOWERBOUND :
+                            alpha = std::max(alpha, ttvalue);
+                            break;
+
+                        case TTFlag::UPPERBOUND :
+                            beta = std::min(beta, ttvalue);
+                            break;
+
+                        default :
+                            break;
+                    }
+
+                    if (alpha >= beta)
+                    {
+                        return ttvalue;
+                    }
+                }
+            }
+
             const bool is_in_check = movegen::isInCheck(board);
 
             if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
