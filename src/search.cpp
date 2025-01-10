@@ -209,15 +209,15 @@ namespace sagittar {
                 // Fail-soft
                 if (score > best_score)
                 {
-                    best_score = score;
+                    best_score        = score;
+                    best_moves_so_far = move;
+                    if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+                    {
+                        pvmove = move;
+                    }
                     if (score > alpha)
                     {
-                        alpha             = score;
-                        best_moves_so_far = move;
-                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
-                        {
-                            pvmove = move;
-                        }
+                        alpha = score;
                         if (score >= beta)
                         {
                             break;

@@ -61,16 +61,8 @@ namespace sagittar {
                 value += board.getPlyCount();
             }
 
-            // If current entry is from the current position AND if move is a null move,
-            // DO NOT replace the move in the entry
-            move::Move move_to_replace = move;
-            if (move == move::Move() && entry.isValid(hash))
-            {
-                move_to_replace = entry.getMove();
-            }
-
             // Store entry
-            entry             = TTEntry(hash, depth, currentage, flag, value, move_to_replace);
+            entry             = TTEntry(hash, depth, currentage, flag, value, move);
             entries.at(index) = entry;
         }
 
