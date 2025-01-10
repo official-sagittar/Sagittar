@@ -95,10 +95,9 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
-            const bool     is_pv_node      = ((beta - alpha) > 1);
+            const bool is_pv_node = ((beta - alpha) > 1);
 
-            if (board.getPlyCount() > 0 && !is_pv_node_type && !is_pv_node)
+            if (board.getPlyCount() > 0 && !is_pv_node)
             {
                 TTData     ttdata;
                 const bool tthit = tt.probe(&ttdata, board);
