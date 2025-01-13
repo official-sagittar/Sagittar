@@ -40,6 +40,9 @@ namespace sagittar {
                                        const TTFlag        flag,
                                        i32                 value,
                                        const move::Move    move) {
+#ifdef DEBUG
+            assert(move != move::Move());
+#endif
             const u64 hash  = board.getHash();
             const u64 index = hash % size;
             TTEntry&  entry = entries.at(index);

@@ -158,7 +158,7 @@ namespace sagittar {
             }
 
             i32        best_score = -INF;
-            move::Move best_moves_so_far;
+            move::Move best_move_so_far;
             u32        legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
@@ -209,19 +209,19 @@ namespace sagittar {
                 // Fail-soft
                 if (score > best_score)
                 {
-                    best_score        = score;
-                    best_moves_so_far = move;
+                    best_score       = score;
+                    best_move_so_far = move;
                     if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
                     {
                         pvmove = move;
                     }
                     if (score > alpha)
                     {
-                        alpha = score;
                         if (score >= beta)
                         {
                             break;
                         }
+                        alpha = score;
                     }
                 }
             }
@@ -253,7 +253,7 @@ namespace sagittar {
                 {
                     flag = TTFlag::EXACT;
                 }
-                tt.store(board, depth, flag, best_score, best_moves_so_far);
+                tt.store(board, depth, flag, best_score, best_move_so_far);
             }
 
             if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
