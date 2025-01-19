@@ -19,7 +19,7 @@ namespace sagittar {
         constexpr i32 INF_BOUND = 52000;
 
         struct TTData {
-            u8         depth;
+            i8         depth;
             TTFlag     flag;
             i32        value;
             move::Move move;
@@ -34,7 +34,7 @@ namespace sagittar {
                 data(0ULL) {}
 
             TTEntry(const u64        hash,
-                    const u8         depth,
+                    const i8         depth,
                     const u8         age,
                     const TTFlag     flag,
                     const i32        value,
@@ -45,7 +45,7 @@ namespace sagittar {
                 key = hash ^ data;
             }
 
-            u8 getDepth() const { return static_cast<u8>(data & 0x3F); }
+            i8 getDepth() const { return static_cast<u8>(data & 0x3F); }
 
             u8 getAge() const { return static_cast<u8>((data >> 6) & 0xFF); }
 
@@ -78,7 +78,7 @@ namespace sagittar {
             void               clear();
             void               resetForSearch();
             void               store(const board::Board& board,
-                                     const u8            depth,
+                                     const i8            depth,
                                      const TTFlag        flag,
                                      const i32           value,
                                      const move::Move    move);

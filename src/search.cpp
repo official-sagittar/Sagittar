@@ -95,7 +95,29 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            const bool is_pv_node = ((beta - alpha) > 1);
+            if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
+            {
+                return eval::evaluateBoard(board);
+            }
+
+            if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
+            {
+                return 0;
+            }
+
+            const bool is_in_check = movegen::isInCheck(board);
+
+            if (is_in_check)
+            {
+                depth++;
+            }
+
+            if (depth <= 0)
+            {
+                return quiescencesearch(board, alpha, beta, info, result);
+            }
+
+            const bool is_pv_node = ((beta - alpha) > 1) || (nodeType != NodeType::NON_PV);
 
             if (board.getPlyCount() > 0 && !is_pv_node)
             {
@@ -114,47 +136,11 @@ namespace sagittar {
                         ttvalue -= board.getPlyCount();
                     }
 
-                    switch (ttdata.flag)
-                    {
-                        case TTFlag::EXACT :
-                            return ttvalue;
-
-                        case TTFlag::LOWERBOUND :
-                            alpha = std::max(alpha, ttvalue);
-                            break;
-
-                        case TTFlag::UPPERBOUND :
-                            beta = std::min(beta, ttvalue);
-                            break;
-
-                        default :
-                            break;
-                    }
-
-                    if (alpha >= beta)
+                    if (ttdata.flag == TTFlag::EXACT)
                     {
                         return ttvalue;
                     }
                 }
-            }
-
-            const bool is_in_check = movegen::isInCheck(board);
-
-            if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
-            {
-                return eval::evaluateBoard(board);
-            }
-            if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
-            {
-                return 0;
-            }
-            if (is_in_check)
-            {
-                depth++;
-            }
-            if (depth <= 0)
-            {
-                return quiescencesearch(board, alpha, beta, info, result);
             }
 
             i32        best_score = -INF;
@@ -209,19 +195,19 @@ namespace sagittar {
                 // Fail-soft
                 if (score > best_score)
                 {
-                    best_score       = score;
-                    best_move_so_far = move;
-                    if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
-                    {
-                        pvmove = move;
-                    }
+                    best_score = score;
                     if (score > alpha)
                     {
+                        alpha            = score;
+                        best_move_so_far = move;
+                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+                        {
+                            pvmove = move;
+                        }
                         if (score >= beta)
                         {
                             break;
                         }
-                        alpha = score;
                     }
                 }
             }
@@ -329,6 +315,8 @@ namespace sagittar {
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            stop.store(false, std::memory_order_relaxed);
+            pvmove = move::Move();
             return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
         }
 
