@@ -16,8 +16,10 @@ namespace sagittar {
             EXACT
         };
 
+        constexpr i32 INF_BOUND = 52000;
+
         struct TTData {
-            u8         depth;
+            i8         depth;
             TTFlag     flag;
             i32        value;
             move::Move move;
@@ -32,17 +34,18 @@ namespace sagittar {
                 data(0ULL) {}
 
             TTEntry(const u64        hash,
-                    const u8         depth,
+                    const i8         depth,
                     const u8         age,
                     const TTFlag     flag,
                     const i32        value,
                     const move::Move move) {
-                data = (static_cast<u64>(move.id()) << 48) | (value << 16) | (flag << 14)
-                     | (age << 6) | depth;
+                data = (static_cast<u64>(move.id()) << 48)
+                     | (static_cast<u64>(value + INF_BOUND) << 16) | (flag << 14) | (age << 6)
+                     | depth;
                 key = hash ^ data;
             }
 
-            u8 getDepth() const { return static_cast<u8>(data & 0x3F); }
+            i8 getDepth() const { return static_cast<u8>(data & 0x3F); }
 
             u8 getAge() const { return static_cast<u8>((data >> 6) & 0xFF); }
 
@@ -54,7 +57,7 @@ namespace sagittar {
                 TTData ttdata;
                 ttdata.depth = getDepth();
                 ttdata.flag  = static_cast<TTFlag>((data >> 14) & 0x3);
-                ttdata.value = static_cast<i32>((data >> 16) & 0xFFFFFFFF);
+                ttdata.value = static_cast<i32>((data >> 16) & 0xFFFFFFFF) - INF_BOUND;
                 ttdata.move  = move::Move::fromId((data >> 48) & 0xFFFF);
                 return ttdata;
             }
@@ -75,7 +78,7 @@ namespace sagittar {
             void               clear();
             void               resetForSearch();
             void               store(const board::Board& board,
-                                     const u8            depth,
+                                     const i8            depth,
                                      const TTFlag        flag,
                                      const i32           value,
                                      const move::Move    move);

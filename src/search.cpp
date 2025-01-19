@@ -95,27 +95,56 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            const bool is_in_check = movegen::isInCheck(board);
-
             if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
             {
                 return eval::evaluateBoard(board);
             }
+
             if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
             {
                 return 0;
             }
+
+            const bool is_in_check = movegen::isInCheck(board);
+
             if (is_in_check)
             {
                 depth++;
             }
+
             if (depth <= 0)
             {
                 return quiescencesearch(board, alpha, beta, info, result);
             }
 
+            const bool is_pv_node = ((beta - alpha) > 1) || (nodeType != NodeType::NON_PV);
+
+            if (board.getPlyCount() > 0 && !is_pv_node)
+            {
+                TTData     ttdata;
+                const bool tthit = tt.probe(&ttdata, board);
+                if (tthit && ttdata.depth >= depth)
+                {
+                    i32 ttvalue = ttdata.value;
+
+                    if (ttvalue < -MATE_SCORE)
+                    {
+                        ttvalue += board.getPlyCount();
+                    }
+                    else if (ttvalue > MATE_SCORE)
+                    {
+                        ttvalue -= board.getPlyCount();
+                    }
+
+                    if (ttdata.flag == TTFlag::EXACT)
+                    {
+                        return ttvalue;
+                    }
+                }
+            }
+
             i32        best_score = -INF;
-            move::Move best_moves_so_far;
+            move::Move best_move_so_far;
             u32        legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
@@ -169,8 +198,8 @@ namespace sagittar {
                     best_score = score;
                     if (score > alpha)
                     {
-                        alpha             = score;
-                        best_moves_so_far = move;
+                        alpha            = score;
+                        best_move_so_far = move;
                         if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
                         {
                             pvmove = move;
@@ -210,7 +239,7 @@ namespace sagittar {
                 {
                     flag = TTFlag::EXACT;
                 }
-                tt.store(board, depth, flag, best_score, best_moves_so_far);
+                tt.store(board, depth, flag, best_score, best_move_so_far);
             }
 
             if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
@@ -286,6 +315,8 @@ namespace sagittar {
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            stop.store(false, std::memory_order_relaxed);
+            pvmove = move::Move();
             return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
         }
 
