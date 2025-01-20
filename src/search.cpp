@@ -42,7 +42,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board);
+            scoreMoves(&moves, board, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -92,6 +92,8 @@ namespace sagittar {
                 shouldStopSearchNow(info);
             }
 
+            const i32 alpha_orig = alpha;
+
             const bool is_in_check = movegen::isInCheck(board);
 
             if (board.getPlyCount() >= MAX_DEPTH) [[unlikely]]
@@ -112,12 +114,12 @@ namespace sagittar {
             }
 
             i32        best_score = -INF;
-            move::Move best_moves_so_far;
+            move::Move best_move_so_far;
             u32        legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board);
+            scoreMoves(&moves, board, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -149,13 +151,13 @@ namespace sagittar {
                     best_score = score;
                     if (score > alpha)
                     {
-                        alpha             = score;
-                        best_moves_so_far = move;
+                        alpha            = score;
+                        best_move_so_far = move;
+                        if (score >= beta)
+                        {
+                            break;
+                        }
                     }
-                }
-                if (score >= beta)
-                {
-                    return best_score;
                 }
             }
 
@@ -171,7 +173,24 @@ namespace sagittar {
                 }
             }
 
-            result->bestmove = best_moves_so_far;
+            if (!stop.load(std::memory_order_relaxed))
+            {
+                tt::TTFlag flag = tt::TTFlag::NONE;
+                if (best_score <= alpha_orig)
+                {
+                    flag = tt::TTFlag::UPPERBOUND;
+                }
+                else if (best_score >= beta)
+                {
+                    flag = tt::TTFlag::LOWERBOUND;
+                }
+                else
+                {
+                    flag = tt::TTFlag::EXACT;
+                }
+                tt.store(board, depth, flag, best_score, best_move_so_far);
+            }
+
             return best_score;
         }
 
@@ -222,13 +241,21 @@ namespace sagittar {
             return bestresult;
         }
 
-        void Searcher::reset() { stop.store(false, std::memory_order_relaxed); }
+        void Searcher::reset() {
+            tt.clear();
+            stop.store(false, std::memory_order_relaxed);
+        }
+
+        void Searcher::resetForSearch() { tt.resetForSearch(); }
+
+        void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
         SearchResult Searcher::startSearch(
           board::Board&                                    board,
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            stop.store(false, std::memory_order_relaxed);
             return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
         }
 

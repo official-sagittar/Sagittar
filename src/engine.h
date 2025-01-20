@@ -22,6 +22,7 @@ namespace sagittar {
         void                setStartpos();
         void                setPositionFromFEN(std::string);
         board::DoMoveResult doMove(const std::string&);
+        void                setTranspositionTableSize(const std::size_t);
         search::SearchResult
                              search(const search::SearchInfo&,
                                     std::function<void(const search::SearchResult&)> searchProgressReportHandler,

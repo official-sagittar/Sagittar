@@ -24,6 +24,13 @@ namespace sagittar {
             flag(flag),
             score(0) {}
 
+        Move Move::fromId(const u16 id) {
+            const Square   from = static_cast<Square>(id & 0x3F);
+            const Square   to   = static_cast<Square>((id >> 6) & 0x3F);
+            const MoveFlag flag = static_cast<MoveFlag>((id >> 12) & 0xF);
+            return Move(from, to, flag);
+        }
+
         void Move::setScore(const u16 s) { score = s; }
 
         Square Move::getFrom() const { return from; }
@@ -34,7 +41,7 @@ namespace sagittar {
 
         u16 Move::getScore() const { return score; }
 
-        u32 Move::id() const { return (score << 16) | (flag << 12) | (to << 6) | from; }
+        u16 Move::id() const { return (flag << 12) | (to << 6) | from; }
 
         void Move::toString(std::ostringstream& ss) const {
             ss << (char) FILE_STR[sq2file(from)];
@@ -54,7 +61,7 @@ namespace sagittar {
             std::cout << ss.str() << std::flush;
         }
 
-        Move& Move::operator=(Move const& rhs) {
+        Move& Move::operator=(const Move& rhs) {
             from  = rhs.from;
             to    = rhs.to;
             flag  = rhs.flag;
@@ -62,6 +69,8 @@ namespace sagittar {
             return *this;
         }
 
-        bool Move::operator==(Move const& rhs) { return id() == rhs.id(); }
+        bool Move::operator==(const Move& rhs) const { return id() == rhs.id(); }
+
+        bool Move::operator!=(const Move& rhs) const { return id() != rhs.id(); };
     }
 }
