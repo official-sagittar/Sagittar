@@ -41,6 +41,14 @@ namespace sagittar {
                 const u64     index     = hash % size;
                 const TTEntry currentry = entries.at(index);
 
+                // Only handles empty indices or stale entires
+                const bool replace = (currentry.hash == 0ULL) || (currentry.age < currentage)
+                                  || (currentry.depth <= depth);
+                if (!replace)
+                {
+                    return;
+                }
+
                 if (value < -MATE_SCORE)
                 {
                     value -= board.getPlyCount();
