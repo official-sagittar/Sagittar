@@ -3,6 +3,7 @@
 #include "board.h"
 #include "move.h"
 #include "pch.h"
+#include "tt.h"
 #include "types.h"
 
 namespace sagittar {
@@ -13,6 +14,8 @@ namespace sagittar {
         constexpr i32 MATE_VALUE = 49000;
         constexpr i32 MATE_SCORE = 48000;
         constexpr u8  MAX_DEPTH  = 64;
+
+        constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
 
         struct SearchInfo {
             i8   depth;
@@ -34,7 +37,9 @@ namespace sagittar {
 
         class Searcher {
            private:
-            std::atomic_bool stop;
+            move::Move             pvmove;
+            std::atomic_bool       stop;
+            tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
@@ -61,6 +66,8 @@ namespace sagittar {
            public:
             Searcher();
             void         reset();
+            void         resetForSearch();
+            void         setTranspositionTableSize(const std::size_t);
             SearchResult startSearch(
               board::Board&                                    board,
               const SearchInfo&                                info,

@@ -25,18 +25,41 @@ namespace sagittar {
         };
         // clang-format on
 
+        static constexpr u16 PVMOVE_SCORE        = 40000;
+        static constexpr u16 TTMOVE_SCORE        = 30000;
         static constexpr u16 MVVLVA_SCORE_OFFSET = 10000;
 
         static constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
             return ((attacker - 1) * 6) + (victim - 1);
         }
 
-        void scoreMoves(containers::ArrayList<move::Move>* moves, const board::Board& board) {
+        void scoreMoves(containers::ArrayList<move::Move>* moves,
+                        const board::Board&                board,
+                        const move::Move&                  pvmove,
+                        const tt::TranspositionTable&      ttable) {
+            move::Move  ttmove;
+            bool        ttmove_found = false;
+            tt::TTEntry ttentry;
+            const bool  tthit = ttable.probe(&ttentry, board);
+            if (tthit)
+            {
+                ttmove       = ttentry.move;
+                ttmove_found = true;
+            }
+
             for (u8 i = 0; i < moves->size(); i++)
             {
                 const move::Move move = moves->at(i);
 
-                if (move::isCapture(move.getFlag()))
+                if (move == pvmove)
+                {
+                    moves->at(i).setScore(PVMOVE_SCORE);
+                }
+                else if (ttmove_found && (move == ttmove))
+                {
+                    moves->at(i).setScore(TTMOVE_SCORE);
+                }
+                else if (move::isCapture(move.getFlag()))
                 {
                     const PieceType attacker = pieceTypeOf(board.getPiece(move.getFrom()));
                     const PieceType victim   = (move.getFlag() == move::MoveFlag::MOVE_CAPTURE_EP)
