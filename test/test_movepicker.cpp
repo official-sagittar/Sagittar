@@ -43,6 +43,8 @@ TEST_SUITE("Movepicker") {
 
         search::sortMoves(&moves, 0);
 
+        REQUIRE(moves.at(0).getScore() == 40000);
+
         for (u8 i = 1; i < moves.size(); i++)
         {
             search::sortMoves(&moves, i);
