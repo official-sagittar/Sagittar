@@ -25,6 +25,7 @@ namespace sagittar {
         };
         // clang-format on
 
+        static constexpr u16 PVMOVE_SCORE        = 40000;
         static constexpr u16 TTMOVE_SCORE        = 30000;
         static constexpr u16 MVVLVA_SCORE_OFFSET = 10000;
 
@@ -34,6 +35,7 @@ namespace sagittar {
 
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
+                        const move::Move&                  pvmove,
                         const tt::TranspositionTable&      ttable) {
             move::Move  ttmove;
             bool        ttmove_found = false;
@@ -49,7 +51,11 @@ namespace sagittar {
             {
                 const move::Move move = moves->at(i);
 
-                if (ttmove_found && (move == ttmove))
+                if (move == pvmove)
+                {
+                    moves->at(i).setScore(PVMOVE_SCORE);
+                }
+                else if (ttmove_found && (move == ttmove))
                 {
                     moves->at(i).setScore(TTMOVE_SCORE);
                 }

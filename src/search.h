@@ -37,6 +37,7 @@ namespace sagittar {
 
         class Searcher {
            private:
+            move::Move             pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
 

@@ -42,7 +42,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, tt);
+            scoreMoves(&moves, board, pvmove, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -119,7 +119,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board, tt);
+            scoreMoves(&moves, board, pvmove, tt);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -153,6 +153,10 @@ namespace sagittar {
                     {
                         alpha            = score;
                         best_move_so_far = move;
+                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+                        {
+                            pvmove = move;
+                        }
                         if (score >= beta)
                         {
                             break;
@@ -191,6 +195,10 @@ namespace sagittar {
                 tt.store(board, depth, flag, best_score, best_move_so_far);
             }
 
+            if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
+            {
+                result->bestmove = pvmove;
+            }
             return best_score;
         }
 
@@ -242,8 +250,9 @@ namespace sagittar {
         }
 
         void Searcher::reset() {
-            tt.clear();
+            pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
+            tt.clear();
         }
 
         void Searcher::resetForSearch() { tt.resetForSearch(); }
@@ -255,6 +264,7 @@ namespace sagittar {
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
             return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
         }
