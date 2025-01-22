@@ -12,7 +12,7 @@ namespace sagittar {
 
         static u64 ZOBRIST_TABLE[15][64];
         static u64 ZOBRIST_CA[16];
-        static u64 ZOBRIST_BLACK_TO_MOVE;
+        static u64 ZOBRIST_SIDE;
 
         void Board::initialize() {
 
@@ -55,7 +55,7 @@ namespace sagittar {
                 ZOBRIST_CA[i] = utils::prng();
             }
 
-            ZOBRIST_BLACK_TO_MOVE = utils::prng();
+            ZOBRIST_SIDE = utils::prng();
 
             movegen::initialize();
         }
@@ -90,9 +90,9 @@ namespace sagittar {
         void Board::resetHash() {
             hash = 0ULL;
 
-            if (active_color == Color::BLACK)
+            if (active_color == Color::WHITE)
             {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
+                hash ^= ZOBRIST_SIDE;
             }
 
             hash ^= ZOBRIST_CA[casteling_rights];
@@ -293,10 +293,12 @@ namespace sagittar {
         DoMoveResult Board::doMoveComplete() {
             const bool is_valid_move = !movegen::isInCheck(*this) && isValid();
             active_color             = colorFlip(active_color);
-            if (active_color == Color::BLACK)
-            {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
-            }
+            hash ^= ZOBRIST_SIDE;
+#ifdef DEBUG
+            const u64 currhash = hash;
+            resetHash();
+            assert(currhash == hash);
+#endif
             return is_valid_move ? DoMoveResult::LEGAL : DoMoveResult::ILLEGAL;
         }
 
@@ -598,10 +600,7 @@ namespace sagittar {
             hash ^= ZOBRIST_CA[casteling_rights];
             hash ^= ZOBRIST_CA[history_entry.casteling_rights];
 
-            if (active_color == Color::BLACK)
-            {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
-            }
+            hash ^= ZOBRIST_SIDE;
 
 #ifdef DEBUG
             assert(hash == history_entry.hash);
