@@ -7,40 +7,24 @@ namespace sagittar {
     namespace board {
 
         // Little-Endian Rank-File Mapping
-        // [Color][from/to][Square]
-        static u8 CASTLE_RIGHTS_MODIFIERS[2][2][64];
+        // clang-format off
+        static const u8 CASTLE_RIGHTS_MODIFIERS[64] = {
+            13, 15, 15, 15, 12, 15, 15, 14,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            7,  15, 15, 15,  3, 15, 15, 11
+        };
+        // clang-format on
 
         static u64 ZOBRIST_TABLE[15][64];
         static u64 ZOBRIST_CA[16];
         static u64 ZOBRIST_SIDE;
 
         void Board::initialize() {
-
-            for (int c = 0; c < 2; c++)
-            {
-                for (int t = 0; t < 2; t++)
-                {
-                    for (int sq = Square::A1; sq <= Square::H8; sq++)
-                    {
-                        CASTLE_RIGHTS_MODIFIERS[c][t][sq] = 15;  // 1111
-                    }
-                }
-            }
-
-            const u8 from = 0;
-            const u8 to   = 1;
-
-            CASTLE_RIGHTS_MODIFIERS[Color::WHITE][from][Square::E1] = 12;  // 1100
-            CASTLE_RIGHTS_MODIFIERS[Color::WHITE][from][Square::A1] = 13;  // 1101
-            CASTLE_RIGHTS_MODIFIERS[Color::WHITE][from][Square::H1] = 14;  // 1110
-            CASTLE_RIGHTS_MODIFIERS[Color::WHITE][to][Square::A8]   = 7;   // 0111
-            CASTLE_RIGHTS_MODIFIERS[Color::WHITE][to][Square::H8]   = 11;  // 1011
-
-            CASTLE_RIGHTS_MODIFIERS[Color::BLACK][from][Square::E8] = 3;   // 0011
-            CASTLE_RIGHTS_MODIFIERS[Color::BLACK][from][Square::A8] = 7;   // 0111
-            CASTLE_RIGHTS_MODIFIERS[Color::BLACK][from][Square::H8] = 11;  // 1011
-            CASTLE_RIGHTS_MODIFIERS[Color::BLACK][to][Square::A1]   = 13;  // 1101
-            CASTLE_RIGHTS_MODIFIERS[Color::BLACK][to][Square::H1]   = 14;  // 1110
 
             for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
             {
@@ -349,7 +333,7 @@ namespace sagittar {
                 const Piece rook = pieceCreate(PieceType::ROOK, active_color);
                 movePiece(rook, static_cast<Square>(to + 1), static_cast<Square>(to - 1));
                 hash ^= ZOBRIST_CA[casteling_rights];
-                casteling_rights &= CASTLE_RIGHTS_MODIFIERS[active_color][0][from];
+                casteling_rights &= CASTLE_RIGHTS_MODIFIERS[from];
                 hash ^= ZOBRIST_CA[casteling_rights];
                 return doMoveComplete();
             }
@@ -359,7 +343,7 @@ namespace sagittar {
                 const Piece rook = pieceCreate(PieceType::ROOK, active_color);
                 movePiece(rook, static_cast<Square>(to - 2), static_cast<Square>(to + 1));
                 hash ^= ZOBRIST_CA[casteling_rights];
-                casteling_rights &= CASTLE_RIGHTS_MODIFIERS[active_color][0][from];
+                casteling_rights &= CASTLE_RIGHTS_MODIFIERS[from];
                 hash ^= ZOBRIST_CA[casteling_rights];
                 return doMoveComplete();
             }
@@ -396,8 +380,7 @@ namespace sagittar {
             }
 
             hash ^= ZOBRIST_CA[casteling_rights];
-            casteling_rights &= CASTLE_RIGHTS_MODIFIERS[active_color][0][from];
-            casteling_rights &= CASTLE_RIGHTS_MODIFIERS[active_color][1][to];
+            casteling_rights &= (CASTLE_RIGHTS_MODIFIERS[from] & CASTLE_RIGHTS_MODIFIERS[to]);
             hash ^= ZOBRIST_CA[casteling_rights];
 
             return doMoveComplete();
