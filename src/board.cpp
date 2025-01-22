@@ -21,11 +21,11 @@ namespace sagittar {
         // clang-format on
 
         static u64 ZOBRIST_TABLE[15][64];
-        static u64 ZOBRIST_KCA[2];
-        static u64 ZOBRIST_QCA[2];
-        static u64 ZOBRIST_BLACK_TO_MOVE;
+        static u64 ZOBRIST_CA[16];
+        static u64 ZOBRIST_SIDE;
 
         void Board::initialize() {
+
             for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
             {
                 for (u8 sq = Square::A1; sq <= Square::H8; sq++)
@@ -34,11 +34,13 @@ namespace sagittar {
                 }
             }
 
-            ZOBRIST_KCA[Color::WHITE] = utils::prng();
-            ZOBRIST_KCA[Color::BLACK] = utils::prng();
-            ZOBRIST_QCA[Color::WHITE] = utils::prng();
-            ZOBRIST_QCA[Color::BLACK] = utils::prng();
-            ZOBRIST_BLACK_TO_MOVE     = utils::prng();
+            for (u8 i = 0; i < 16; i++)
+            {
+                ZOBRIST_CA[i] = utils::prng();
+            }
+
+            ZOBRIST_SIDE = utils::prng();
+
             movegen::initialize();
         }
 
@@ -72,30 +74,12 @@ namespace sagittar {
         void Board::resetHash() {
             hash = 0ULL;
 
-            if (active_color == Color::BLACK)
+            if (active_color == Color::WHITE)
             {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
+                hash ^= ZOBRIST_SIDE;
             }
 
-            if (casteling_rights & CastleFlag::WKCA)
-            {
-                hash ^= ZOBRIST_KCA[Color::WHITE];
-            }
-
-            if (casteling_rights & CastleFlag::WQCA)
-            {
-                hash ^= ZOBRIST_QCA[Color::WHITE];
-            }
-
-            if (casteling_rights & CastleFlag::BKCA)
-            {
-                hash ^= ZOBRIST_KCA[Color::BLACK];
-            }
-
-            if (casteling_rights & CastleFlag::BQCA)
-            {
-                hash ^= ZOBRIST_QCA[Color::BLACK];
-            }
+            hash ^= ZOBRIST_CA[casteling_rights];
 
             for (u8 sq = Square::A1; sq <= Square::H8; sq++)
             {
@@ -293,10 +277,12 @@ namespace sagittar {
         DoMoveResult Board::doMoveComplete() {
             const bool is_valid_move = !movegen::isInCheck(*this) && isValid();
             active_color             = colorFlip(active_color);
-            if (active_color == Color::BLACK)
-            {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
-            }
+            hash ^= ZOBRIST_SIDE;
+#ifdef DEBUG
+            const u64 currhash = hash;
+            resetHash();
+            assert(currhash == hash);
+#endif
             return is_valid_move ? DoMoveResult::LEGAL : DoMoveResult::ILLEGAL;
         }
 
@@ -346,8 +332,9 @@ namespace sagittar {
                 movePiece(piece, from, to);
                 const Piece rook = pieceCreate(PieceType::ROOK, active_color);
                 movePiece(rook, static_cast<Square>(to + 1), static_cast<Square>(to - 1));
+                hash ^= ZOBRIST_CA[casteling_rights];
                 casteling_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-                hash ^= ZOBRIST_KCA[active_color];
+                hash ^= ZOBRIST_CA[casteling_rights];
                 return doMoveComplete();
             }
             else if (flag == move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE)
@@ -355,8 +342,9 @@ namespace sagittar {
                 movePiece(piece, from, to);
                 const Piece rook = pieceCreate(PieceType::ROOK, active_color);
                 movePiece(rook, static_cast<Square>(to - 2), static_cast<Square>(to + 1));
+                hash ^= ZOBRIST_CA[casteling_rights];
                 casteling_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-                hash ^= ZOBRIST_QCA[active_color];
+                hash ^= ZOBRIST_CA[casteling_rights];
                 return doMoveComplete();
             }
 
@@ -386,11 +374,14 @@ namespace sagittar {
 
             movePiece(piece, from, to, move::isCapture(flag), move::isPromotion(flag), promoted);
 
-            if (pieceTypeOf(piece) == PieceType::PAWN)
+            if ((pieceTypeOf(piece) == PieceType::PAWN) || move::isCapture(flag))
             {
                 half_move_clock = 0;
             }
+
+            hash ^= ZOBRIST_CA[casteling_rights];
             casteling_rights &= (CASTLE_RIGHTS_MODIFIERS[from] & CASTLE_RIGHTS_MODIFIERS[to]);
+            hash ^= ZOBRIST_CA[casteling_rights];
 
             return doMoveComplete();
         }
@@ -565,14 +556,12 @@ namespace sagittar {
                 undoMovePiece(piece, from, to);
                 const Piece rook = pieceCreate(PieceType::ROOK, prev_active_color);
                 undoMovePiece(rook, static_cast<Square>(to + 1), static_cast<Square>(to - 1));
-                hash ^= ZOBRIST_KCA[prev_active_color];
             }
             else if (flag == move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE)
             {
                 undoMovePiece(piece, from, to);
                 const Piece rook = pieceCreate(PieceType::ROOK, prev_active_color);
                 undoMovePiece(rook, static_cast<Square>(to - 2), static_cast<Square>(to + 1));
-                hash ^= ZOBRIST_QCA[prev_active_color];
             }
             else if (flag == move::MoveFlag::MOVE_CAPTURE_EP)
             {
@@ -591,10 +580,10 @@ namespace sagittar {
                               move::isPromotion(flag), promoted);
             }
 
-            if (active_color == Color::BLACK)
-            {
-                hash ^= ZOBRIST_BLACK_TO_MOVE;
-            }
+            hash ^= ZOBRIST_CA[casteling_rights];
+            hash ^= ZOBRIST_CA[history_entry.casteling_rights];
+
+            hash ^= ZOBRIST_SIDE;
 
 #ifdef DEBUG
             assert(hash == history_entry.hash);
@@ -644,7 +633,7 @@ namespace sagittar {
         }
 
         bool Board::hasPositionRepeated() const {
-            for (u8 i = (ply_count - half_move_clock); i < ply_count - 1; ++i)
+            for (u8 i = std::max(0, (ply_count - half_move_clock)); i < ply_count - 1; ++i)
             {
                 if (hash == history.peek(i).hash)
                 {
