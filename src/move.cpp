@@ -31,7 +31,7 @@ namespace sagittar {
             return Move(from, to, flag);
         }
 
-        void Move::setScore(const u16 s) { score = s; }
+        void Move::setScore(const u32 s) { score = s; }
 
         Square Move::getFrom() const { return from; }
 
@@ -39,7 +39,7 @@ namespace sagittar {
 
         MoveFlag Move::getFlag() const { return flag; }
 
-        u16 Move::getScore() const { return score; }
+        u32 Move::getScore() const { return score; }
 
         u16 Move::id() const { return (flag << 12) | (to << 6) | from; }
 

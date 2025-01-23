@@ -6,6 +6,7 @@
 #include "movegen.h"
 #include "movepicker.h"
 #include "pch.h"
+#include "search.h"
 #include "tt.h"
 #include "types.h"
 
@@ -15,6 +16,7 @@ TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
         search::tt::TranspositionTable tt(2);
+        search::SearcherData           data;
 
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
@@ -24,7 +26,7 @@ TEST_SUITE("Movepicker") {
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        search::scoreMoves(&moves, board, pvmove, tt);
+        search::scoreMoves(&moves, board, pvmove, tt, data);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (moves.at(i) == pvmove)

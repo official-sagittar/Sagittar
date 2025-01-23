@@ -9,6 +9,18 @@ namespace sagittar {
 
     namespace search {
 
+        SearcherData::SearcherData() { reset(); }
+
+        void SearcherData::reset() {
+            for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
+            {
+                for (u8 sq = Square::A1; sq <= Square::H8; sq++)
+                {
+                    history[p][sq] = 0;
+                }
+            }
+        }
+
         Searcher::Searcher() { stop.store(false, std::memory_order_relaxed); }
 
         void Searcher::shouldStopSearchNow(const SearchInfo& info) {
@@ -42,7 +54,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, pvmove, tt);
+            scoreMoves(&moves, board, pvmove, tt, data);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -155,7 +167,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board, pvmove, tt);
+            scoreMoves(&moves, board, pvmove, tt, data);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -209,6 +221,11 @@ namespace sagittar {
                         if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
                         {
                             pvmove = move;
+                        }
+                        if (!move::isCapture(move.getFlag()))
+                        {
+                            const Piece piece = board.getPiece(move.getFrom());
+                            data.history[piece][move.getTo()] += depth;
                         }
                         if (score >= beta)
                         {
@@ -306,9 +323,13 @@ namespace sagittar {
             pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
             tt.clear();
+            data.reset();
         }
 
-        void Searcher::resetForSearch() { tt.resetForSearch(); }
+        void Searcher::resetForSearch() {
+            tt.resetForSearch();
+            data.reset();
+        }
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
