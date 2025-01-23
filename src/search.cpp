@@ -25,7 +25,7 @@ namespace sagittar {
                 shouldStopSearchNow(info);
             }
 
-            if (board.getPlyCount() >= MAX_DEPTH)
+            if (board.getPlyCount() >= MAX_DEPTH - 1)
             {
                 return eval::evaluateBoard(board);
             }
@@ -95,7 +95,7 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            if (board.getPlyCount() >= MAX_DEPTH) [[unlikely]]
+            if (board.getPlyCount() >= MAX_DEPTH - 1) [[unlikely]]
             {
                 return eval::evaluateBoard(board);
             }
@@ -198,6 +198,7 @@ namespace sagittar {
                     return 0;
                 }
 
+                // Fail-soft
                 if (score > best_score)
                 {
                     best_score = score;

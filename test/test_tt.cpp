@@ -24,6 +24,7 @@ TEST_SUITE("TT") {
         board.setStartpos();
 
         search::tt::TranspositionTable tt(2);
+
         REQUIRE(tt.getSize() > 0);
 
         move::Move m(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
@@ -60,6 +61,7 @@ TEST_SUITE("TT") {
         board::Board board;
 
         search::tt::TranspositionTable tt(2);
+
         REQUIRE(tt.getSize() > 0);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -89,5 +91,6 @@ TEST_SUITE("TT") {
         REQUIRE(ttentry.flag == search::tt::TTFlag::LOWERBOUND);
         REQUIRE(ttentry.value == 50);
         REQUIRE(ttentry.move == m);  // move should still be the previous move
+      
     }
 }

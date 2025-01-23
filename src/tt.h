@@ -5,7 +5,6 @@
 #include "pch.h"
 #include "types.h"
 
-
 namespace sagittar {
 
     namespace search {

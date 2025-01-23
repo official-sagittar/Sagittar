@@ -74,13 +74,16 @@ namespace sagittar {
             void         reset();
             void         resetForSearch();
             void         setTranspositionTableSize(const std::size_t);
+
             SearchResult startSearch(
               board::Board&                                    board,
               const SearchInfo&                                info,
               std::function<void(const search::SearchResult&)> searchProgressReportHandler,
               std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+
             SearchResult startSearch(board::Board& board, const SearchInfo& info);
-            void         stopSearch();
+
+            void stopSearch();
         };
 
     }
