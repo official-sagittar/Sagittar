@@ -10,7 +10,7 @@ using namespace sagittar;
 TEST_SUITE("TT") {
 
     TEST_CASE("TranspositionTable::setSize") {
-        search::TranspositionTable tt(2);
+        search::tt::TranspositionTable tt(2);
 
         std::size_t originalsize = tt.getSize();
         REQUIRE(originalsize > 0);
@@ -23,43 +23,45 @@ TEST_SUITE("TT") {
         board::Board board;
         board.setStartpos();
 
-        search::TranspositionTable tt(2);
+        search::tt::TranspositionTable tt(2);
+
         REQUIRE(tt.getSize() > 0);
 
         move::Move m(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
-        tt.store(board, 1, search::TTFlag::EXACT, 10, m);
+        tt.store(board, 1, search::tt::TTFlag::EXACT, 10, m);
 
-        search::TTData ttdata;
+        search::tt::TTEntry ttentry;
 
-        bool tthit = tt.probe(&ttdata, board);
+        bool tthit = tt.probe(&ttentry, board);
 
         REQUIRE(tthit == true);
-        REQUIRE(ttdata.depth == 1);
-        REQUIRE(ttdata.flag == search::TTFlag::EXACT);
-        REQUIRE(ttdata.value == 10);
-        REQUIRE(ttdata.move == m);
+        REQUIRE(ttentry.depth == 1);
+        REQUIRE(ttentry.flag == search::tt::TTFlag::EXACT);
+        REQUIRE(ttentry.value == 10);
+        REQUIRE(ttentry.move == m);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
         fen::parseFEN(&board, fen);
 
         m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board, 3, search::TTFlag::LOWERBOUND, 100, m);
+        tt.store(board, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
 
-        tthit = tt.probe(&ttdata, board);
+        tthit = tt.probe(&ttentry, board);
 
         REQUIRE(tthit == true);
-        REQUIRE(ttdata.depth == 3);
-        REQUIRE(ttdata.flag == search::TTFlag::LOWERBOUND);
-        REQUIRE(ttdata.value == 100);
-        REQUIRE(ttdata.move == m);
+        REQUIRE(ttentry.depth == 3);
+        REQUIRE(ttentry.flag == search::tt::TTFlag::LOWERBOUND);
+        REQUIRE(ttentry.value == 100);
+        REQUIRE(ttentry.move == m);
     }
 
     TEST_CASE("Null Move Replacement from the same position") {
         board::Board board;
 
-        search::TranspositionTable tt(2);
+        search::tt::TranspositionTable tt(2);
+
         REQUIRE(tt.getSize() > 0);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -67,27 +69,28 @@ TEST_SUITE("TT") {
 
         const move::Move m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board, 3, search::TTFlag::EXACT, 100, m);
+        tt.store(board, 3, search::tt::TTFlag::EXACT, 100, m);
 
-        search::TTData ttdata;
-        bool           tthit = tt.probe(&ttdata, board);
+        search::tt::TTEntry ttentry;
+        bool                tthit = tt.probe(&ttentry, board);
 
         REQUIRE(tthit == true);
-        REQUIRE(ttdata.depth == 3);
-        REQUIRE(ttdata.flag == search::TTFlag::EXACT);
-        REQUIRE(ttdata.value == 100);
-        REQUIRE(ttdata.move == m);
+        REQUIRE(ttentry.depth == 3);
+        REQUIRE(ttentry.flag == search::tt::TTFlag::EXACT);
+        REQUIRE(ttentry.value == 100);
+        REQUIRE(ttentry.move == m);
 
         const move::Move nullmove;
 
-        tt.store(board, 5, search::TTFlag::LOWERBOUND, 50, nullmove);
+        tt.store(board, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
 
-        tthit = tt.probe(&ttdata, board);
+        tthit = tt.probe(&ttentry, board);
 
         REQUIRE(tthit == true);
-        REQUIRE(ttdata.depth == 5);
-        REQUIRE(ttdata.flag == search::TTFlag::LOWERBOUND);
-        REQUIRE(ttdata.value == 50);
-        REQUIRE(ttdata.move == m);  // move should still be the previous move
+        REQUIRE(ttentry.depth == 5);
+        REQUIRE(ttentry.flag == search::tt::TTFlag::LOWERBOUND);
+        REQUIRE(ttentry.value == 50);
+        REQUIRE(ttentry.move == m);  // move should still be the previous move
+      
     }
 }

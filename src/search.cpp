@@ -117,28 +117,34 @@ namespace sagittar {
                 return quiescencesearch(board, alpha, beta, info, result);
             }
 
-            const bool is_pv_node = ((beta - alpha) > 1) || (nodeType != NodeType::NON_PV);
+            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
+            const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
             if (board.getPlyCount() > 0 && !is_pv_node)
             {
-                TTData     ttdata;
-                const bool tthit = tt.probe(&ttdata, board);
-                if (tthit && ttdata.depth >= depth)
+                tt::TTEntry ttentry;
+                const bool  tthit = tt.probe(&ttentry, board);
+                if (tthit)
                 {
-                    i32 ttvalue = ttdata.value;
+                    if (ttentry.depth >= depth)
+                    {
+                        i32 ttvalue = ttentry.value;
 
-                    if (ttvalue < -MATE_SCORE)
-                    {
-                        ttvalue += board.getPlyCount();
-                    }
-                    else if (ttvalue > MATE_SCORE)
-                    {
-                        ttvalue -= board.getPlyCount();
-                    }
+                        if (ttvalue < -MATE_SCORE)
+                        {
+                            ttvalue += board.getPlyCount();
+                        }
+                        else if (ttvalue > MATE_SCORE)
+                        {
+                            ttvalue -= board.getPlyCount();
+                        }
 
-                    if (ttdata.flag == TTFlag::EXACT)
-                    {
-                        return ttvalue;
+                        if (ttentry.flag == tt::TTFlag::EXACT
+                            || (ttentry.flag == tt::TTFlag::LOWERBOUND && ttvalue >= beta)
+                            || (ttentry.flag == tt::TTFlag::UPPERBOUND && ttvalue <= alpha))
+                        {
+                            return ttvalue;
+                        }
                     }
                 }
             }
@@ -226,18 +232,18 @@ namespace sagittar {
 
             if (!stop.load(std::memory_order_relaxed))
             {
-                TTFlag flag = TTFlag::NONE;
+                tt::TTFlag flag = tt::TTFlag::NONE;
                 if (best_score <= alpha_orig)
                 {
-                    flag = TTFlag::UPPERBOUND;
+                    flag = tt::TTFlag::UPPERBOUND;
                 }
                 else if (best_score >= beta)
                 {
-                    flag = TTFlag::LOWERBOUND;
+                    flag = tt::TTFlag::LOWERBOUND;
                 }
                 else
                 {
-                    flag = TTFlag::EXACT;
+                    flag = tt::TTFlag::EXACT;
                 }
                 tt.store(board, depth, flag, best_score, best_move_so_far);
             }
@@ -297,16 +303,12 @@ namespace sagittar {
         }
 
         void Searcher::reset() {
-            tt.clear();
-            stop.store(false, std::memory_order_relaxed);
             pvmove = move::Move();
+            stop.store(false, std::memory_order_relaxed);
+            tt.clear();
         }
 
-        void Searcher::resetForSearch() {
-            tt.resetForSearch();
-            stop.store(false, std::memory_order_relaxed);
-            pvmove = move::Move();
-        }
+        void Searcher::resetForSearch() { tt.resetForSearch(); }
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
@@ -315,8 +317,8 @@ namespace sagittar {
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-            stop.store(false, std::memory_order_relaxed);
             pvmove = move::Move();
+            stop.store(false, std::memory_order_relaxed);
             return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
         }
 

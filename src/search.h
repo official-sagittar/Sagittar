@@ -42,9 +42,9 @@ namespace sagittar {
 
         class Searcher {
            private:
-            TranspositionTable tt;
-            std::atomic_bool   stop;
-            move::Move         pvmove;
+            move::Move             pvmove;
+            std::atomic_bool       stop;
+            tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
@@ -71,12 +71,9 @@ namespace sagittar {
 
            public:
             Searcher();
-
-            void reset();
-
-            void resetForSearch();
-
-            void setTranspositionTableSize(const std::size_t);
+            void         reset();
+            void         resetForSearch();
+            void         setTranspositionTableSize(const std::size_t);
 
             SearchResult startSearch(
               board::Board&                                    board,

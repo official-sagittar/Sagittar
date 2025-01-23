@@ -14,7 +14,7 @@ using namespace sagittar;
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
-        search::TranspositionTable tt;
+        search::tt::TranspositionTable tt(2);
 
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
@@ -27,7 +27,11 @@ TEST_SUITE("Movepicker") {
         search::scoreMoves(&moves, board, pvmove, tt);
         for (u8 i = 1; i < moves.size(); i++)
         {
-            if (move::isCapture(moves.at(i).getFlag()))
+            if (moves.at(i) == pvmove)
+            {
+                REQUIRE(moves.at(i).getScore() == 40000);
+            }
+            else if (move::isCapture(moves.at(i).getFlag()))
             {
                 REQUIRE(moves.at(i).getScore() >= 10100);
             }
@@ -38,6 +42,8 @@ TEST_SUITE("Movepicker") {
         }
 
         search::sortMoves(&moves, 0);
+
+        REQUIRE(moves.at(0).getScore() == 40000);
 
         for (u8 i = 1; i < moves.size(); i++)
         {

@@ -14,7 +14,7 @@ namespace sagittar {
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
-                        const TranspositionTable&          ttable);
+                        const tt::TranspositionTable&      ttable);
         void sortMoves(containers::ArrayList<move::Move>* moves, const u8 index);
 
     }

@@ -36,14 +36,14 @@ namespace sagittar {
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
-                        const TranspositionTable&          ttable) {
-            move::Move ttmove;
-            bool       ttmove_found = false;
-            TTData     ttdata;
-            const bool tthit = ttable.probe(&ttdata, board);
+                        const tt::TranspositionTable&      ttable) {
+            move::Move  ttmove;
+            bool        ttmove_found = false;
+            tt::TTEntry ttentry;
+            const bool  tthit = ttable.probe(&ttentry, board);
             if (tthit)
             {
-                ttmove       = ttdata.move;
+                ttmove       = ttentry.move;
                 ttmove_found = true;
             }
 
