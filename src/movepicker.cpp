@@ -15,7 +15,7 @@ namespace sagittar {
         Queen         101    201    301    401    501    601
         King          100    200    300    400    500    600
         */
-        static const u16 MVV_LVA_TABLE[36] = {
+        static const u32 MVV_LVA_TABLE[36] = {
             105, 205, 305, 405, 505, 605,
             104, 204, 304, 404, 504, 604,
             103, 203, 303, 403, 503, 603,
@@ -25,9 +25,12 @@ namespace sagittar {
         };
         // clang-format on
 
-        static constexpr u16 PVMOVE_SCORE        = 40000;
-        static constexpr u16 TTMOVE_SCORE        = 30000;
-        static constexpr u16 MVVLVA_SCORE_OFFSET = 10000;
+        static constexpr u32 PVMOVE_SCORE        = 40000;
+        static constexpr u32 TTMOVE_SCORE        = 30000;
+        static constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
+        static constexpr u32 HISTORY_SCORE_MIN   = 0;
+        static constexpr u32 HISTORY_SCORE_MAX   = 7000;
+
 
         static constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
             return ((attacker - 1) * 6) + (victim - 1);
@@ -36,7 +39,8 @@ namespace sagittar {
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
-                        const tt::TranspositionTable&      ttable) {
+                        const tt::TranspositionTable&      ttable,
+                        const SearcherData&                data) {
             move::Move  ttmove;
             bool        ttmove_found = false;
             tt::TTEntry ttentry;
@@ -70,11 +74,18 @@ namespace sagittar {
                     assert(victim != 0);
 #endif
                     const u8  idx   = mvvlvaIdx(attacker, victim);
-                    const u16 score = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
+                    const u32 score = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
 #ifdef DEBUG
                     assert(idx >= 0 && idx < 36);
                     assert(score >= 10100 && score <= 10605);
 #endif
+                    moves->at(i).setScore(score);
+                }
+                else
+                {
+                    const Piece piece = board.getPiece(move.getFrom());
+                    const u32   score = std::clamp(data.history[piece][move.getTo()],
+                                                   HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
                     moves->at(i).setScore(score);
                 }
             }

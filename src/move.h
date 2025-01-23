@@ -29,18 +29,18 @@ namespace sagittar {
             Square   from;
             Square   to;
             MoveFlag flag;
-            u16      score;
+            u32      score;
 
            public:
             Move();
             Move(const Move&);
             Move(const Square from, const Square to, const MoveFlag flag);
             static Move fromId(const u16 id);
-            void        setScore(const u16);
+            void        setScore(const u32);
             Square      getFrom() const;
             Square      getTo() const;
             MoveFlag    getFlag() const;
-            u16         getScore() const;
+            u32         getScore() const;
             u16         id() const;
             void        toString(std::ostringstream&) const;
             void        display() const;
