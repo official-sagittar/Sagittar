@@ -13,12 +13,15 @@ namespace sagittar {
             Engine& engine;
 
            private:
+            // Standard UCI commands
             void              handleUCI();
             void              handleIsReady();
             void              handleUCINewgame();
-            void              handleDisplay();
+            void              handleSetOption(std::string&);
             void              handlePosition(std::string&);
             std::future<void> handleGo(std::string&);
+            // Non-standard commands
+            void handleDisplay();
 
            public:
             UCIHandler(Engine& engine);

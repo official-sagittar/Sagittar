@@ -12,8 +12,8 @@ namespace sagittar {
         void UCIHandler::handleUCI() {
             std::ostringstream ss;
             ss << "id name " << engine.getName() << "\n";
-            ss << "id author the pixie developers (see AUTHORS file)\n";
-            ss << "option name Hash type spin default 1 min 1 max 1\n";
+            ss << "id author the Sagittar developers (see AUTHORS file)\n";
+            ss << "option name Hash type spin default 16 min 1 max 512\n";
             ss << "option name Threads type spin default 1 min 1 max 1\n";
             ss << "uciok";
             std::cout << ss.str() << std::endl;
@@ -23,7 +23,21 @@ namespace sagittar {
 
         void UCIHandler::handleUCINewgame() { engine.reset(); }
 
-        void UCIHandler::handleDisplay() { engine.displayBoard(); }
+        void UCIHandler::handleSetOption(std::string& input) {
+            std::istringstream ss(input);
+            std::string        cmd, name, id, valuename, value;
+
+            ss >> cmd >> name >> id >> valuename >> value;
+
+            if (id == "Hash")
+            {
+                const std::size_t ttsize = static_cast<std::size_t>(std::stoi(value));
+                if (ttsize >= 1 && ttsize <= 512)
+                {
+                    engine.setTranspositionTableSize(ttsize);
+                }
+            }
+        }
 
         void UCIHandler::handlePosition(std::string& input) {
             std::istringstream ss(input);
@@ -194,6 +208,8 @@ namespace sagittar {
             return f;
         }
 
+        void UCIHandler::handleDisplay() { engine.displayBoard(); }
+
         void UCIHandler::start() {
             std::string       input;
             std::future<void> uci_go_future;
@@ -214,7 +230,7 @@ namespace sagittar {
                 }
                 else if (input.rfind("setoption", 0) == 0)
                 {
-                    // TODO
+                    handleSetOption(input);
                 }
                 else if (input.rfind("position", 0) == 0)
                 {
