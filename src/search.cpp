@@ -222,13 +222,13 @@ namespace sagittar {
                         {
                             pvmove = move;
                         }
-                        if (!move::isCapture(move.getFlag()))
-                        {
-                            const Piece piece = board.getPiece(move.getFrom());
-                            data.history[piece][move.getTo()] += depth;
-                        }
                         if (score >= beta)
                         {
+                            if (!move::isCapture(move.getFlag()))
+                            {
+                                const Piece piece = board.getPiece(move.getFrom());
+                                data.history[piece][move.getTo()] += depth;
+                            }
                             break;
                         }
                     }
@@ -326,10 +326,7 @@ namespace sagittar {
             data.reset();
         }
 
-        void Searcher::resetForSearch() {
-            tt.resetForSearch();
-            data.reset();
-        }
+        void Searcher::resetForSearch() { tt.resetForSearch(); }
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
