@@ -310,7 +310,32 @@ namespace sagittar {
                 }
                 result.depth = currdepth;
                 result.time  = time;
-                result.pv    = {result.bestmove};
+
+                u8          pv_count = 0;
+                tt::TTEntry ttentry;
+                bool        tthit = tt.probe(&ttentry, board);
+                while (pv_count++ < currdepth && tthit)
+                {
+                    if (ttentry.flag != tt::TTFlag::EXACT)
+                    {
+                        break;
+                    }
+                    const move::Move move = ttentry.move;
+                    if (board.doMove(move) == board::DoMoveResult::LEGAL)
+                    {
+                        result.pv.push_back(move);
+                        tthit = tt.probe(&ttentry, board);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                while (board.getPlyCount() > 0)
+                {
+                    board.undoMove();
+                }
+
                 searchProgressReportHandler(result);
             }
 
