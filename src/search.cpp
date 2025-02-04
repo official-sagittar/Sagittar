@@ -279,15 +279,36 @@ namespace sagittar {
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
             SearchResult bestresult{};
 
+            i32 alpha = -INF;
+            i32 beta  = INF;
+
             for (u8 currdepth = 1; currdepth <= info.depth; currdepth++)
             {
                 SearchResult result{};
-                const u64    starttime = utils::currtimeInMilliseconds();
-                i32       score = search<NodeType::PV>(board, currdepth, -INF, INF, info, &result);
-                const u64 time  = utils::currtimeInMilliseconds() - starttime;
+
+                const u64 starttime = utils::currtimeInMilliseconds();
+                i32 score      = search<NodeType::PV>(board, currdepth, alpha, beta, info, &result);
+                const u64 time = utils::currtimeInMilliseconds() - starttime;
+
                 if (stop.load(std::memory_order_relaxed))
                 {
                     break;
+                }
+
+                // Aspiration Windows
+                if ((score <= alpha) || (score >= beta))
+                {
+                    // We fell outside the window
+                    // Try again with a full-width window (and the same depth).
+                    alpha = -INF;
+                    beta  = INF;
+                    currdepth--;
+                    continue;
+                }
+                else
+                {
+                    alpha = score - 50;
+                    beta  = score + 50;
                 }
 
                 bestresult = result;
