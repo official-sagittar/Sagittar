@@ -335,6 +335,9 @@ namespace sagittar {
                 {
                     board.undoMove();
                 }
+#ifdef DEBUG
+                assert(board.getPlyCount() == 0);
+#endif
 
                 searchProgressReportHandler(result);
             }
