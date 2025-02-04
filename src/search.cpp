@@ -272,7 +272,7 @@ namespace sagittar {
             return best_score;
         }
 
-        SearchResult Searcher::searchRoot(
+        SearchResult Searcher::searchIteratively(
           board::Board&                                    board,
           const SearchInfo&                                info,
           std::function<void(const search::SearchResult&)> searchProgressReportHandler,
@@ -337,7 +337,8 @@ namespace sagittar {
           std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
             pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
-            return searchRoot(board, info, searchProgressReportHandler, searchCompleteReportHander);
+            return searchIteratively(board, info, searchProgressReportHandler,
+                                     searchCompleteReportHander);
         }
 
         SearchResult Searcher::startSearch(board::Board& board, const SearchInfo& info) {

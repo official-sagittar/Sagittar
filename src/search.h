@@ -71,11 +71,11 @@ namespace sagittar {
                        const SearchInfo& info,
                        SearchResult*     result);
 
-            SearchResult
-            searchRoot(board::Board&                                    board,
-                       const SearchInfo&                                info,
-                       std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-                       std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+            SearchResult searchIteratively(
+              board::Board&                                    board,
+              const SearchInfo&                                info,
+              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
+              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
 
            public:
             Searcher();
