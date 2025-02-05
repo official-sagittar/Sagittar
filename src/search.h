@@ -69,7 +69,8 @@ namespace sagittar {
                        i32               alpha,
                        i32               beta,
                        const SearchInfo& info,
-                       SearchResult*     result);
+                       SearchResult*     result,
+                       const bool        do_null);
 
             SearchResult searchIteratively(
               board::Board&                                    board,

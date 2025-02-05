@@ -168,6 +168,32 @@ namespace sagittar {
             return eval;
         }
 
+        bool isEndGame(const board::Board& board) {
+            const u8 wQ = board.getPieceCount(Piece::WHITE_QUEEN);
+            const u8 bQ = board.getPieceCount(Piece::BLACK_QUEEN);
+
+            const u8 wR = board.getPieceCount(Piece::WHITE_ROOK);
+            const u8 bR = board.getPieceCount(Piece::BLACK_ROOK);
+
+            const u8 wB = board.getPieceCount(Piece::WHITE_BISHOP);
+            const u8 bB = board.getPieceCount(Piece::BLACK_BISHOP);
+
+            const u8 wN = board.getPieceCount(Piece::WHITE_KNIGHT);
+            const u8 bN = board.getPieceCount(Piece::BLACK_KNIGHT);
+
+            bool is_end_game = false;
+
+            if (wQ == 0 && bQ == 0)
+                is_end_game = true;
+            else if (wQ == 1 && bQ == 1 && wR == 0 && bR == 0)
+            {
+                if ((wN + wB) <= 1 && (bN + bB) <= 1)
+                    is_end_game = true;
+            }
+
+            return is_end_game;
+        }
+
     }
 
 }

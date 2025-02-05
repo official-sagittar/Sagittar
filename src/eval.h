@@ -10,6 +10,7 @@ namespace sagittar {
 
         void initialize();
         i32  evaluateBoard(const board::Board&);
+        bool isEndGame(const board::Board&);
 
     }
 
