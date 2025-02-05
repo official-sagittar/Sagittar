@@ -161,6 +161,17 @@ namespace sagittar {
                 }
             }
 
+            // Reverse Futility Pruning
+            if (!is_in_check && !is_pv_node && depth <= 3)
+            {
+                const i32 eval   = eval::evaluateBoard(board);
+                const i32 margin = 150 * depth;
+                if (eval >= beta + margin)
+                {
+                    return eval;
+                }
+            }
+
             i32        best_score = -INF;
             move::Move best_move_so_far;
             u32        legal_moves_count = 0;
