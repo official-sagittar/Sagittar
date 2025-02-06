@@ -138,7 +138,7 @@ namespace sagittar {
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
             const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
-            if (board.getPlyCount() > 0 && !is_pv_node && do_null)
+            if (board.getPlyCount() > 0 && !is_pv_node)
             {
                 tt::TTEntry ttentry;
                 const bool  tthit = tt.probe(&ttentry, board);
@@ -289,7 +289,7 @@ namespace sagittar {
                 }
             }
 
-            if (!stop.load(std::memory_order_relaxed) && do_null)
+            if (!stop.load(std::memory_order_relaxed))
             {
                 tt::TTFlag flag = tt::TTFlag::NONE;
                 if (best_score <= alpha_orig)
