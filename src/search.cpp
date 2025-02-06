@@ -113,7 +113,12 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
+            if (do_null && board.hasPositionRepeated())
+            {
+                return 0;
+            }
+
+            if (board.getHalfmoveClock() >= 100)
             {
                 return 0;
             }
@@ -133,7 +138,7 @@ namespace sagittar {
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
             const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
-            if (board.getPlyCount() > 0 && !is_pv_node && do_null)
+            if (board.getPlyCount() > 0 && !is_pv_node)
             {
                 tt::TTEntry ttentry;
                 const bool  tthit = tt.probe(&ttentry, board);
@@ -163,7 +168,7 @@ namespace sagittar {
             }
 
             // Node Pruning
-            if (!is_in_check && !is_pv_node && do_null)
+            if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
                 if (depth <= 3)
@@ -255,14 +260,13 @@ namespace sagittar {
                     {
                         alpha            = score;
                         best_move_so_far = move;
-                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed)
-                            && do_null)
+                        if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
                         {
                             pvmove = move;
                         }
                         if (score >= beta)
                         {
-                            if (!move::isCapture(move.getFlag()) && do_null)
+                            if (!move::isCapture(move.getFlag()))
                             {
                                 const Piece piece = board.getPiece(move.getFrom());
                                 data.history[piece][move.getTo()] += depth;
@@ -285,7 +289,7 @@ namespace sagittar {
                 }
             }
 
-            if (!stop.load(std::memory_order_relaxed) && do_null)
+            if (!stop.load(std::memory_order_relaxed))
             {
                 tt::TTFlag flag = tt::TTFlag::NONE;
                 if (best_score <= alpha_orig)
@@ -303,7 +307,7 @@ namespace sagittar {
                 tt.store(board, depth, flag, best_score, best_move_so_far);
             }
 
-            if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed) && do_null)
+            if (board.getPlyCount() == 0 && !stop.load(std::memory_order_relaxed))
             {
                 result->bestmove = pvmove;
             }

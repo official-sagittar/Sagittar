@@ -547,13 +547,7 @@ namespace sagittar {
                                  half_move_clock, full_move_number, hash);
 
             enpassant_target = Square::NO_SQ;
-            half_move_clock++;
-            if (active_color == Color::BLACK)
-            {
-                full_move_number++;
-            }
-            ply_count++;
-            active_color = colorFlip(active_color);
+            active_color     = colorFlip(active_color);
             hash ^= ZOBRIST_SIDE;
         }
 
@@ -634,7 +628,6 @@ namespace sagittar {
             enpassant_target = history_entry.enpassant_target;
             half_move_clock  = history_entry.half_move_clock;
             full_move_number = history_entry.full_move_number;
-            ply_count--;
 
             history.pop();
         }
