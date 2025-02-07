@@ -99,7 +99,8 @@ namespace sagittar {
                              i32               alpha,
                              i32               beta,
                              const SearchInfo& info,
-                             SearchResult*     result) {
+                             SearchResult*     result,
+                             const bool        do_null) {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
@@ -112,7 +113,12 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            if (board.hasPositionRepeated() || board.getHalfmoveClock() >= 100)
+            if (do_null && board.hasPositionRepeated())
+            {
+                return 0;
+            }
+
+            if (board.getHalfmoveClock() >= 100)
             {
                 return 0;
             }
@@ -161,14 +167,38 @@ namespace sagittar {
                 }
             }
 
-            // Reverse Futility Pruning
-            if (!is_in_check && !is_pv_node && depth <= 3)
+            // Node Pruning
+            if (!is_in_check && !is_pv_node)
             {
-                const i32 eval   = eval::evaluateBoard(board);
-                const i32 margin = 150 * depth;
-                if (eval >= beta + margin)
+                // Reverse Futility Pruning
+                if (depth <= 3)
                 {
-                    return eval;
+                    const i32 eval   = eval::evaluateBoard(board);
+                    const i32 margin = 150 * depth;
+                    if (eval >= beta + margin)
+                    {
+                        return eval;
+                    }
+                }
+
+                // Null Move Pruning
+                if (do_null && depth >= 3 && !eval::isEndGame(board))
+                {
+                    const u8 r = 2;
+#ifdef DEBUG
+                    const u64 hash = board.getHash();
+#endif
+                    board.doNullMove();
+                    const i32 score = -search<NodeType::NON_PV>(board, depth - r, -beta, -beta + 1,
+                                                                info, result, false);
+                    board.undoNullMove();
+#ifdef DEBUG
+                    assert(hash == board.getHash());
+#endif
+                    if (score >= beta)
+                    {
+                        return beta;
+                    }
                 }
             }
 
@@ -200,17 +230,18 @@ namespace sagittar {
 
                 if (legal_moves_count == 1)
                 {
-                    score = -search<nodeType>(board, depth - 1, -beta, -alpha, info, result);
+                    score =
+                      -search<nodeType>(board, depth - 1, -beta, -alpha, info, result, do_null);
                 }
                 else
                 {
-                    score =
-                      -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info, result);
+                    score = -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info,
+                                                      result, do_null);
                     if (score > alpha && score < beta)
                     {
                         // re-search
-                        score =
-                          -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info, result);
+                        score = -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info, result,
+                                                      do_null);
                     }
                 }
 
@@ -280,6 +311,7 @@ namespace sagittar {
             {
                 result->bestmove = pvmove;
             }
+
             return best_score;
         }
 
@@ -298,7 +330,8 @@ namespace sagittar {
                 SearchResult result{};
 
                 const u64 starttime = utils::currtimeInMilliseconds();
-                i32 score      = search<NodeType::PV>(board, currdepth, alpha, beta, info, &result);
+                i32       score =
+                  search<NodeType::PV>(board, currdepth, alpha, beta, info, &result, true);
                 const u64 time = utils::currtimeInMilliseconds() - starttime;
 
                 if (stop.load(std::memory_order_relaxed))

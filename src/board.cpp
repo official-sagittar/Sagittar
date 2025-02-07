@@ -540,6 +540,17 @@ namespace sagittar {
             return doMove(move);
         }
 
+        void Board::doNullMove() {
+            const move::Move nullmove;
+
+            history.emplace_back(nullmove, Piece::NO_PIECE, casteling_rights, enpassant_target,
+                                 half_move_clock, full_move_number, hash);
+
+            enpassant_target = Square::NO_SQ;
+            active_color     = colorFlip(active_color);
+            hash ^= ZOBRIST_SIDE;
+        }
+
         void Board::undoMove() {
             const MoveHistoryEntry& history_entry = history.top();
 
@@ -596,6 +607,27 @@ namespace sagittar {
             half_move_clock  = history_entry.half_move_clock;
             full_move_number = history_entry.full_move_number;
             ply_count--;
+
+            history.pop();
+        }
+
+        void Board::undoNullMove() {
+            const MoveHistoryEntry& history_entry = history.top();
+
+            const Color prev_active_color = colorFlip(active_color);
+
+            hash ^= ZOBRIST_SIDE;
+
+#ifdef DEBUG
+            assert(hash == history_entry.hash);
+            assert(colorFlip(active_color) == prev_active_color);
+#endif
+
+            active_color     = prev_active_color;
+            casteling_rights = history_entry.casteling_rights;
+            enpassant_target = history_entry.enpassant_target;
+            half_move_clock  = history_entry.half_move_clock;
+            full_move_number = history_entry.full_move_number;
 
             history.pop();
         }

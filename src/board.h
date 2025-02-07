@@ -125,7 +125,9 @@ namespace sagittar {
             void                       resetPlyCount();
             [[nodiscard]] DoMoveResult doMove(const move::Move) noexcept;
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
+            void                       doNullMove();
             void                       undoMove();
+            void                       undoNullMove();
             BitBoard                   getBitboard(const u8 index) const;
             Piece                      getPiece(const Square) const;
             u8                         getPieceCount(const Piece) const;
