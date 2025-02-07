@@ -249,6 +249,7 @@ namespace sagittar {
                         && move_piece_type != PieceType::PAWN)
                     // clang-format on
                     {
+                        // LMR with fixed depth reduction for now
                         score = -search<NodeType::NON_PV>(board, depth - 2, -alpha - 1, -alpha,
                                                           info, result, do_null);
                     }
