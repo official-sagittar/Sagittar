@@ -205,6 +205,7 @@ namespace sagittar {
             i32        best_score = -INF;
             move::Move best_move_so_far;
             u32        legal_moves_count = 0;
+            u32        moves_searched    = 0;
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
@@ -213,7 +214,8 @@ namespace sagittar {
             for (u8 i = 0; i < moves.size(); i++)
             {
                 sortMoves(&moves, i);
-                const move::Move move = moves.at(i);
+                const move::Move move            = moves.at(i);
+                const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
 
                 const board::DoMoveResult do_move_result = board.doMove(move);
 
@@ -226,24 +228,49 @@ namespace sagittar {
                 result->nodes++;
                 legal_moves_count++;
 
-                i32 score;
+                i32 score = -INF;
 
-                if (legal_moves_count == 1)
+                // PVS + LMR
+                if (moves_searched == 0)
                 {
                     score =
                       -search<nodeType>(board, depth - 1, -beta, -alpha, info, result, do_null);
                 }
                 else
                 {
-                    score = -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha, info,
-                                                      result, do_null);
-                    if (score > alpha && score < beta)
+                    // clang-format off
+                    if (!is_in_check
+                        && !is_pv_node
+                        && moves_searched >= 4
+                        && depth >= 3
+                        && !movegen::isInCheck(board)
+                        && !move::isCapture(move.getFlag())
+                        && !move::isPromotion(move.getFlag())
+                        && move_piece_type != PieceType::PAWN)
+                    // clang-format on
                     {
-                        // re-search
-                        score = -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info, result,
-                                                      do_null);
+                        score = -search<NodeType::NON_PV>(board, depth - 2, -alpha - 1, -alpha,
+                                                          info, result, do_null);
+                    }
+                    else
+                    {
+                        score = alpha + 1;
+                    }
+
+                    if (score > alpha)
+                    {
+                        score = -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha,
+                                                          info, result, do_null);
+                        if (score > alpha && score < beta)
+                        {
+                            // re-search
+                            score = -search<NodeType::PV>(board, depth - 1, -beta, -alpha, info,
+                                                          result, do_null);
+                        }
                     }
                 }
+
+                moves_searched++;
 
                 board.undoMove();
 
