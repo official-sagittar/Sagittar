@@ -1,7 +1,7 @@
 # Sagittar
 
 <p align="center">
-    <img src="Sagittar.webp" alt="Sagittar Logo"/>
+    <img src="Sagittar.webp" width="64" height="64" alt="Sagittar Logo"/>
 </p>
 
 A free UCI Chess engine
