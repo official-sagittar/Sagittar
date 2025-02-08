@@ -1,5 +1,9 @@
 # Sagittar
 
+<p align="center">
+    <img src="Sagittar.webp" alt="Sagittar Logo"/>
+</p>
+
 A free UCI Chess engine
 
 [![License](https://img.shields.io/github/license/codemaniac/pixie)](LICENSE)
