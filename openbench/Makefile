@@ -17,7 +17,7 @@ clean:
 dir:
 	@mkdir -p $(OBJ_DIR)
 
-sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o tt.o uci.o utils.o datagen.o
+sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o tt.o uci.o utils.o
 	@echo "==== Building sagittar ===="
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$(EXE) $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/board.o \
@@ -31,8 +31,7 @@ sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o per
 		$(OBJ_DIR)/search.o \
 		$(OBJ_DIR)/tt.o \
 		$(OBJ_DIR)/uci.o \
-		$(OBJ_DIR)/utils.o \
-		$(OBJ_DIR)/datagen.o
+		$(OBJ_DIR)/utils.o
 
 main.o: $(SRC_DIR)/main.cpp
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o -MF $(OBJ_DIR)/main.d
@@ -72,8 +71,5 @@ uci.o: $(SRC_DIR)/uci.cpp $(SRC_DIR)/uci.h
 
 utils.o: $(SRC_DIR)/utils.cpp $(SRC_DIR)/utils.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/utils.cpp -o $(OBJ_DIR)/utils.o -MF $(OBJ_DIR)/utils.d
-
-datagen.o: $(SRC_DIR)/datagen/datagen.cpp $(SRC_DIR)/datagen/datagen.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/datagen/datagen.cpp -o $(OBJ_DIR)/datagen.o -MF $(OBJ_DIR)/datagen.d
 
 .PHONY: clean dir
