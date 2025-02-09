@@ -17,7 +17,7 @@ clean:
 dir:
 	@mkdir -p $(OBJ_DIR)
 
-sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o tt.o uci.o utils.o
+sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o params.o perft.o search.o tt.o uci.o utils.o
 	@echo "==== Building sagittar ===="
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$(EXE) $(OBJ_DIR)/main.o \
 		$(OBJ_DIR)/board.o \
@@ -27,6 +27,7 @@ sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o per
 		$(OBJ_DIR)/move.o \
 		$(OBJ_DIR)/movegen.o \
 		$(OBJ_DIR)/movepicker.o \
+		$(OBJ_DIR)/params.o \
 		$(OBJ_DIR)/perft.o \
 		$(OBJ_DIR)/search.o \
 		$(OBJ_DIR)/tt.o \
@@ -56,6 +57,9 @@ movegen.o: $(SRC_DIR)/movegen.cpp $(SRC_DIR)/movegen.h
 
 movepicker.o: $(SRC_DIR)/movepicker.cpp $(SRC_DIR)/movepicker.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/movepicker.cpp -o $(OBJ_DIR)/movepicker.o -MF $(OBJ_DIR)/movepicker.d
+
+params.o: $(SRC_DIR)/params.cpp $(SRC_DIR)/params.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/params.cpp -o $(OBJ_DIR)/params.o -MF $(OBJ_DIR)/params.d
 
 perft.o: $(SRC_DIR)/perft.cpp $(SRC_DIR)/perft.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/perft.cpp -o $(OBJ_DIR)/perft.o -MF $(OBJ_DIR)/perft.d

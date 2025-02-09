@@ -37,6 +37,8 @@ namespace sagittar {
                     engine.setTranspositionTableSize(ttsize);
                 }
             }
+
+            engine.setSearcherParams();
         }
 
         void UCIHandler::handlePosition(std::string& input) {

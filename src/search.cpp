@@ -23,6 +23,11 @@ namespace sagittar {
 
         Searcher::Searcher() { stop.store(false, std::memory_order_relaxed); }
 
+        void Searcher::setParams(const params::Parameters& params) {
+            searchParams.RFP_DEPTH_MAX = params.getInt("RFP_DEPTH_MAX", 3);
+            searchParams.RFP_MARGIN    = params.getInt("RFP_MARGIN", 150);
+        }
+
         void Searcher::shouldStopSearchNow(const SearchInfo& info) {
             if (info.timeset && (utils::currtimeInMilliseconds() >= info.stoptime))
             {
@@ -171,10 +176,10 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= 3)
+                if (depth <= searchParams.RFP_DEPTH_MAX)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
-                    const i32 margin = 150 * depth;
+                    const i32 margin = searchParams.RFP_MARGIN * depth;
                     if (eval >= beta + margin)
                     {
                         return eval;
