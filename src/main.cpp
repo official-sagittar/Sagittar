@@ -20,7 +20,9 @@ int main(int argc, char* argv[]) {
         }
         else if (cmd.rfind("genfens", 0) == 0)
         {
-            sagittar::datagen::genfens(cmd);
+
+            sagittar::datagen::DataGenerator datagenerator(engine);
+            datagenerator.genfens(cmd);
 
             if (std::string(argv[2]) == "quit")
             {

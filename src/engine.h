@@ -1,6 +1,7 @@
 #pragma once
 
 #include "board.h"
+#include "move.h"
 #include "pch.h"
 #include "search.h"
 
@@ -21,7 +22,9 @@ namespace sagittar {
         void                resetForSearch();
         void                setStartpos();
         void                setPositionFromFEN(std::string);
+        std::string         getPositionAsFEN();
         board::DoMoveResult doMove(const std::string&);
+        board::DoMoveResult doMove(const move::Move&);
         void                setTranspositionTableSize(const std::size_t);
         search::SearchResult
                              search(const search::SearchInfo&,
