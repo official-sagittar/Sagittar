@@ -138,6 +138,102 @@ namespace sagittar {
             board->resetHash();
         }
 
+        std::string toFEN(const board::Board& board) {
+            std::ostringstream oss;
+
+            // Piece placement data
+            for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
+            {
+                u8 empty = 0;
+                for (u8 file = File::FILE_A; file <= File::FILE_H; file++)
+                {
+                    const Square sq    = rf2sq(rank, file);
+                    const Piece  piece = board.getPiece(sq);
+                    if (piece != Piece::NO_PIECE)
+                    {
+                        if (empty > 0)
+                        {
+                            oss << (int) empty;
+                            empty = 0;
+                        }
+                        oss << PIECES_STR[piece];
+                    }
+                    else
+                    {
+                        empty++;
+                    }
+                }
+                if (empty > 0)
+                {
+                    oss << (int) empty;
+                }
+                if (rank != Rank::RANK_1)
+                {
+                    oss << "/";
+                }
+            }
+            oss << " ";
+
+            // Active color
+            if (board.getActiveColor() == Color::WHITE)
+            {
+                oss << "w";
+            }
+            else
+            {
+                oss << "b";
+            }
+            oss << " ";
+
+            // Castling availability
+            if (board.getCastelingRights() == board::CastleFlag::NOCA)
+            {
+                oss << "-";
+            }
+            else
+            {
+                if (board.getCastelingRights() & board::CastleFlag::WKCA)
+                {
+                    oss << "K";
+                }
+                if (board.getCastelingRights() & board::CastleFlag::WQCA)
+                {
+                    oss << "Q";
+                }
+                if (board.getCastelingRights() & board::CastleFlag::BKCA)
+                {
+                    oss << "k";
+                }
+                if (board.getCastelingRights() & board::CastleFlag::BQCA)
+                {
+                    oss << "q";
+                }
+            }
+            oss << " ";
+
+            // En passant target
+            if (board.getEnpassantTarget() == Square::NO_SQ)
+            {
+                oss << "-";
+            }
+            else
+            {
+                const Square ep_target = board.getEnpassantTarget();
+                const File   file      = sq2file(ep_target);
+                const Rank   rank      = sq2rank(ep_target);
+                oss << FILE_STR[file] << (int) rank + 1;
+            }
+            oss << " ";
+
+            // Halfmove clock
+            oss << (int) board.getHalfmoveClock() << " ";
+
+            // Fullmove number
+            oss << (int) board.getFullmoveNumber() << " ";
+
+            return oss.str();
+        }
+
     }
 
 }

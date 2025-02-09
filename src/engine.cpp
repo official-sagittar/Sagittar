@@ -31,7 +31,11 @@ namespace sagittar {
 
     void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&board, fen); }
 
+    std::string Engine::getPositionAsFEN() { return fen::toFEN(board); }
+
     board::DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
+
+    board::DoMoveResult Engine::doMove(const move::Move& move) { return board.doMove(move); }
 
     void Engine::setTranspositionTableSize(const std::size_t size) {
         searcher.setTranspositionTableSize(size);

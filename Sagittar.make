@@ -170,6 +170,7 @@ GENERATED :=
 OBJECTS :=
 
 GENERATED += $(OBJDIR)/board.o
+GENERATED += $(OBJDIR)/datagen.o
 GENERATED += $(OBJDIR)/engine.o
 GENERATED += $(OBJDIR)/eval.o
 GENERATED += $(OBJDIR)/fen.o
@@ -183,6 +184,7 @@ GENERATED += $(OBJDIR)/tt.o
 GENERATED += $(OBJDIR)/uci.o
 GENERATED += $(OBJDIR)/utils.o
 OBJECTS += $(OBJDIR)/board.o
+OBJECTS += $(OBJDIR)/datagen.o
 OBJECTS += $(OBJDIR)/engine.o
 OBJECTS += $(OBJDIR)/eval.o
 OBJECTS += $(OBJDIR)/fen.o
@@ -345,6 +347,9 @@ endif
 # #############################################
 
 $(OBJDIR)/board.o: src/board.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/datagen.o: src/datagen/datagen.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/engine.o: src/engine.cpp

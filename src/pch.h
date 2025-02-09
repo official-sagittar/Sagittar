@@ -4,9 +4,12 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <fstream>
 #include <functional>
 #include <future>
 #include <iostream>
+#include <iterator>
+#include <random>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -15,7 +18,6 @@
 #endif
 #ifdef TEST
     #include <filesystem>
-    #include <fstream>
     #include <map>
     #include <regex>
 #endif

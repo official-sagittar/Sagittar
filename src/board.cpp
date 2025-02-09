@@ -1,4 +1,5 @@
 #include "board.h"
+#include "fen.h"
 #include "movegen.h"
 #include "utils.h"
 
@@ -698,7 +699,7 @@ namespace sagittar {
             ss << " " << (int) ply_count;
             ss << " " << (unsigned long long) hash << "\n";
 
-            std::cout << ss.str() << std::endl;
+            std::cout << ss.str() << fen::toFEN(*this) << std::endl;
         }
 
     }

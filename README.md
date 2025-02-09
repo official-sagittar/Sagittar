@@ -1,10 +1,18 @@
 # Sagittar
 
+<p align="center">
+    <img src="Sagittar.webp" width="256" height="256" alt="Sagittar Logo"/>
+</p>
+
 A free UCI Chess engine
 
 [![License](https://img.shields.io/github/license/codemaniac/pixie)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![Sagittar Unit Test](https://github.com/codemaniac/Sagittar/actions/workflows/unit-test.yml/badge.svg)
+
+<br />
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/codemaniac)
 
 # Building Sagittar
 
