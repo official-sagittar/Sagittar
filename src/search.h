@@ -49,8 +49,8 @@ namespace sagittar {
         };
 
         struct SearcherParams {
-            u8 RFP_DEPTH_MAX;
-            u8 RFP_MARGIN;
+            int RFP_DEPTH_MAX;
+            int RFP_MARGIN;
         };
 
         class Searcher {
@@ -64,11 +64,11 @@ namespace sagittar {
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
-            i32 quiescencesearch(board::Board&     board,
-                                 i32               alpha,
-                                 i32               beta,
-                                 const SearchInfo& info,
-                                 SearchResult*     result);
+            SearchResult searchIteratively(
+              board::Board&                                    board,
+              const SearchInfo&                                info,
+              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
+              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
             i32 search(board::Board&     board,
@@ -79,17 +79,21 @@ namespace sagittar {
                        SearchResult*     result,
                        const bool        do_null);
 
-            SearchResult searchIteratively(
-              board::Board&                                    board,
-              const SearchInfo&                                info,
-              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+            i32 quiescencesearch(board::Board&     board,
+                                 i32               alpha,
+                                 i32               beta,
+                                 const SearchInfo& info,
+                                 SearchResult*     result);
 
            public:
             Searcher();
-            void setParams(const params::Parameters&);
+
+            void setParams(const parameters::ParameterStore&);
+
             void reset();
+
             void resetForSearch();
+
             void setTranspositionTableSize(const std::size_t);
 
             SearchResult startSearch(

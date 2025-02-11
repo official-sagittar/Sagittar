@@ -1,22 +1,26 @@
 #pragma once
 
+#include "containers.h"
 #include "pch.h"
 
 namespace sagittar {
 
-    namespace params {
+    namespace parameters {
 
-        class Parameters {
+        class ParameterStore {
            private:
-            std::map<std::string, int>   dataInt;
-            std::map<std::string, float> dataFloat;
+            containers::VariantMap<int, float> params;
 
            public:
-            void setInt(const std::string key, const int value);
-            void setFloat(const std::string key, const float value);
+            template<typename T>
+            void set(const std::string& key, const T value) {
+                params.insert<T>(key, value);
+            }
 
-            int   getInt(const std::string key, const int defaultValue) const;
-            float getFloat(const std::string key, const float defaultValue) const;
+            template<typename T>
+            T get(const std::string& key, const T defaultValue) const {
+                return params.get(key, defaultValue);
+            }
         };
 
     }

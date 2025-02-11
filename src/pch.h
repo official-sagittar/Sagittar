@@ -8,8 +8,10 @@
 #include <future>
 #include <iostream>
 #include <map>
+#include <regex>
 #include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 #ifdef DEBUG
     #include <cassert>
@@ -17,8 +19,6 @@
 #ifdef TEST
     #include <filesystem>
     #include <fstream>
-    #include <map>
-    #include <regex>
 #endif
 
 #endif

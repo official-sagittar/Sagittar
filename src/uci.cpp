@@ -37,6 +37,19 @@ namespace sagittar {
                     engine.setTranspositionTableSize(ttsize);
                 }
             }
+            else
+            {
+                if (utils::isFloat(value))
+                {
+                    const float fvalue = std::stof(value);
+                    engine.setParam<float>(id, fvalue);
+                }
+                else
+                {
+                    const int ivalue = std::stoi(value);
+                    engine.setParam<int>(id, ivalue);
+                }
+            }
 
             engine.setSearcherParams();
         }

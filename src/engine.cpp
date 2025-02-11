@@ -23,16 +23,16 @@ namespace sagittar {
         searcher.reset();
     }
 
-    void Engine::setParamsInt(const std::string key, const int value) { params.setInt(key, value); }
-
-    void Engine::setParamsFloat(const std::string key, const float value) {
-        params.setFloat(key, value);
-    }
-
     void Engine::resetForSearch() {
         board.resetPlyCount();
         searcher.resetForSearch();
     }
+
+    void Engine::setTranspositionTableSize(const std::size_t size) {
+        searcher.setTranspositionTableSize(size);
+    }
+
+    void Engine::setSearcherParams() { searcher.setParams(params); }
 
     void Engine::setStartpos() { board.setStartpos(); }
 
@@ -43,12 +43,6 @@ namespace sagittar {
     board::DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
 
     board::DoMoveResult Engine::doMove(const move::Move& move) { return board.doMove(move); }
-
-    void Engine::setTranspositionTableSize(const std::size_t size) {
-        searcher.setTranspositionTableSize(size);
-    }
-
-    void Engine::setSearcherParams() { searcher.setParams(params); }
 
     search::SearchResult
     Engine::search(const search::SearchInfo&                        info,
