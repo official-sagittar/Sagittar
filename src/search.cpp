@@ -320,8 +320,15 @@ namespace sagittar {
                         && move_piece_type != PieceType::PAWN)
                     // clang-format on
                     {
+                        const float LMR_R_BIAS  = 1.0f;
+                        const float LMR_R_SCALE = 1.5f;
+                        const u8    r =
+                          std::min(static_cast<int>(LMR_R_BIAS
+                                                    + std::log2(depth) * std::log2(moves_searched)
+                                                        / LMR_R_SCALE),
+                                   depth - 1);
                         // LMR with fixed depth reduction for now
-                        score = -search<NodeType::NON_PV>(board, depth - 2, -alpha - 1, -alpha,
+                        score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
                                                           info, result, do_null);
                     }
                     else

@@ -8,6 +8,7 @@
 #include <future>
 #include <iostream>
 #include <map>
+#include <math.h>
 #include <regex>
 #include <sstream>
 #include <string>
