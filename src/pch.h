@@ -4,11 +4,11 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <functional>
 #include <future>
 #include <iostream>
 #include <map>
-#include <math.h>
 #include <regex>
 #include <sstream>
 #include <string>
