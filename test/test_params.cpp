@@ -9,13 +9,13 @@ TEST_SUITE("Params") {
     TEST_CASE("Params::set and Params::get") {
         const float EPSILON = 0.0001;
 
-        params::Parameters params;
+        parameters::ParameterStore params;
 
-        params.setInt("FOO", 1);
-        params.setFloat("BAR", 3.14);
+        params.set<int>("FOO", 1);
+        params.set<float>("BAR", 3.14);
 
-        REQUIRE(params.getInt("FOO", 0) == 1);
-        REQUIRE(std::abs(params.getFloat("BAR", 0.0) - 3.14) <= EPSILON);
-        REQUIRE(std::abs(params.getFloat("BAT", 1.2345) - 1.2345) <= EPSILON);
+        REQUIRE(params.get<int>("FOO", 0) == 1);
+        REQUIRE(std::abs(params.get<float>("BAR", 0.0) - 3.14) <= EPSILON);
+        REQUIRE(std::abs(params.get<float>("BAT", 1.2345) - 1.2345) <= EPSILON);
     }
 }
