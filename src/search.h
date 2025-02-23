@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "move.h"
+#include "params.h"
 #include "pch.h"
 #include "tt.h"
 #include "types.h"
@@ -47,21 +48,27 @@ namespace sagittar {
             void reset();
         };
 
+        struct SearcherParams {
+            int RFP_DEPTH_MAX;
+            int RFP_MARGIN;
+        };
+
         class Searcher {
            private:
             move::Move             pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
+            SearcherParams         searchParams;
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
-            i32 quiescencesearch(board::Board&     board,
-                                 i32               alpha,
-                                 i32               beta,
-                                 const SearchInfo& info,
-                                 SearchResult*     result);
+            SearchResult searchIteratively(
+              board::Board&                                    board,
+              const SearchInfo&                                info,
+              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
+              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
             i32 search(board::Board&     board,
@@ -72,16 +79,21 @@ namespace sagittar {
                        SearchResult*     result,
                        const bool        do_null);
 
-            SearchResult searchIteratively(
-              board::Board&                                    board,
-              const SearchInfo&                                info,
-              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+            i32 quiescencesearch(board::Board&     board,
+                                 i32               alpha,
+                                 i32               beta,
+                                 const SearchInfo& info,
+                                 SearchResult*     result);
 
            public:
             Searcher();
+
+            void setParams(const parameters::ParameterStore&);
+
             void reset();
+
             void resetForSearch();
+
             void setTranspositionTableSize(const std::size_t);
 
             SearchResult startSearch(

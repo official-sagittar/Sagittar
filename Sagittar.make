@@ -215,6 +215,7 @@ GENERATED += $(OBJDIR)/test_main.o
 GENERATED += $(OBJDIR)/test_move.o
 GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
+GENERATED += $(OBJDIR)/test_params.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_tt.o
 GENERATED += $(OBJDIR)/test_utils.o
@@ -224,6 +225,7 @@ OBJECTS += $(OBJDIR)/test_main.o
 OBJECTS += $(OBJDIR)/test_move.o
 OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
+OBJECTS += $(OBJDIR)/test_params.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_tt.o
 OBJECTS += $(OBJDIR)/test_utils.o
@@ -235,6 +237,7 @@ GENERATED += $(OBJDIR)/test_main.o
 GENERATED += $(OBJDIR)/test_move.o
 GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
+GENERATED += $(OBJDIR)/test_params.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_tt.o
 GENERATED += $(OBJDIR)/test_utils.o
@@ -244,6 +247,7 @@ OBJECTS += $(OBJDIR)/test_main.o
 OBJECTS += $(OBJDIR)/test_move.o
 OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
+OBJECTS += $(OBJDIR)/test_params.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_tt.o
 OBJECTS += $(OBJDIR)/test_utils.o
@@ -255,6 +259,7 @@ GENERATED += $(OBJDIR)/test_main.o
 GENERATED += $(OBJDIR)/test_move.o
 GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
+GENERATED += $(OBJDIR)/test_params.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_tt.o
 GENERATED += $(OBJDIR)/test_utils.o
@@ -264,6 +269,7 @@ OBJECTS += $(OBJDIR)/test_main.o
 OBJECTS += $(OBJDIR)/test_move.o
 OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
+OBJECTS += $(OBJDIR)/test_params.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_tt.o
 OBJECTS += $(OBJDIR)/test_utils.o
@@ -418,6 +424,9 @@ $(OBJDIR)/test_movegen.o: test/test_movegen.cpp
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_params.o: test/test_params.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_perft.o: test/test_perft.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -447,6 +456,9 @@ $(OBJDIR)/test_movegen.o: test/test_movegen.cpp
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_params.o: test/test_params.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_perft.o: test/test_perft.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -474,6 +486,9 @@ $(OBJDIR)/test_movegen.o: test/test_movegen.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_params.o: test/test_params.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_perft.o: test/test_perft.cpp

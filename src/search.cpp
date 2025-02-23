@@ -21,7 +21,44 @@ namespace sagittar {
             }
         }
 
+        /*
+        * Searcher
+        */
+
         Searcher::Searcher() { stop.store(false, std::memory_order_relaxed); }
+
+        void Searcher::setParams(const parameters::ParameterStore& params) {
+            searchParams.RFP_DEPTH_MAX = params.get<int>("RFP_DEPTH_MAX", 3);
+            searchParams.RFP_MARGIN    = params.get<int>("RFP_MARGIN", 150);
+        }
+
+        void Searcher::reset() {
+            pvmove = move::Move();
+            stop.store(false, std::memory_order_relaxed);
+            tt.clear();
+            data.reset();
+        }
+
+        void Searcher::resetForSearch() { tt.resetForSearch(); }
+
+        void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
+
+        SearchResult Searcher::startSearch(
+          board::Board&                                    board,
+          const SearchInfo&                                info,
+          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
+          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            pvmove = move::Move();
+            stop.store(false, std::memory_order_relaxed);
+            return searchIteratively(board, info, searchProgressReportHandler,
+                                     searchCompleteReportHander);
+        }
+
+        SearchResult Searcher::startSearch(board::Board& board, const SearchInfo& info) {
+            return startSearch(board, info, [](auto&) {}, [](auto&) {});
+        }
+
+        void Searcher::stopSearch() { stop.store(true, std::memory_order_relaxed); }
 
         void Searcher::shouldStopSearchNow(const SearchInfo& info) {
             if (info.timeset && (utils::currtimeInMilliseconds() >= info.stoptime))
@@ -30,67 +67,101 @@ namespace sagittar {
             }
         }
 
-        i32 Searcher::quiescencesearch(
-          board::Board& board, i32 alpha, i32 beta, const SearchInfo& info, SearchResult* result) {
-            if ((result->nodes & 2047) == 0)
+        SearchResult Searcher::searchIteratively(
+          board::Board&                                    board,
+          const SearchInfo&                                info,
+          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
+          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+            SearchResult bestresult{};
+
+            i32 alpha = -INF;
+            i32 beta  = INF;
+
+            for (u8 currdepth = 1; currdepth <= info.depth; currdepth++)
             {
-                shouldStopSearchNow(info);
-            }
+                SearchResult result{};
 
-            if (board.getPlyCount() >= MAX_DEPTH - 1)
-            {
-                return eval::evaluateBoard(board);
-            }
-
-            const i32 stand_pat = eval::evaluateBoard(board);
-            if (stand_pat >= beta)
-            {
-                return beta;
-            }
-            if (alpha < stand_pat)
-            {
-                alpha = stand_pat;
-            }
-
-            containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, pvmove, tt, data);
-
-            for (u8 i = 0; i < moves.size(); i++)
-            {
-                sortMoves(&moves, i);
-                const move::Move move = moves.at(i);
-
-                const board::DoMoveResult do_move_result = board.doMove(move);
-
-                if (do_move_result == board::DoMoveResult::ILLEGAL)
-                {
-                    board.undoMove();
-                    continue;
-                }
-
-                result->nodes++;
-
-                const i32 score = -quiescencesearch(board, -beta, -alpha, info, result);
-
-                board.undoMove();
+                const u64 starttime = utils::currtimeInMilliseconds();
+                i32       score =
+                  search<NodeType::PV>(board, currdepth, alpha, beta, info, &result, true);
+                const u64 time = utils::currtimeInMilliseconds() - starttime;
 
                 if (stop.load(std::memory_order_relaxed))
                 {
-                    return 0;
+                    break;
                 }
 
-                if (score > alpha)
+                // Aspiration Windows
+                if ((score <= alpha) || (score >= beta))
                 {
-                    alpha = score;
-                    if (score >= beta)
+                    // We fell outside the window
+                    // Try again with a full-width window (and the same depth).
+                    alpha = -INF;
+                    beta  = INF;
+                    currdepth--;
+                    continue;
+                }
+                else
+                {
+                    alpha = score - 50;
+                    beta  = score + 50;
+                }
+
+                bestresult = result;
+
+                result.score = score;
+                if (score > -MATE_VALUE && score < -MATE_SCORE)
+                {
+                    result.is_mate = true;
+                    result.mate_in = (-(score + MATE_VALUE) / 2 - 1);
+                }
+                else if (score > MATE_SCORE && score < MATE_VALUE)
+                {
+                    result.is_mate = true;
+                    result.mate_in = ((MATE_VALUE - score) / 2 + 1);
+                }
+                else
+                {
+                    result.is_mate = false;
+                    result.mate_in = 0;
+                }
+                result.depth = currdepth;
+                result.time  = time;
+
+                u8          pv_count = 0;
+                tt::TTEntry ttentry;
+                bool        tthit = tt.probe(&ttentry, board);
+                while (pv_count++ < currdepth && tthit)
+                {
+                    if (ttentry.flag != tt::TTFlag::EXACT)
                     {
-                        return beta;
+                        break;
+                    }
+                    const move::Move move = ttentry.move;
+                    if (board.doMove(move) == board::DoMoveResult::LEGAL)
+                    {
+                        result.pv.push_back(move);
+                        tthit = tt.probe(&ttentry, board);
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
+                while (board.getPlyCount() > 0)
+                {
+                    board.undoMove();
+                }
+#ifdef DEBUG
+                assert(board.getPlyCount() == 0);
+#endif
+
+                searchProgressReportHandler(result);
             }
 
-            return alpha;
+            searchCompleteReportHander(bestresult);
+
+            return bestresult;
         }
 
         template<NodeType nodeType>
@@ -171,10 +242,10 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= 3)
+                if (depth <= searchParams.RFP_DEPTH_MAX)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
-                    const i32 margin = 150 * depth;
+                    const i32 margin = searchParams.RFP_MARGIN * depth;
                     if (eval >= beta + margin)
                     {
                         return eval;
@@ -343,130 +414,68 @@ namespace sagittar {
             return best_score;
         }
 
-        SearchResult Searcher::searchIteratively(
-          board::Board&                                    board,
-          const SearchInfo&                                info,
-          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-            SearchResult bestresult{};
-
-            i32 alpha = -INF;
-            i32 beta  = INF;
-
-            for (u8 currdepth = 1; currdepth <= info.depth; currdepth++)
+        i32 Searcher::quiescencesearch(
+          board::Board& board, i32 alpha, i32 beta, const SearchInfo& info, SearchResult* result) {
+            if ((result->nodes & 2047) == 0)
             {
-                SearchResult result{};
+                shouldStopSearchNow(info);
+            }
 
-                const u64 starttime = utils::currtimeInMilliseconds();
-                i32       score =
-                  search<NodeType::PV>(board, currdepth, alpha, beta, info, &result, true);
-                const u64 time = utils::currtimeInMilliseconds() - starttime;
+            if (board.getPlyCount() >= MAX_DEPTH - 1)
+            {
+                return eval::evaluateBoard(board);
+            }
+
+            const i32 stand_pat = eval::evaluateBoard(board);
+            if (stand_pat >= beta)
+            {
+                return beta;
+            }
+            if (alpha < stand_pat)
+            {
+                alpha = stand_pat;
+            }
+
+            containers::ArrayList<move::Move> moves;
+            movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
+            scoreMoves(&moves, board, pvmove, tt, data);
+
+            for (u8 i = 0; i < moves.size(); i++)
+            {
+                sortMoves(&moves, i);
+                const move::Move move = moves.at(i);
+
+                const board::DoMoveResult do_move_result = board.doMove(move);
+
+                if (do_move_result == board::DoMoveResult::ILLEGAL)
+                {
+                    board.undoMove();
+                    continue;
+                }
+
+                result->nodes++;
+
+                const i32 score = -quiescencesearch(board, -beta, -alpha, info, result);
+
+                board.undoMove();
 
                 if (stop.load(std::memory_order_relaxed))
                 {
-                    break;
+                    return 0;
                 }
 
-                // Aspiration Windows
-                if ((score <= alpha) || (score >= beta))
+                if (score > alpha)
                 {
-                    // We fell outside the window
-                    // Try again with a full-width window (and the same depth).
-                    alpha = -INF;
-                    beta  = INF;
-                    currdepth--;
-                    continue;
-                }
-                else
-                {
-                    alpha = score - 50;
-                    beta  = score + 50;
-                }
-
-                bestresult = result;
-
-                result.score = score;
-                if (score > -MATE_VALUE && score < -MATE_SCORE)
-                {
-                    result.is_mate = true;
-                    result.mate_in = (-(score + MATE_VALUE) / 2 - 1);
-                }
-                else if (score > MATE_SCORE && score < MATE_VALUE)
-                {
-                    result.is_mate = true;
-                    result.mate_in = ((MATE_VALUE - score) / 2 + 1);
-                }
-                else
-                {
-                    result.is_mate = false;
-                    result.mate_in = 0;
-                }
-                result.depth = currdepth;
-                result.time  = time;
-
-                u8          pv_count = 0;
-                tt::TTEntry ttentry;
-                bool        tthit = tt.probe(&ttentry, board);
-                while (pv_count++ < currdepth && tthit)
-                {
-                    if (ttentry.flag != tt::TTFlag::EXACT)
+                    alpha = score;
+                    if (score >= beta)
                     {
-                        break;
-                    }
-                    const move::Move move = ttentry.move;
-                    if (board.doMove(move) == board::DoMoveResult::LEGAL)
-                    {
-                        result.pv.push_back(move);
-                        tthit = tt.probe(&ttentry, board);
-                    }
-                    else
-                    {
-                        break;
+                        return beta;
                     }
                 }
-                while (board.getPlyCount() > 0)
-                {
-                    board.undoMove();
-                }
-#ifdef DEBUG
-                assert(board.getPlyCount() == 0);
-#endif
-
-                searchProgressReportHandler(result);
             }
 
-            searchCompleteReportHander(bestresult);
-
-            return bestresult;
+            return alpha;
         }
-
-        void Searcher::reset() {
-            pvmove = move::Move();
-            stop.store(false, std::memory_order_relaxed);
-            tt.clear();
-            data.reset();
-        }
-
-        void Searcher::resetForSearch() { tt.resetForSearch(); }
-
-        void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
-
-        SearchResult Searcher::startSearch(
-          board::Board&                                    board,
-          const SearchInfo&                                info,
-          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-            pvmove = move::Move();
-            stop.store(false, std::memory_order_relaxed);
-            return searchIteratively(board, info, searchProgressReportHandler,
-                                     searchCompleteReportHander);
-        }
-
-        SearchResult Searcher::startSearch(board::Board& board, const SearchInfo& info) {
-            return startSearch(board, info, [](auto&) {}, [](auto&) {});
-        }
-
-        void Searcher::stopSearch() { stop.store(true, std::memory_order_relaxed); }
 
     }
 

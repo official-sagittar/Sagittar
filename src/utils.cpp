@@ -38,6 +38,11 @@ namespace sagittar {
             return milliseconds;
         }
 
+        bool isFloat(const std::string& str) {
+            static const std::regex floatRegex(R"([-+]?\d*\.\d+([eE][-+]?\d+)?)");
+            return std::regex_match(str, floatRegex);
+        }
+
     }
 
 }
