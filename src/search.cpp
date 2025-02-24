@@ -285,8 +285,7 @@ namespace sagittar {
             for (u8 i = 0; i < moves.size(); i++)
             {
                 sortMoves(&moves, i);
-                const move::Move move            = moves.at(i);
-                const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
+                const move::Move move = moves.at(i);
 
                 const board::DoMoveResult do_move_result = board.doMove(move);
 
@@ -314,14 +313,33 @@ namespace sagittar {
                         && !is_pv_node
                         && moves_searched >= 4
                         && depth >= 3
-                        && !movegen::isInCheck(board)
-                        && !move::isCapture(move.getFlag())
-                        && !move::isPromotion(move.getFlag())
-                        && move_piece_type != PieceType::PAWN)
+                        && !movegen::isInCheck(board))
                     // clang-format on
                     {
-                        // LMR with fixed depth reduction for now
-                        score = -search<NodeType::NON_PV>(board, depth - 2, -alpha - 1, -alpha,
+                        u8 r = 0;
+                        if (move::isCapture(move.getFlag()) || move::isPromotion(move.getFlag()))
+                        {
+                            float LMR_R_BIAS_T, LMR_R_SCALE_T;
+                            LMR_R_BIAS_T  = 0.0f;
+                            LMR_R_SCALE_T = 2.75f;
+                            r =
+                              std::min(static_cast<int>(LMR_R_BIAS_T
+                                                        + std::log(depth) * std::log(moves_searched)
+                                                            / LMR_R_SCALE_T),
+                                       depth - 1);
+                        }
+                        else
+                        {
+                            float LMR_R_BIAS_Q, LMR_R_SCALE_Q;
+                            LMR_R_BIAS_Q  = 1.0f;
+                            LMR_R_SCALE_Q = 1.5f;
+                            r =
+                              std::min(static_cast<int>(LMR_R_BIAS_Q
+                                                        + std::log(depth) * std::log(moves_searched)
+                                                            / LMR_R_SCALE_Q),
+                                       depth - 1);
+                        }
+                        score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
                                                           info, result, do_null);
                     }
                     else
