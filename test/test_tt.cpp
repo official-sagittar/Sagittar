@@ -29,11 +29,11 @@ TEST_SUITE("TT") {
 
         move::Move m(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
-        tt.store(board, 1, search::tt::TTFlag::EXACT, 10, m);
+        tt.store(board.getHash(), 0, 1, search::tt::TTFlag::EXACT, 10, m);
 
         search::tt::TTEntry ttentry;
 
-        bool tthit = tt.probe(&ttentry, board);
+        bool tthit = tt.probe(&ttentry, board.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttentry.depth == 1);
@@ -46,9 +46,9 @@ TEST_SUITE("TT") {
 
         m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
+        tt.store(board.getHash(), 0, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
 
-        tthit = tt.probe(&ttentry, board);
+        tthit = tt.probe(&ttentry, board.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttentry.depth == 3);
@@ -69,10 +69,10 @@ TEST_SUITE("TT") {
 
         const move::Move m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board, 3, search::tt::TTFlag::EXACT, 100, m);
+        tt.store(board.getHash(), 0, 3, search::tt::TTFlag::EXACT, 100, m);
 
         search::tt::TTEntry ttentry;
-        bool                tthit = tt.probe(&ttentry, board);
+        bool                tthit = tt.probe(&ttentry, board.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttentry.depth == 3);
@@ -82,15 +82,14 @@ TEST_SUITE("TT") {
 
         const move::Move nullmove;
 
-        tt.store(board, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
+        tt.store(board.getHash(), 0, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
 
-        tthit = tt.probe(&ttentry, board);
+        tthit = tt.probe(&ttentry, board.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttentry.depth == 5);
         REQUIRE(ttentry.flag == search::tt::TTFlag::LOWERBOUND);
         REQUIRE(ttentry.value == 50);
         REQUIRE(ttentry.move == m);  // move should still be the previous move
-      
     }
 }

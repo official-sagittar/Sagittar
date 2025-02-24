@@ -23,10 +23,7 @@ namespace sagittar {
         searcher.reset();
     }
 
-    void Engine::resetForSearch() {
-        board.resetPlyCount();
-        searcher.resetForSearch();
-    }
+    void Engine::resetForSearch() { searcher.resetForSearch(); }
 
     void Engine::setTranspositionTableSize(const std::size_t size) {
         searcher.setTranspositionTableSize(size);

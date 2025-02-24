@@ -122,7 +122,6 @@ namespace sagittar {
             void                       setEnpassantTarget(const Square);
             void                       setHalfmoveClock(const u8);
             void                       setFullmoveNumber(const u8);
-            void                       resetPlyCount();
             [[nodiscard]] DoMoveResult doMove(const move::Move) noexcept;
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
             void                       doNullMove();
@@ -136,7 +135,6 @@ namespace sagittar {
             Square                     getEnpassantTarget() const;
             u8                         getHalfmoveClock() const;
             u8                         getFullmoveNumber() const;
-            i8                         getPlyCount() const;
             u64                        getHash() const;
             bool                       isValid() const;
             bool                       hasPositionRepeated() const;
