@@ -273,8 +273,6 @@ namespace sagittar {
 
         void Board::setFullmoveNumber(const u8 n) { full_move_number = n; }
 
-        void Board::resetPlyCount() { ply_count = 0; }
-
         DoMoveResult Board::doMoveComplete() {
             const bool is_valid_move = !movegen::isInCheck(*this) && isValid();
             active_color             = colorFlip(active_color);
@@ -651,8 +649,6 @@ namespace sagittar {
 
         u8 Board::getFullmoveNumber() const { return full_move_number; }
 
-        i8 Board::getPlyCount() const { return ply_count; }
-
         u64 Board::getHash() const { return hash; }
 
         bool Board::isValid() const {
@@ -666,7 +662,7 @@ namespace sagittar {
         }
 
         bool Board::hasPositionRepeated() const {
-            for (u8 i = std::max(0, (ply_count - half_move_clock)); i < ply_count - 1; ++i)
+            for (u8 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
             {
                 if (hash == history.peek(i).hash)
                 {

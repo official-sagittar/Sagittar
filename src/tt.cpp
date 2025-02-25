@@ -32,12 +32,12 @@ namespace sagittar {
 
             void TranspositionTable::resetForSearch() { currentage++; }
 
-            void TranspositionTable::store(const board::Board& board,
-                                           const i8            depth,
-                                           const TTFlag        flag,
-                                           i32                 value,
-                                           const move::Move    move) {
-                const u64     hash      = board.getHash();
+            void TranspositionTable::store(const u64        hash,
+                                           const i32        ply,
+                                           const i8         depth,
+                                           const TTFlag     flag,
+                                           i32              value,
+                                           const move::Move move) {
                 const u64     index     = hash % size;
                 const TTEntry currentry = entries.at(index);
 
@@ -51,11 +51,11 @@ namespace sagittar {
 
                 if (value < -MATE_SCORE)
                 {
-                    value -= board.getPlyCount();
+                    value -= ply;
                 }
                 else if (value > MATE_SCORE)
                 {
-                    value += board.getPlyCount();
+                    value += ply;
                 }
 
                 // If current entry is from the current position AND if move is a null move,
@@ -72,8 +72,7 @@ namespace sagittar {
                 entries.at(index) = newentry;
             }
 
-            bool TranspositionTable::probe(TTEntry* entry, const board::Board& board) const {
-                const u64     hash      = board.getHash();
+            bool TranspositionTable::probe(TTEntry* entry, const u64 hash) const {
                 const u64     index     = hash % size;
                 const TTEntry currentry = entries.at(index);
 

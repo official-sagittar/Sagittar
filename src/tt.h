@@ -60,12 +60,13 @@ namespace sagittar {
                 std::size_t        getSize() const;
                 void               clear();
                 void               resetForSearch();
-                void               store(const board::Board& board,
-                                         const i8            depth,
-                                         const TTFlag        flag,
-                                         i32                 value,
-                                         const move::Move    move);
-                [[nodiscard]] bool probe(TTEntry* entry, const board::Board& board) const;
+                void               store(const u64        hash,
+                                         const i32        ply,
+                                         const i8         depth,
+                                         const TTFlag     flag,
+                                         i32              value,
+                                         const move::Move move);
+                [[nodiscard]] bool probe(TTEntry* entry, const u64 hash) const;
             };
 
         }

@@ -44,7 +44,7 @@ namespace sagittar {
             move::Move  ttmove;
             bool        ttmove_found = false;
             tt::TTEntry ttentry;
-            const bool  tthit = ttable.probe(&ttentry, board);
+            const bool  tthit = ttable.probe(&ttentry, board.getHash());
             if (tthit)
             {
                 ttmove       = ttentry.move;
