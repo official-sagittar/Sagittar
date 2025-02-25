@@ -142,7 +142,7 @@ namespace sagittar {
                              i8                depth,
                              i32               alpha,
                              i32               beta,
-                             i32               ply,
+                             const i32         ply,
                              const SearchInfo& info,
                              SearchResult*     result,
                              const bool        do_null) {
@@ -409,7 +409,7 @@ namespace sagittar {
         i32 Searcher::quiescencesearch(board::Board&     board,
                                        i32               alpha,
                                        i32               beta,
-                                       i32               ply,
+                                       const i32         ply,
                                        const SearchInfo& info,
                                        SearchResult*     result) {
             if ((result->nodes & 2047) == 0)
