@@ -1,75 +1,98 @@
-EXE ?= sagittar
+# Detect the platform
+ifeq ($(OS),Windows_NT)
+    # Windows settings
+    EXE_EXT := .exe
+    PATHSEP := \\
+else
+    # Linux/Unix settings
+    EXE_EXT :=
+    PATHSEP := /
+endif
+
+EXE ?= Sagittar$(EXE_EXT)
 CXX ?= clang++
 CFLAGS := -MD -MP -DNDEBUG -m64 -Werror -flto -O3 -std=c++20 -march=native
 LDFLAGS := -m64 -static -flto
 
 BIN_DIR := .
-OBJ_DIR := ../obj
-SRC_DIR := ../src
+OBJ_DIR := ..$(PATHSEP)obj
+SRC_DIR := ..$(PATHSEP)src
 INC_DIR := -I$(SRC_DIR)
 
 all: clean dir sagittar
 
 clean:
+	@echo "==== Cleaning ===="
+ifeq ($(OS),Windows_NT)
+	@if exist "$(OBJ_DIR)" rmdir /S /Q "$(OBJ_DIR)"
+	@if exist "$(BIN_DIR)$(PATHSEP)$(EXE)" del /Q "$(BIN_DIR)$(PATHSEP)$(EXE)"
+else
 	@rm -rf $(OBJ_DIR)
-	@rm -f $(EXE)
+	@rm -f $(BIN_DIR)$(PATHSEP)$(EXE)
+endif
 
 dir:
+	@echo "==== Creating Required Folders ===="
+ifeq ($(OS),Windows_NT)
+	@if not exist "$(OBJ_DIR)" mkdir "$(OBJ_DIR)"
+else
 	@mkdir -p $(OBJ_DIR)
+endif
 
 sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o perft.o search.o tt.o uci.o utils.o
-	@echo "==== Building sagittar ===="
-	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)/$(EXE) $(OBJ_DIR)/main.o \
-		$(OBJ_DIR)/board.o \
-		$(OBJ_DIR)/engine.o \
-		$(OBJ_DIR)/eval.o \
-		$(OBJ_DIR)/fen.o \
-		$(OBJ_DIR)/move.o \
-		$(OBJ_DIR)/movegen.o \
-		$(OBJ_DIR)/movepicker.o \
-		$(OBJ_DIR)/perft.o \
-		$(OBJ_DIR)/search.o \
-		$(OBJ_DIR)/tt.o \
-		$(OBJ_DIR)/uci.o \
-		$(OBJ_DIR)/utils.o
+	@echo "==== Building Sagittar ===="
+	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)$(PATHSEP)$(EXE) \
+		$(OBJ_DIR)$(PATHSEP)main.o \
+		$(OBJ_DIR)$(PATHSEP)board.o \
+		$(OBJ_DIR)$(PATHSEP)engine.o \
+		$(OBJ_DIR)$(PATHSEP)eval.o \
+		$(OBJ_DIR)$(PATHSEP)fen.o \
+		$(OBJ_DIR)$(PATHSEP)move.o \
+		$(OBJ_DIR)$(PATHSEP)movegen.o \
+		$(OBJ_DIR)$(PATHSEP)movepicker.o \
+		$(OBJ_DIR)$(PATHSEP)perft.o \
+		$(OBJ_DIR)$(PATHSEP)search.o \
+		$(OBJ_DIR)$(PATHSEP)tt.o \
+		$(OBJ_DIR)$(PATHSEP)uci.o \
+		$(OBJ_DIR)$(PATHSEP)utils.o
 
-main.o: $(SRC_DIR)/main.cpp
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/main.cpp -o $(OBJ_DIR)/main.o -MF $(OBJ_DIR)/main.d
+main.o: $(SRC_DIR)$(PATHSEP)main.cpp
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)main.cpp -o $(OBJ_DIR)$(PATHSEP)main.o -MF $(OBJ_DIR)$(PATHSEP)main.d
 
-board.o: $(SRC_DIR)/board.cpp $(SRC_DIR)/board.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/board.cpp -o $(OBJ_DIR)/board.o -MF $(OBJ_DIR)/board.d
+board.o: $(SRC_DIR)$(PATHSEP)board.cpp $(SRC_DIR)$(PATHSEP)board.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)board.cpp -o $(OBJ_DIR)$(PATHSEP)board.o -MF $(OBJ_DIR)$(PATHSEP)board.d
 
-engine.o: $(SRC_DIR)/engine.cpp $(SRC_DIR)/engine.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/engine.cpp -o $(OBJ_DIR)/engine.o -MF $(OBJ_DIR)/engine.d
+engine.o: $(SRC_DIR)$(PATHSEP)engine.cpp $(SRC_DIR)$(PATHSEP)engine.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)engine.cpp -o $(OBJ_DIR)$(PATHSEP)engine.o -MF $(OBJ_DIR)$(PATHSEP)engine.d
 
-eval.o: $(SRC_DIR)/eval.cpp $(SRC_DIR)/eval.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/eval.cpp -o $(OBJ_DIR)/eval.o -MF $(OBJ_DIR)/eval.d
+eval.o: $(SRC_DIR)$(PATHSEP)eval.cpp $(SRC_DIR)$(PATHSEP)eval.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)eval.cpp -o $(OBJ_DIR)$(PATHSEP)eval.o -MF $(OBJ_DIR)$(PATHSEP)eval.d
 
-fen.o: $(SRC_DIR)/fen.cpp $(SRC_DIR)/fen.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/fen.cpp -o $(OBJ_DIR)/fen.o -MF $(OBJ_DIR)/fen.d
+fen.o: $(SRC_DIR)$(PATHSEP)fen.cpp $(SRC_DIR)$(PATHSEP)fen.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)fen.cpp -o $(OBJ_DIR)$(PATHSEP)fen.o -MF $(OBJ_DIR)$(PATHSEP)fen.d
 
-move.o: $(SRC_DIR)/move.cpp $(SRC_DIR)/move.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/move.cpp -o $(OBJ_DIR)/move.o -MF $(OBJ_DIR)/move.d
+move.o: $(SRC_DIR)$(PATHSEP)move.cpp $(SRC_DIR)$(PATHSEP)move.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)move.cpp -o $(OBJ_DIR)$(PATHSEP)move.o -MF $(OBJ_DIR)$(PATHSEP)move.d
 
-movegen.o: $(SRC_DIR)/movegen.cpp $(SRC_DIR)/movegen.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/movegen.cpp -o $(OBJ_DIR)/movegen.o -MF $(OBJ_DIR)/movegen.d
+movegen.o: $(SRC_DIR)$(PATHSEP)movegen.cpp $(SRC_DIR)$(PATHSEP)movegen.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)movegen.cpp -o $(OBJ_DIR)$(PATHSEP)movegen.o -MF $(OBJ_DIR)$(PATHSEP)movegen.d
 
-movepicker.o: $(SRC_DIR)/movepicker.cpp $(SRC_DIR)/movepicker.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/movepicker.cpp -o $(OBJ_DIR)/movepicker.o -MF $(OBJ_DIR)/movepicker.d
+movepicker.o: $(SRC_DIR)$(PATHSEP)movepicker.cpp $(SRC_DIR)$(PATHSEP)movepicker.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)movepicker.cpp -o $(OBJ_DIR)$(PATHSEP)movepicker.o -MF $(OBJ_DIR)$(PATHSEP)movepicker.d
 
-perft.o: $(SRC_DIR)/perft.cpp $(SRC_DIR)/perft.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/perft.cpp -o $(OBJ_DIR)/perft.o -MF $(OBJ_DIR)/perft.d
+perft.o: $(SRC_DIR)$(PATHSEP)perft.cpp $(SRC_DIR)$(PATHSEP)perft.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)perft.cpp -o $(OBJ_DIR)$(PATHSEP)perft.o -MF $(OBJ_DIR)$(PATHSEP)perft.d
 
-search.o: $(SRC_DIR)/search.cpp $(SRC_DIR)/search.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/search.cpp -o $(OBJ_DIR)/search.o -MF $(OBJ_DIR)/search.d
+search.o: $(SRC_DIR)$(PATHSEP)search.cpp $(SRC_DIR)$(PATHSEP)search.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search.cpp -o $(OBJ_DIR)$(PATHSEP)search.o -MF $(OBJ_DIR)$(PATHSEP)search.d
 
-tt.o: $(SRC_DIR)/tt.cpp $(SRC_DIR)/tt.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/tt.cpp -o $(OBJ_DIR)/tt.o -MF $(OBJ_DIR)/tt.d
+tt.o: $(SRC_DIR)$(PATHSEP)tt.cpp $(SRC_DIR)$(PATHSEP)tt.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)tt.cpp -o $(OBJ_DIR)$(PATHSEP)tt.o -MF $(OBJ_DIR)$(PATHSEP)tt.d
 
-uci.o: $(SRC_DIR)/uci.cpp $(SRC_DIR)/uci.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/uci.cpp -o $(OBJ_DIR)/uci.o -MF $(OBJ_DIR)/uci.d
+uci.o: $(SRC_DIR)$(PATHSEP)uci.cpp $(SRC_DIR)$(PATHSEP)uci.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)uci.cpp -o $(OBJ_DIR)$(PATHSEP)uci.o -MF $(OBJ_DIR)$(PATHSEP)uci.d
 
-utils.o: $(SRC_DIR)/utils.cpp $(SRC_DIR)/utils.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)/utils.cpp -o $(OBJ_DIR)/utils.o -MF $(OBJ_DIR)/utils.d
+utils.o: $(SRC_DIR)$(PATHSEP)utils.cpp $(SRC_DIR)$(PATHSEP)utils.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)utils.cpp -o $(OBJ_DIR)$(PATHSEP)utils.o -MF $(OBJ_DIR)$(PATHSEP)utils.d
 
 .PHONY: clean dir
