@@ -158,12 +158,12 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            if (do_null && board.hasPositionRepeated())
+            if (ply > 0 && do_null && board.hasPositionRepeated())
             {
                 return 0;
             }
 
-            if (board.getHalfmoveClock() >= 100)
+            if (ply > 0 && board.getHalfmoveClock() >= 100)
             {
                 return 0;
             }
