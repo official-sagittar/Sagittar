@@ -1,7 +1,6 @@
 #include "engine.h"
 #include "eval.h"
 #include "fen.h"
-#include "types.h"
 #include "utils.h"
 
 namespace sagittar {
@@ -41,16 +40,16 @@ namespace sagittar {
 
     board::DoMoveResult Engine::doMove(const move::Move& move) { return board.doMove(move); }
 
+    search::SearchResult Engine::search(search::SearchInfo info) {
+        return searcher.startSearch(board, info);
+    }
+
     search::SearchResult
-    Engine::search(const search::SearchInfo&                        info,
+    Engine::search(search::SearchInfo                               info,
                    std::function<void(const search::SearchResult&)> searchProgressReportHandler,
                    std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
         return searcher.startSearch(board, info, searchProgressReportHandler,
                                     searchCompleteReportHander);
-    }
-
-    search::SearchResult Engine::search(const search::SearchInfo& info) {
-        return searcher.startSearch(board, info);
     }
 
     void Engine::stopSearch() { searcher.stopSearch(); }
@@ -116,10 +115,7 @@ namespace sagittar {
             setPositionFromFEN(fen);
 
             search::SearchInfo info;
-            info.depth     = 4;
-            info.timeset   = false;
-            info.starttime = utils::currtimeInMilliseconds();
-            info.stoptime  = 0;
+            info.depth = 4;
 
             searcher.reset();
             const search::SearchResult result = search(info);

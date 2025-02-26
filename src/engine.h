@@ -5,6 +5,7 @@
 #include "params.h"
 #include "pch.h"
 #include "search.h"
+#include "searchtypes.h"
 
 namespace sagittar {
 
@@ -46,12 +47,12 @@ namespace sagittar {
 
         board::DoMoveResult doMove(const move::Move&);
 
+        search::SearchResult search(search::SearchInfo);
+
         search::SearchResult
-        search(const search::SearchInfo&,
+        search(search::SearchInfo,
                std::function<void(const search::SearchResult&)> searchProgressReportHandler,
                std::function<void(const search::SearchResult&)> searchCompleteReportHander);
-
-        search::SearchResult search(const search::SearchInfo&);
 
         void stopSearch();
 

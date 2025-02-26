@@ -12,7 +12,6 @@
 #include <regex>
 #include <sstream>
 #include <string>
-#include <variant>
 #include <vector>
 #ifdef DEBUG
     #include <cassert>

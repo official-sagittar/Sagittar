@@ -1,5 +1,6 @@
 #include "uci.h"
 #include "board.h"
+#include "searchtypes.h"
 #include "utils.h"
 
 namespace sagittar {
@@ -105,7 +106,7 @@ namespace sagittar {
             std::istringstream ss(input);
             std::string        token;
 
-            int movestogo = 30, movetime = -1, time = -1, inc = 0, depth = -1;
+            search::SearchInfo info;
 
             ss >> token;
 
@@ -113,75 +114,50 @@ namespace sagittar {
             {
                 if (token == "infinite")
                 {
-                    // Do nothing
+                    info.infinite = true;
                 }
                 else if (token == "wtime")
                 {
                     int value;
                     ss >> value;
-                    time = value;
+                    info.wtime = value;
                 }
                 else if (token == "btime")
                 {
                     int value;
                     ss >> value;
-                    time = value;
+                    info.btime = value;
                 }
                 else if (token == "winc")
                 {
                     int value;
                     ss >> value;
-                    inc = value;
+                    info.winc = value;
                 }
                 else if (token == "binc")
                 {
                     int value;
                     ss >> value;
-                    inc = value;
+                    info.binc = value;
                 }
                 else if (token == "movestogo")
                 {
                     int value;
                     ss >> value;
-                    movestogo = value;
+                    info.movestogo = value;
                 }
                 else if (token == "movetime")
                 {
                     int value;
                     ss >> value;
-                    movetime = value;
+                    info.movetime = value;
                 }
                 else if (token == "depth")
                 {
                     int value;
                     ss >> value;
-                    depth = value;
+                    info.depth = value;
                 }
-            }
-
-            if (movetime != -1)
-            {
-                time      = movetime;
-                movestogo = 1;
-            }
-
-            if (depth == -1)
-            {
-                depth = search::MAX_DEPTH;
-            }
-
-            search::SearchInfo info;
-            info.depth     = depth;
-            info.timeset   = false;
-            info.starttime = utils::currtimeInMilliseconds();
-            info.stoptime  = 0ULL;
-
-            if (time > 0)
-            {
-                info.timeset = true;
-                time /= movestogo;
-                time -= 50;
-                info.stoptime = info.starttime + time + inc;
             }
 
             auto searchProgressReportHandler = [](const search::SearchResult& result) {

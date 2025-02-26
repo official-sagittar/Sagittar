@@ -3,6 +3,7 @@
 #include "eval.h"
 #include "movegen.h"
 #include "movepicker.h"
+#include "timeman.h"
 #include "utils.h"
 
 namespace sagittar {
@@ -43,18 +44,19 @@ namespace sagittar {
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
-        SearchResult Searcher::startSearch(
-          board::Board&                                    board,
-          const SearchInfo&                                info,
-          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+        SearchResult
+        Searcher::startSearch(board::Board&                            board,
+                              SearchInfo                               info,
+                              std::function<void(const SearchResult&)> searchProgressReportHandler,
+                              std::function<void(const SearchResult&)> searchCompleteReportHander) {
             pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
+            timeman::setSearchHardBoundTime(&info, board);
             return searchIteratively(board, info, searchProgressReportHandler,
                                      searchCompleteReportHander);
         }
 
-        SearchResult Searcher::startSearch(board::Board& board, const SearchInfo& info) {
+        SearchResult Searcher::startSearch(board::Board& board, SearchInfo info) {
             return startSearch(board, info, [](auto&) {}, [](auto&) {});
         }
 
@@ -68,10 +70,10 @@ namespace sagittar {
         }
 
         SearchResult Searcher::searchIteratively(
-          board::Board&                                    board,
-          const SearchInfo&                                info,
-          std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-          std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
+          board::Board&                            board,
+          const SearchInfo&                        info,
+          std::function<void(const SearchResult&)> searchProgressReportHandler,
+          std::function<void(const SearchResult&)> searchCompleteReportHander) {
             SearchResult bestresult{};
 
             i32 alpha = -INF;
@@ -149,6 +151,10 @@ namespace sagittar {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
+                if (ply > 0 && stop.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
             }
 
             const i32 alpha_orig = alpha;
@@ -415,6 +421,10 @@ namespace sagittar {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
+                if (ply > 0 && stop.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
             }
 
             if (ply >= MAX_DEPTH - 1)
