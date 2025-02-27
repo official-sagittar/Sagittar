@@ -4,6 +4,7 @@
 #include "move.h"
 #include "params.h"
 #include "pch.h"
+#include "searchtypes.h"
 #include "tt.h"
 #include "types.h"
 
@@ -17,24 +18,6 @@ namespace sagittar {
         constexpr u8  MAX_DEPTH  = 64;
 
         constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
-
-        struct SearchInfo {
-            i8   depth;
-            u64  starttime;
-            u64  stoptime;
-            bool timeset;
-        };
-
-        struct SearchResult {
-            i32                     score;
-            bool                    is_mate;
-            i8                      mate_in;
-            u8                      depth;
-            u64                     nodes;
-            u64                     time;
-            std::vector<move::Move> pv;
-            move::Move              bestmove{};
-        };
 
         enum class NodeType {
             NON_PV,
@@ -64,11 +47,11 @@ namespace sagittar {
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
-            SearchResult searchIteratively(
-              board::Board&                                    board,
-              const SearchInfo&                                info,
-              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+            SearchResult
+            searchIteratively(board::Board&                            board,
+                              const SearchInfo&                        info,
+                              std::function<void(const SearchResult&)> searchProgressReportHandler,
+                              std::function<void(const SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
             i32 search(board::Board&     board,
@@ -98,13 +81,13 @@ namespace sagittar {
 
             void setTranspositionTableSize(const std::size_t);
 
-            SearchResult startSearch(
-              board::Board&                                    board,
-              const SearchInfo&                                info,
-              std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-              std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+            SearchResult
+            startSearch(board::Board&                            board,
+                        SearchInfo                               info,
+                        std::function<void(const SearchResult&)> searchProgressReportHandler,
+                        std::function<void(const SearchResult&)> searchCompleteReportHander);
 
-            SearchResult startSearch(board::Board& board, const SearchInfo& info);
+            SearchResult startSearch(board::Board& board, SearchInfo info);
 
             void stopSearch();
         };
