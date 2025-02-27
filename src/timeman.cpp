@@ -33,12 +33,11 @@ namespace sagittar {
 
                 info->depth = info->depth == 0 ? search::MAX_DEPTH : info->depth;
 
-                info->movestogo = info->movestogo == 0 ? 30 : info->movestogo;
-
                 info->timeset = false;
 
                 if (time > 0)
                 {
+                    info->movestogo = info->movestogo == 0 ? 30 : info->movestogo;
                     info->timeset   = true;
                     info->starttime = utils::currtimeInMilliseconds();
                     time /= info->movestogo;
