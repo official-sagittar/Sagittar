@@ -20,11 +20,11 @@ namespace sagittar {
         // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
         // clang-format off
         static const i32 PIECE_SCORES[6] = {
-            S(82, 94),    // PAWN
+            S(82, 94),      // PAWN
             S(337, 281),    // KNIGHT
             S(365, 297),    // BISHOP
             S(477, 512),    // ROOK
-            S(1025, 936),    // QUEEN
+            S(1025, 936),   // QUEEN
             0               // KING
         };
 
@@ -86,6 +86,8 @@ namespace sagittar {
             }
         };
         // clang-format on
+
+        static const i32 TEMPO_BONUS = S(15, 3);
 
         static i32 PSQT[6][64][2];
 
@@ -163,6 +165,9 @@ namespace sagittar {
                 assert(stm == -1);
             }
 #endif
+
+            eval += (is_end_game ? eg_score(TEMPO_BONUS) : mg_score(TEMPO_BONUS)) * stm;
+
             eval *= stm;
 
             return eval;
