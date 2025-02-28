@@ -87,9 +87,10 @@ namespace sagittar {
         };
         // clang-format on
 
-        static const i32 TEMPO_BONUS = S(15, 3);
-
-        static i32 PSQT[6][64][2];
+        static const i32 PHASE_WEIGHTS[6] = {0, 1, 1, 2, 4, 0};
+        static const i32 TOTAL_PHASE      = 24;
+        static const i32 TEMPO_BONUS      = S(15, 3);
+        static i32       PSQT[6][64][2];
 
         void initialize() {
             for (int p = 0; p < 6; p++)
@@ -103,25 +104,7 @@ namespace sagittar {
         }
 
         i32 evaluateBoard(const board::Board& board) {
-            const u8 wQ = board.getPieceCount(Piece::WHITE_QUEEN);
-            const u8 bQ = board.getPieceCount(Piece::BLACK_QUEEN);
-
-            const u8 wR = board.getPieceCount(Piece::WHITE_ROOK);
-            const u8 bR = board.getPieceCount(Piece::BLACK_ROOK);
-
-            const u8 wB = board.getPieceCount(Piece::WHITE_BISHOP);
-            const u8 bB = board.getPieceCount(Piece::BLACK_BISHOP);
-
-            const u8 wN = board.getPieceCount(Piece::WHITE_KNIGHT);
-            const u8 bN = board.getPieceCount(Piece::BLACK_KNIGHT);
-
-            const u8 q = wQ + bQ;
-            const u8 r = wR + bR;
-            const u8 b = wB + bB;
-            const u8 n = wN + bN;
-
-            i32 phase = 24 - (4 * q) - (2 * r) - (1 * b) - (1 * n);
-
+            i32 phase   = TOTAL_PHASE;
             i32 eval_mg = 0;
             i32 eval_eg = 0;
 
@@ -136,6 +119,8 @@ namespace sagittar {
                 const PieceType ptype  = pieceTypeOf(piece);
                 const Color     pcolor = pieceColorOf(piece);
 
+                phase -= PHASE_WEIGHTS[ptype - 1];
+
                 switch (pcolor)
                 {
                     case Color::WHITE :
@@ -149,7 +134,9 @@ namespace sagittar {
                 }
             }
 
-            i32 eval = (eval_mg * phase + eval_eg * (24 - phase)) / 24;
+            phase = (phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE;
+
+            i32 eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
             const i8 stm = 1 - (2 * board.getActiveColor());
 #ifdef DEBUG
