@@ -103,7 +103,7 @@ namespace sagittar {
             }
         }
 
-        static bool isInsufficientMaterial(const board::Board& board) {
+        bool isInsufficientMaterial(const board::Board& board) {
             const u8 whitePiecesCount = board.getPiecesCount(Color::WHITE);
             const u8 blackPiecesCount = board.getPiecesCount(Color::BLACK);
 
@@ -150,11 +150,6 @@ namespace sagittar {
         }
 
         i32 evaluateBoard(const board::Board& board) {
-            if (isInsufficientMaterial(board))
-            {
-                return 0;
-            }
-
             i32 phase   = TOTAL_PHASE;
             i32 eval_mg = 0;
             i32 eval_eg = 0;
