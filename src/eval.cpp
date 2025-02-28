@@ -150,7 +150,10 @@ namespace sagittar {
             }
 #endif
 
-            eval += (isEndGame(board) ? eg_score(TEMPO_BONUS) : mg_score(TEMPO_BONUS)) * stm;
+            // Tempo Bonus
+            const i32 tempo_bonus =
+              ((mg_score(TEMPO_BONUS) * (256 - phase)) + (eg_score(TEMPO_BONUS) * phase)) / 256;
+            eval += tempo_bonus * stm;
 
             eval *= stm;
 
