@@ -115,6 +115,13 @@ namespace sagittar {
             const u8 wN = board.getPieceCount(Piece::WHITE_KNIGHT);
             const u8 bN = board.getPieceCount(Piece::BLACK_KNIGHT);
 
+            const u8 q = wQ + bQ;
+            const u8 r = wR + bR;
+            const u8 b = wB + bB;
+            const u8 n = wN + bN;
+
+            i32 phase = 24 - (4 * q) - (2 * r) - (1 * b) - (1 * n);
+
             i32 eval_mg = 0;
             i32 eval_eg = 0;
 
@@ -142,17 +149,7 @@ namespace sagittar {
                 }
             }
 
-            bool is_end_game = false;
-
-            if (wQ == 0 && bQ == 0)
-                is_end_game = true;
-            else if (wQ == 1 && bQ == 1 && wR == 0 && bR == 0)
-            {
-                if ((wN + wB) <= 1 && (bN + bB) <= 1)
-                    is_end_game = true;
-            }
-
-            i32 eval = is_end_game ? eval_eg : eval_mg;
+            i32 eval = (eval_mg * phase + eval_eg * (24 - phase)) / 24;
 
             const i8 stm = 1 - (2 * board.getActiveColor());
 #ifdef DEBUG
@@ -166,7 +163,7 @@ namespace sagittar {
             }
 #endif
 
-            eval += (is_end_game ? eg_score(TEMPO_BONUS) : mg_score(TEMPO_BONUS)) * stm;
+            eval += (isEndGame(board) ? eg_score(TEMPO_BONUS) : mg_score(TEMPO_BONUS)) * stm;
 
             eval *= stm;
 
@@ -189,11 +186,15 @@ namespace sagittar {
             bool is_end_game = false;
 
             if (wQ == 0 && bQ == 0)
+            {
                 is_end_game = true;
+            }
             else if (wQ == 1 && bQ == 1 && wR == 0 && bR == 0)
             {
                 if ((wN + wB) <= 1 && (bN + bB) <= 1)
+                {
                     is_end_game = true;
+                }
             }
 
             return is_end_game;
