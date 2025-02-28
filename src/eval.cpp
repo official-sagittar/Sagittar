@@ -103,7 +103,58 @@ namespace sagittar {
             }
         }
 
+        static bool isInsufficientMaterial(const board::Board& board) {
+            const u8 whitePiecesCount = board.getPiecesCount(Color::WHITE);
+            const u8 blackPiecesCount = board.getPiecesCount(Color::BLACK);
+
+            // King vs King
+            if (whitePiecesCount == 1 && blackPiecesCount == 1)
+            {
+                return true;
+            }
+
+            // King + Bishop vs King
+            const u8 wB = board.getPieceCount(Piece::WHITE_BISHOP);
+            const u8 bB = board.getPieceCount(Piece::BLACK_BISHOP);
+
+            if ((whitePiecesCount == 2 && wB == 1 && blackPiecesCount == 1)
+                || (blackPiecesCount == 2 && bB == 1 && whitePiecesCount == 1))
+            {
+                return true;
+            }
+
+            // King + Knight vs King
+            const u8 wN = board.getPieceCount(Piece::WHITE_KNIGHT);
+            const u8 bN = board.getPieceCount(Piece::BLACK_KNIGHT);
+
+            if ((whitePiecesCount == 2 && wN == 1 && blackPiecesCount == 1)
+                || (blackPiecesCount == 2 && bN == 1 && whitePiecesCount == 1))
+            {
+                return true;
+            }
+
+            // King + Bishop vs King + Bishop (both on same color squares)
+            if (whitePiecesCount == 2 && blackPiecesCount == 2 && wB == 1 && bB == 1)
+            {
+                const auto wB_bb = board.getBitboard(Piece::WHITE_BISHOP);
+                const auto bB_bb = board.getBitboard(Piece::BLACK_BISHOP);
+
+                if (((wB_bb & board::MASK_LIGHT_SQUARES) && (bB_bb & board::MASK_LIGHT_SQUARES))
+                    || ((wB_bb & board::MASK_DARK_SQUARES) && (bB_bb & board::MASK_DARK_SQUARES)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         i32 evaluateBoard(const board::Board& board) {
+            if (isInsufficientMaterial(board))
+            {
+                return 0;
+            }
+
             i32 phase   = TOTAL_PHASE;
             i32 eval_mg = 0;
             i32 eval_eg = 0;
