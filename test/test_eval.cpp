@@ -75,7 +75,7 @@ TEST_SUITE("Eval") {
         is_insufficient = eval::isInsufficientMaterial(board);
         CHECK(is_insufficient == true);
 
-        fen = "4k3/4p1b1/8/8/8/8/3B4/4K3 w - - 0 1";
+        fen = "4k3/6b1/8/8/8/8/2B5/4K3 w - - 0 1";
         fen::parseFEN(&board, fen);
         is_insufficient = eval::isInsufficientMaterial(board);
         CHECK(is_insufficient == false);

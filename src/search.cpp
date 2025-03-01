@@ -169,8 +169,7 @@ namespace sagittar {
                 return 0;
             }
 
-            if (ply > 0
-                && ((board.getHalfmoveClock() >= 100) || eval::isInsufficientMaterial(board)))
+            if (ply > 0 && board.getHalfmoveClock() >= 100)
             {
                 return 0;
             }
@@ -431,6 +430,11 @@ namespace sagittar {
             if (ply >= MAX_DEPTH - 1)
             {
                 return eval::evaluateBoard(board);
+            }
+
+            if (eval::isInsufficientMaterial(board))
+            {
+                return 0;
             }
 
             const i32 stand_pat = eval::evaluateBoard(board);
