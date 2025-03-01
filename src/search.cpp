@@ -169,7 +169,8 @@ namespace sagittar {
                 return 0;
             }
 
-            if (ply > 0 && (board.getHalfmoveClock() >= 100 || eval::isInsufficientMaterial(board)))
+            if (ply > 0
+                && ((board.getHalfmoveClock() >= 100) || eval::isInsufficientMaterial(board)))
             {
                 return 0;
             }
