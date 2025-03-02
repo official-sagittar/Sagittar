@@ -20,6 +20,11 @@ namespace sagittar {
                     history[p][sq] = 0;
                 }
             }
+            for (u8 i = 0; i < MAX_DEPTH; i++)
+            {
+                killer_moves[0][i] = move::Move();
+                killer_moves[1][i] = move::Move();
+            }
         }
 
         /*
@@ -260,7 +265,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board, pvmove, tt, data);
+            scoreMoves(&moves, board, pvmove, tt, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -293,7 +298,9 @@ namespace sagittar {
                         && !is_pv_node
                         && moves_searched >= 4
                         && depth >= 3
-                        && !movegen::isInCheck(board))
+                        && !movegen::isInCheck(board)
+                        && move.getScore() != KILLER_0_SCORE
+                        && move.getScore() != KILLER_1_SCORE)
                     // clang-format on
                     {
                         u8 r = 0;
@@ -365,6 +372,11 @@ namespace sagittar {
                         {
                             if (!move::isCapture(move.getFlag()))
                             {
+                                // Killer Heuristic
+                                data.killer_moves[1][ply] = data.killer_moves[0][ply];
+                                data.killer_moves[0][ply] = move;
+
+                                // History Heuristic
                                 const Piece piece = board.getPiece(move.getFrom());
                                 data.history[piece][move.getTo()] += depth;
                             }
@@ -444,7 +456,7 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, pvmove, tt, data);
+            scoreMoves(&moves, board, pvmove, tt, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {

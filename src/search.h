@@ -25,7 +25,8 @@ namespace sagittar {
         };
 
         struct SearcherData {
-            u32 history[15][64];  // [piece][to]
+            u32        history[15][64];  // [piece][to]
+            move::Move killer_moves[2][MAX_DEPTH];
 
             SearcherData();
             void reset();

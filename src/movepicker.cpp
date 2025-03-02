@@ -4,43 +4,12 @@ namespace sagittar {
 
     namespace search {
 
-        // clang-format off
-        /*
-            (Victims) Pawn   Knight Bishop Rook   Queen  King
-        (Attackers)
-        Pawn          105    205    305    405    505    605
-        Knight        104    204    304    404    504    604
-        Bishop        103    203    303    403    503    603
-        Rook          102    202    302    402    502    602
-        Queen         101    201    301    401    501    601
-        King          100    200    300    400    500    600
-        */
-        static const u32 MVV_LVA_TABLE[36] = {
-            105, 205, 305, 405, 505, 605,
-            104, 204, 304, 404, 504, 604,
-            103, 203, 303, 403, 503, 603,
-            102, 202, 302, 402, 502, 602,
-            101, 201, 301, 401, 501, 601,
-            100, 200, 300, 400, 500, 600
-        };
-        // clang-format on
-
-        static constexpr u32 PVMOVE_SCORE        = 40000;
-        static constexpr u32 TTMOVE_SCORE        = 30000;
-        static constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
-        static constexpr u32 HISTORY_SCORE_MIN   = 0;
-        static constexpr u32 HISTORY_SCORE_MAX   = 7000;
-
-
-        static constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
-            return ((attacker - 1) * 6) + (victim - 1);
-        }
-
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
                         const tt::TranspositionTable&      ttable,
-                        const SearcherData&                data) {
+                        const SearcherData&                data,
+                        const i32                          ply) {
             move::Move  ttmove;
             bool        ttmove_found = false;
             tt::TTEntry ttentry;
@@ -83,10 +52,21 @@ namespace sagittar {
                 }
                 else
                 {
-                    const Piece piece = board.getPiece(move.getFrom());
-                    const u32   score = std::clamp(data.history[piece][move.getTo()],
-                                                   HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
-                    moves->at(i).setScore(score);
+                    if (move == data.killer_moves[0][ply])
+                    {
+                        moves->at(i).setScore(KILLER_0_SCORE);
+                    }
+                    else if (move == data.killer_moves[1][ply])
+                    {
+                        moves->at(i).setScore(KILLER_1_SCORE);
+                    }
+                    else
+                    {
+                        const Piece piece = board.getPiece(move.getFrom());
+                        const u32   score = std::clamp(data.history[piece][move.getTo()],
+                                                       HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
+                        moves->at(i).setScore(score);
+                    }
                 }
             }
         }
