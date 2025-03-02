@@ -639,10 +639,6 @@ namespace sagittar {
             return utils::bitCount1s(bitboards[piece]);
         }
 
-        u8 Board::getPiecesCount(const Color color) const {
-            return utils::bitCount1s(bitboards[bitboardColorSlot(color)]);
-        }
-
         Color Board::getActiveColor() const { return active_color; }
 
         u8 Board::getCastelingRights() const { return casteling_rights; }
