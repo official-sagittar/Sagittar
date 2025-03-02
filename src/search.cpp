@@ -270,7 +270,8 @@ namespace sagittar {
             for (u8 i = 0; i < moves.size(); i++)
             {
                 sortMoves(&moves, i);
-                const move::Move move = moves.at(i);
+                const move::Move move            = moves.at(i);
+                const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
 
                 const board::DoMoveResult do_move_result = board.doMove(move);
 
@@ -280,8 +281,28 @@ namespace sagittar {
                     continue;
                 }
 
-                result->nodes++;
                 legal_moves_count++;
+
+                // Late Move Pruning
+                // clang-format off
+                if (!is_pv_node
+                    && !is_in_check
+                    && move_piece_type != PieceType::PAWN
+                    && !movegen::isInCheck(board)
+                    && !move::isCapture(move.getFlag())
+                    && !move::isPromotion(move.getFlag())
+                    && depth <= 2)
+                // clang-format on
+                {
+                    const u32 LMP_MOVE_TRESHOLD = moves.size() * (1 - (0.4 - (0.1 * depth)));
+                    if (moves_searched >= LMP_MOVE_TRESHOLD)
+                    {
+                        board.undoMove();
+                        continue;
+                    }
+                }
+
+                result->nodes++;
 
                 i32 score = -INF;
 
