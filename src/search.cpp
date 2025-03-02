@@ -159,17 +159,17 @@ namespace sagittar {
 
             const i32 alpha_orig = alpha;
 
-            if (ply >= MAX_DEPTH - 1) [[unlikely]]
+            if (ply >= (MAX_DEPTH - 1)) [[unlikely]]
             {
                 return eval::evaluateBoard(board);
             }
 
-            if (ply > 0 && do_null && board.hasPositionRepeated())
+            if ((ply > 0) && do_null && board.hasPositionRepeated())
             {
                 return 0;
             }
 
-            if (ply > 0 && board.getHalfmoveClock() >= 100)
+            if ((ply > 0) && (board.getHalfmoveClock() >= 100))
             {
                 return 0;
             }
@@ -427,7 +427,7 @@ namespace sagittar {
                 }
             }
 
-            if (ply >= MAX_DEPTH - 1)
+            if (ply >= (MAX_DEPTH - 1))
             {
                 return eval::evaluateBoard(board);
             }
