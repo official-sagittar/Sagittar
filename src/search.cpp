@@ -224,7 +224,7 @@ namespace sagittar {
             }
 
             // Node Pruning
-            if (!is_in_check && !is_pv_node)
+            if (!is_pv_node && !is_in_check)
             {
                 // Reverse Futility Pruning
                 if (depth <= searchParams.RFP_DEPTH_MAX)
@@ -295,21 +295,20 @@ namespace sagittar {
                 else
                 {
                     // clang-format off
-                    if (!is_in_check
-                        && !is_pv_node
+                    if (!is_pv_node
+                        && !is_in_check
                         && !movegen::isInCheck(board))
                     // clang-format on
                     {
                         // Late Move Pruning
                         // clang-format off
-                        if (move_piece_type != PieceType::PAWN
+                        if (depth <= 2
+                            && move_piece_type != PieceType::PAWN
                             && !move::isCapture(move.getFlag())
-                            && !move::isPromotion(move.getFlag())
-                            && depth <= 2)
+                            && !move::isPromotion(move.getFlag()))
                         // clang-format on
                         {
-                            const u32 LMP_MOVE_TRESHOLD =
-                              moves.size() * (1 - (0.6 - (0.1 * depth)));
+                            const u8 LMP_MOVE_TRESHOLD = 3 + depth;
                             if (moves_searched >= LMP_MOVE_TRESHOLD)
                             {
                                 board.undoMove();
