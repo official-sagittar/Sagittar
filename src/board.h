@@ -11,16 +11,14 @@ namespace sagittar {
 
         using BitBoard = u64;
 
-        constexpr BitBoard MASK_RANK_1        = 0x00000000000000FF;
-        constexpr BitBoard MASK_RANK_4        = 0x00000000FF000000;
-        constexpr BitBoard MASK_RANK_5        = 0x000000FF00000000;
-        constexpr BitBoard MASK_RANK_8        = 0xFF00000000000000;
-        constexpr BitBoard MASK_NOT_A_FILE    = 0xFEFEFEFEFEFEFEFE;
-        constexpr BitBoard MASK_NOT_H_FILE    = 0x7F7F7F7F7F7F7F7F;
-        constexpr BitBoard MASK_NOT_AB_FILE   = 0xFCFCFCFCFCFCFCFC;
-        constexpr BitBoard MASK_NOT_GH_FILE   = 0x3F3F3F3F3F3F3F3F;
-        constexpr BitBoard MASK_LIGHT_SQUARES = 0x55AA55AA55AA55AA;
-        constexpr BitBoard MASK_DARK_SQUARES  = 0xAA55AA55AA55AA55;
+        constexpr BitBoard MASK_RANK_1      = 0x00000000000000FF;
+        constexpr BitBoard MASK_RANK_4      = 0x00000000FF000000;
+        constexpr BitBoard MASK_RANK_5      = 0x000000FF00000000;
+        constexpr BitBoard MASK_RANK_8      = 0xFF00000000000000;
+        constexpr BitBoard MASK_NOT_A_FILE  = 0xFEFEFEFEFEFEFEFE;
+        constexpr BitBoard MASK_NOT_H_FILE  = 0x7F7F7F7F7F7F7F7F;
+        constexpr BitBoard MASK_NOT_AB_FILE = 0xFCFCFCFCFCFCFCFC;
+        constexpr BitBoard MASK_NOT_GH_FILE = 0x3F3F3F3F3F3F3F3F;
 
         constexpr BitBoard north(const BitBoard b) { return b << 8; }
         constexpr BitBoard south(const BitBoard b) { return b >> 8; }
@@ -132,7 +130,6 @@ namespace sagittar {
             BitBoard                   getBitboard(const u8 index) const;
             Piece                      getPiece(const Square) const;
             u8                         getPieceCount(const Piece) const;
-            u8                         getPiecesCount(const Color) const;
             Color                      getActiveColor() const;
             u8                         getCastelingRights() const;
             Square                     getEnpassantTarget() const;
