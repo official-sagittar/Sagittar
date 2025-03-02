@@ -174,11 +174,6 @@ namespace sagittar {
                 return 0;
             }
 
-            if ((ply > 0) && eval::isInsufficientMaterial(board))
-            {
-                return 0;
-            }
-
             const bool is_in_check = movegen::isInCheck(board);
 
             if (is_in_check)
@@ -430,11 +425,6 @@ namespace sagittar {
                 {
                     return 0;
                 }
-            }
-
-            if (eval::isInsufficientMaterial(board))
-            {
-                return 0;
             }
 
             if (ply >= (MAX_DEPTH - 1))
