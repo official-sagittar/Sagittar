@@ -10,7 +10,6 @@ namespace sagittar {
         version = "0.1.0";
         board::Board::initialize();
         eval::initialize();
-        searcher.setParams(params);
     }
 
     Engine::~Engine() {}
@@ -27,8 +26,6 @@ namespace sagittar {
     void Engine::setTranspositionTableSize(const std::size_t size) {
         searcher.setTranspositionTableSize(size);
     }
-
-    void Engine::setSearcherParams() { searcher.setParams(params); }
 
     void Engine::setStartpos() { board.setStartpos(); }
 

@@ -176,6 +176,7 @@ GENERATED += $(OBJDIR)/fen.o
 GENERATED += $(OBJDIR)/move.o
 GENERATED += $(OBJDIR)/movegen.o
 GENERATED += $(OBJDIR)/movepicker.o
+GENERATED += $(OBJDIR)/params.o
 GENERATED += $(OBJDIR)/pch.o
 GENERATED += $(OBJDIR)/perft.o
 GENERATED += $(OBJDIR)/search.o
@@ -190,6 +191,7 @@ OBJECTS += $(OBJDIR)/fen.o
 OBJECTS += $(OBJDIR)/move.o
 OBJECTS += $(OBJDIR)/movegen.o
 OBJECTS += $(OBJDIR)/movepicker.o
+OBJECTS += $(OBJDIR)/params.o
 OBJECTS += $(OBJDIR)/pch.o
 OBJECTS += $(OBJDIR)/perft.o
 OBJECTS += $(OBJDIR)/search.o
@@ -371,6 +373,9 @@ $(OBJDIR)/movegen.o: src/movegen.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/movepicker.o: src/movepicker.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/params.o: src/params.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/pch.o: src/pch.cpp

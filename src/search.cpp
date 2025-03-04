@@ -3,6 +3,7 @@
 #include "eval.h"
 #include "movegen.h"
 #include "movepicker.h"
+#include "params.h"
 #include "timeman.h"
 #include "utils.h"
 
@@ -32,11 +33,6 @@ namespace sagittar {
         */
 
         Searcher::Searcher() { stop.store(false, std::memory_order_relaxed); }
-
-        void Searcher::setParams(const parameters::ParameterStore& params) {
-            searchParams.RFP_DEPTH_MAX = params.get<int>("RFP_DEPTH_MAX", 3);
-            searchParams.RFP_MARGIN    = params.get<int>("RFP_MARGIN", 150);
-        }
 
         void Searcher::reset() {
             pvmove = move::Move();
@@ -227,10 +223,10 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= searchParams.RFP_DEPTH_MAX)
+                if (depth <= params::rfp_depth_max)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
-                    const i32 margin = searchParams.RFP_MARGIN * depth;
+                    const i32 margin = params::rfp_margin * depth;
                     if (eval >= beta + margin)
                     {
                         return eval;
