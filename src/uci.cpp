@@ -213,12 +213,12 @@ namespace sagittar {
             for (auto& param : params::params())
             {
                 ss << param.name;
-                ss << " int";
-                ss << " " << (int) param.value;
-                ss << " " << (int) param.min;
-                ss << " " << (int) param.max;
-                ss << " " << (int) param.step;
-                ss << " 0.002\n";
+                ss << ", int";
+                ss << ", " << (int) param.value;
+                ss << ", " << (int) param.min;
+                ss << ", " << (int) param.max;
+                ss << ", " << (int) param.step;
+                ss << ", 0.002\n";
             }
             std::cout << ss.str() << std::endl;
         }
