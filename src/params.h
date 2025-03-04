@@ -41,9 +41,14 @@ namespace sagittar {
 
 #endif
 
-        PARAM(rfp_depth_max, 3, 2, 5, 1);
         PARAM(rfp_margin, 150, 50, 300, 10);
 
+        PARAM(lmp_treshold, 6, 1, 8, 1);
+
+        PARAM(lmr_alpha_tactical, 0, 0, 500, 10);
+        PARAM(lmr_beta_tactical, 275, 50, 500, 5);
+        PARAM(lmr_alpha_quiet, 100, 0, 500, 10);
+        PARAM(lmr_beta_quiet, 150, 50, 500, 5);
     }
 
 }

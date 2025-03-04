@@ -21,6 +21,9 @@ namespace sagittar {
             std::future<void> handleGo(std::string&);
             // Non-standard commands
             void handleDisplay();
+#ifdef EXTERNAL_TUNE
+            void handleDisplayParams();
+#endif
 
            public:
             UCIHandler(Engine& engine);

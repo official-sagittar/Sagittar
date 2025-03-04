@@ -10,6 +10,14 @@ namespace sagittar {
             return params;
         }
 
+        Parameter& addParam(
+          std::string name, int value, int min, int max, int step, std::function<void()> callback) {
+
+            params().push_back({name, value, value, min, max, step, callback});
+            Parameter& p = params().back();
+            return p;
+        }
+
         static Parameter* lookup(std::string& name) {
             for (auto& p : params())
             {
@@ -34,14 +42,6 @@ namespace sagittar {
                 return true;
             }
             return false;
-        }
-
-        Parameter& addParam(
-          std::string name, int value, int min, int max, int step, std::function<void()> callback) {
-
-            params().push_back({name, value, value, min, max, step, callback});
-            Parameter& p = params().back();
-            return p;
         }
 #endif
 

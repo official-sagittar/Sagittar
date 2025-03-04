@@ -22,9 +22,9 @@ namespace sagittar {
             {
                 ss << "option name " << param.name;
                 ss << " type spin";
-                ss << " default " << param.default_value;
-                ss << " min " << param.min;
-                ss << " max " << param.max;
+                ss << " default " << (int) param.default_value;
+                ss << " min " << (int) param.min;
+                ss << " max " << (int) param.max;
                 ss << "\n";
             }
 #endif
@@ -207,9 +207,30 @@ namespace sagittar {
 
         void UCIHandler::handleDisplay() { engine.displayBoard(); }
 
+#ifdef EXTERNAL_TUNE
+        void UCIHandler::handleDisplayParams() {
+            std::ostringstream ss;
+            for (auto& param : params::params())
+            {
+                ss << param.name;
+                ss << " int";
+                ss << " " << (int) param.value;
+                ss << " " << (int) param.min;
+                ss << " " << (int) param.max;
+                ss << " " << (int) param.step;
+                ss << " 0.002\n";
+            }
+            std::cout << ss.str() << std::endl;
+        }
+#endif
+
         void UCIHandler::start() {
             std::string       input;
             std::future<void> uci_go_future;
+
+#ifdef EXTERNAL_TUNE
+            handleDisplayParams();
+#endif
 
             while (std::getline(std::cin, input))
             {

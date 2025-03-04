@@ -223,7 +223,7 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= params::rfp_depth_max)
+                if (depth <= 3)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
                     const i32 margin = params::rfp_margin * depth;
@@ -304,9 +304,9 @@ namespace sagittar {
                             && depth <= 2)
                         // clang-format on
                         {
-                            const u32 LMP_MOVE_TRESHOLD =
-                              moves.size() * (1 - (0.6 - (0.1 * depth)));
-                            if (moves_searched >= LMP_MOVE_TRESHOLD)
+                            const u32 LMP_MOVE_CUTOFF =
+                              moves.size() * (1 - ((params::lmp_treshold / 10.0) - (0.1 * depth)));
+                            if (moves_searched >= LMP_MOVE_CUTOFF)
                             {
                                 board.undoMove();
                                 result->nodes--;
@@ -326,24 +326,26 @@ namespace sagittar {
                             if (move::isCapture(move.getFlag())
                                 || move::isPromotion(move.getFlag()))
                             {
-                                float LMR_R_BIAS_T, LMR_R_SCALE_T;
-                                LMR_R_BIAS_T  = 0.0f;
-                                LMR_R_SCALE_T = 2.75f;
-                                r             = std::min(
-                                  static_cast<int>(LMR_R_BIAS_T
-                                                               + std::log(depth) * std::log(moves_searched)
-                                                                   / LMR_R_SCALE_T),
+                                const float lmr_alpha_t =
+                                  static_cast<float>(params::lmr_alpha_tactical) / 100.0f;
+                                const float lmr_beta_t =
+                                  static_cast<float>(params::lmr_beta_tactical) / 100.0f;
+                                r = std::min(
+                                  static_cast<int>(lmr_alpha_t
+                                                   + std::log(depth) * std::log(moves_searched)
+                                                       / lmr_beta_t),
                                   depth - 1);
                             }
                             else
                             {
-                                float LMR_R_BIAS_Q, LMR_R_SCALE_Q;
-                                LMR_R_BIAS_Q  = 1.0f;
-                                LMR_R_SCALE_Q = 1.5f;
-                                r             = std::min(
-                                  static_cast<int>(LMR_R_BIAS_Q
-                                                               + std::log(depth) * std::log(moves_searched)
-                                                                   / LMR_R_SCALE_Q),
+                                const float lmr_alpha_q =
+                                  static_cast<float>(params::lmr_alpha_quiet) / 100.0f;
+                                const float lmr_beta_q =
+                                  static_cast<float>(params::lmr_beta_quiet) / 100.0f;
+                                r = std::min(
+                                  static_cast<int>(lmr_alpha_q
+                                                   + std::log(depth) * std::log(moves_searched)
+                                                       / lmr_beta_q),
                                   depth - 1);
                             }
                             score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
