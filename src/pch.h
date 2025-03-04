@@ -5,7 +5,6 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -14,6 +13,9 @@
 #include <vector>
 #ifdef DEBUG
     #include <cassert>
+#endif
+#ifdef EXTERNAL_TUNE
+    #include <deque>
 #endif
 #ifdef TEST
     #include <filesystem>
