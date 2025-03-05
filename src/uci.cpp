@@ -57,6 +57,10 @@ namespace sagittar {
                 {
                     std::cerr << "Invalid option!" << std::endl;
                 }
+                else
+                {
+                    engine.setSearcherParams();
+                }
             }
 #endif
         }

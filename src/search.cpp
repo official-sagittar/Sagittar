@@ -11,7 +11,41 @@ namespace sagittar {
 
     namespace search {
 
-        SearcherData::SearcherData() { reset(); }
+        static u8     lmr_r_table_tactical[64][64];  // [move][depth]
+        static u8     lmr_r_table_quiet[64][64];     // [move][depth]
+        static double lmp_treshold;
+
+        static void updateLMRTables() {
+            float lmr_alpha, lmr_beta;
+            u8    r;
+            for (u8 depth = 0; depth < MAX_DEPTH; depth++)
+            {
+                for (u8 move = 0; move < 64; move++)
+                {
+                    // Update LMR Tactical table
+                    lmr_alpha = static_cast<float>(params::lmr_alpha_tactical) / 100.0f;
+                    lmr_beta  = static_cast<float>(params::lmr_beta_tactical) / 100.0f;
+                    r         = std::min(
+                      static_cast<int>(lmr_alpha + std::log(depth) * std::log(move) / lmr_beta),
+                      depth - 1);
+                    lmr_r_table_tactical[move][depth] = r;
+
+                    // Update LMR Quiet table
+                    lmr_alpha = static_cast<float>(params::lmr_alpha_quiet) / 100.0f;
+                    lmr_beta  = static_cast<float>(params::lmr_beta_quiet) / 100.0f;
+                    r         = std::min(
+                      static_cast<int>(lmr_alpha + std::log(depth) * std::log(move) / lmr_beta),
+                      depth - 1);
+                    lmr_r_table_quiet[move][depth] = r;
+                }
+            }
+        }
+
+        SearcherData::SearcherData() {
+            reset();
+            updateLMRTables();
+            lmp_treshold = params::lmp_treshold / 10.0;
+        }
 
         void SearcherData::reset() {
             for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
@@ -44,6 +78,13 @@ namespace sagittar {
         void Searcher::resetForSearch() { tt.resetForSearch(); }
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
+
+#ifdef EXTERNAL_TUNE
+        void Searcher::setParams() {
+            updateLMRTables();
+            lmp_treshold = params::lmp_treshold / 10.0;
+        }
+#endif
 
         SearchResult
         Searcher::startSearch(board::Board&                            board,
@@ -223,7 +264,7 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= 3)
+                if (depth <= params::rfp_depth_max)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
                     const i32 margin = params::rfp_margin * depth;
@@ -234,7 +275,7 @@ namespace sagittar {
                 }
 
                 // Null Move Pruning
-                if (do_null && depth >= 3 && !eval::isEndGame(board))
+                if (do_null && depth >= params::nmp_depth_min && !eval::isEndGame(board))
                 {
                     const u8 r = 2;
 #ifdef DEBUG
@@ -301,11 +342,11 @@ namespace sagittar {
                         if (move_piece_type != PieceType::PAWN
                             && !move::isCapture(move.getFlag())
                             && !move::isPromotion(move.getFlag())
-                            && depth <= 2)
+                            && depth <= params::lmp_depth_max)
                         // clang-format on
                         {
                             const u32 LMP_MOVE_CUTOFF =
-                              moves.size() * (1 - ((params::lmp_treshold / 10.0) - (0.1 * depth)));
+                              moves.size() * (1 - (lmp_treshold - (0.1 * depth)));
                             if (moves_searched >= LMP_MOVE_CUTOFF)
                             {
                                 board.undoMove();
@@ -316,8 +357,8 @@ namespace sagittar {
 
                         // Late Move Reduction
                         // clang-format off
-                        if (depth >= 3
-                            && moves_searched >= 4
+                        if (depth >= params::lmr_depth_min
+                            && moves_searched >= params::lmr_movesearched_min
                             && move.getScore() != KILLER_0_SCORE
                             && move.getScore() != KILLER_1_SCORE)
                         // clang-format on
@@ -326,27 +367,13 @@ namespace sagittar {
                             if (move::isCapture(move.getFlag())
                                 || move::isPromotion(move.getFlag()))
                             {
-                                const float lmr_alpha_t =
-                                  static_cast<float>(params::lmr_alpha_tactical) / 100.0f;
-                                const float lmr_beta_t =
-                                  static_cast<float>(params::lmr_beta_tactical) / 100.0f;
-                                r = std::min(
-                                  static_cast<int>(lmr_alpha_t
-                                                   + std::log(depth) * std::log(moves_searched)
-                                                       / lmr_beta_t),
-                                  depth - 1);
+                                r = lmr_r_table_tactical[std::clamp(moves_searched, 0U, 64U)]
+                                                        [(int) depth];
                             }
                             else
                             {
-                                const float lmr_alpha_q =
-                                  static_cast<float>(params::lmr_alpha_quiet) / 100.0f;
-                                const float lmr_beta_q =
-                                  static_cast<float>(params::lmr_beta_quiet) / 100.0f;
-                                r = std::min(
-                                  static_cast<int>(lmr_alpha_q
-                                                   + std::log(depth) * std::log(moves_searched)
-                                                       / lmr_beta_q),
-                                  depth - 1);
+                                r = lmr_r_table_quiet[std::clamp(moves_searched, 0U, 64U)]
+                                                     [(int) depth];
                             }
                             score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
                                                               ply + 1, info, result, do_null);

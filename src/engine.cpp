@@ -27,6 +27,10 @@ namespace sagittar {
         searcher.setTranspositionTableSize(size);
     }
 
+#ifdef EXTERNAL_TUNE
+    void Engine::setSearcherParams() { searcher.setParams(); }
+#endif
+
     void Engine::setStartpos() { board.setStartpos(); }
 
     void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&board, fen); }

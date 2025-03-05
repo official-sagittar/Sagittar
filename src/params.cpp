@@ -10,10 +10,9 @@ namespace sagittar {
             return params;
         }
 
-        Parameter& addParam(
-          std::string name, int value, int min, int max, int step, std::function<void()> callback) {
+        Parameter& addParam(std::string name, int value, int min, int max, int step) {
 
-            params().push_back({name, value, value, min, max, step, callback});
+            params().push_back({name, value, value, min, max, step});
             Parameter& p = params().back();
             return p;
         }
@@ -35,10 +34,6 @@ namespace sagittar {
             if (p != nullptr)
             {
                 p->value = value;
-                if (p->callback)
-                {
-                    p->callback();
-                }
                 return true;
             }
             return false;

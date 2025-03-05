@@ -2,7 +2,6 @@
 
 #include "board.h"
 #include "move.h"
-#include "params.h"
 #include "pch.h"
 #include "search.h"
 #include "searchtypes.h"
@@ -28,6 +27,10 @@ namespace sagittar {
         void resetForSearch();
 
         void setTranspositionTableSize(const std::size_t);
+
+#ifdef EXTERNAL_TUNE
+        void setSearcherParams();
+#endif
 
         void setStartpos();
 

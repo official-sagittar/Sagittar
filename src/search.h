@@ -74,6 +74,10 @@ namespace sagittar {
 
             void setTranspositionTableSize(const std::size_t);
 
+#ifdef EXTERNAL_TUNE
+            void setParams();
+#endif
+
             SearchResult
             startSearch(board::Board&                            board,
                         SearchInfo                               info,
