@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "eval.h"
 #include "fen.h"
+#include "params.h"
 #include "utils.h"
 
 namespace sagittar {
@@ -10,6 +11,7 @@ namespace sagittar {
         version = "0.1.0";
         board::Board::initialize();
         eval::initialize();
+        params::init();
     }
 
     Engine::~Engine() {}
@@ -26,10 +28,6 @@ namespace sagittar {
     void Engine::setTranspositionTableSize(const std::size_t size) {
         searcher.setTranspositionTableSize(size);
     }
-
-#ifdef EXTERNAL_TUNE
-    void Engine::setSearcherParams() { searcher.setParams(); }
-#endif
 
     void Engine::setStartpos() { board.setStartpos(); }
 

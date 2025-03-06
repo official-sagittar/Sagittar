@@ -28,10 +28,6 @@ namespace sagittar {
 
         void setTranspositionTableSize(const std::size_t);
 
-#ifdef EXTERNAL_TUNE
-        void setSearcherParams();
-#endif
-
         void setStartpos();
 
         void setPositionFromFEN(std::string);
