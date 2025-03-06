@@ -32,28 +32,12 @@ namespace sagittar {
             void reset();
         };
 
-        struct SearcherParams {
-            i8  rfp_depth_max;
-            i32 rfp_margin;
-
-            i8 nmp_depth_min;
-
-            i8     lmp_depth_max;
-            double lmp_treshold;
-
-            i8  lmr_depth_min;
-            u32 lmr_movesearched_min;
-            u8  lmr_r_table_tactical[64][64];  // [move][depth]
-            u8  lmr_r_table_quiet[64][64];     // [move][depth]
-        };
-
         class Searcher {
            private:
             move::Move             pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
-            SearcherParams         search_params;
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
