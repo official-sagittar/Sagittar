@@ -223,7 +223,7 @@ namespace sagittar {
             if (!is_in_check && !is_pv_node)
             {
                 // Reverse Futility Pruning
-                if (depth <= params::rfp_depth_max)
+                if (depth <= 3)
                 {
                     const i32 eval   = eval::evaluateBoard(board);
                     const i32 margin = params::rfp_margin * depth;
@@ -234,7 +234,7 @@ namespace sagittar {
                 }
 
                 // Null Move Pruning
-                if (do_null && depth >= params::nmp_depth_min && !eval::isEndGame(board))
+                if (do_null && depth >= 3 && !eval::isEndGame(board))
                 {
                     const u8 r = 2;
 #ifdef DEBUG
@@ -301,7 +301,7 @@ namespace sagittar {
                         if (move_piece_type != PieceType::PAWN
                             && !move::isCapture(move.getFlag())
                             && !move::isPromotion(move.getFlag())
-                            && depth <= params::lmp_depth_max)
+                            && depth <= 2)
                         // clang-format on
                         {
                             const u32 LMP_MOVE_CUTOFF =
@@ -316,8 +316,8 @@ namespace sagittar {
 
                         // Late Move Reduction
                         // clang-format off
-                        if (depth >= params::lmr_depth_min
-                            && moves_searched >= params::lmr_movesearched_min
+                        if (depth >= 3
+                            && moves_searched >= 4
                             && move.getScore() != KILLER_0_SCORE
                             && move.getScore() != KILLER_1_SCORE)
                         // clang-format on
