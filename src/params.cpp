@@ -46,13 +46,13 @@ namespace sagittar {
 #endif
 
         void init() {
-            update_lmp_treshold_pct();
-            update_lmr_table();
+            updateLMPTresholdPct();
+            updateLMRTable();
         }
 
-        void update_lmp_treshold_pct() { lmp_treshold_pct = lmp_treshold / 10.0; }
+        void updateLMPTresholdPct() { lmp_treshold_pct = lmp_treshold / 10.0; }
 
-        void update_lmr_table() {
+        void updateLMRTable() {
             const float lmr_alpha_t = static_cast<float>(lmr_alpha_tactical) / 100.0f;
             const float lmr_beta_t  = static_cast<float>(lmr_beta_tactical) / 100.0f;
             const float lmr_alpha_q = static_cast<float>(lmr_alpha_quiet) / 100.0f;

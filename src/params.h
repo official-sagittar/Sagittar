@@ -45,8 +45,8 @@ namespace sagittar {
         inline u8     lmr_r_table_quiet[64][64];     // [move][depth]
 
         void init();
-        void update_lmp_treshold_pct();
-        void update_lmr_table();
+        void updateLMPTresholdPct();
+        void updateLMRTable();
 
         PARAM(rfp_depth_max, 3, 1, 5, 1);
         PARAM(rfp_margin, 150, 50, 300, 10);
@@ -54,14 +54,14 @@ namespace sagittar {
         PARAM(nmp_depth_min, 3, 1, 5, 1);
 
         PARAM(lmp_depth_max, 2, 1, 5, 1);
-        PARAM_CALLBACK(lmp_treshold, 6, 1, 8, 1, update_lmp_treshold_pct);
+        PARAM_CALLBACK(lmp_treshold, 6, 1, 8, 1, updateLMPTresholdPct);
 
         PARAM(lmr_depth_min, 3, 1, 5, 1);
         PARAM(lmr_movesearched_min, 4, 1, 10, 1);
-        PARAM_CALLBACK(lmr_alpha_tactical, 0, 0, 500, 10, update_lmr_table);
-        PARAM_CALLBACK(lmr_beta_tactical, 275, 50, 500, 5, update_lmr_table);
-        PARAM_CALLBACK(lmr_alpha_quiet, 100, 0, 500, 10, update_lmr_table);
-        PARAM_CALLBACK(lmr_beta_quiet, 150, 50, 500, 5, update_lmr_table);
+        PARAM_CALLBACK(lmr_alpha_tactical, 0, 0, 500, 10, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_tactical, 275, 50, 500, 5, updateLMRTable);
+        PARAM_CALLBACK(lmr_alpha_quiet, 100, 0, 500, 10, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_quiet, 150, 50, 500, 5, updateLMRTable);
     }
 
 }
