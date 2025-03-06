@@ -51,7 +51,7 @@ namespace sagittar {
         PARAM(rfp_depth_max, 3, 1, 5, 1);
         PARAM(rfp_margin, 150, 50, 300, 25);
 
-        PARAM(nmp_depth_min, 3, 1, 5, 1);
+        PARAM(nmp_depth_min, 3, 2, 8, 1);
 
         PARAM(lmp_depth_max, 2, 1, 5, 1);
         PARAM_CALLBACK(lmp_treshold, 6, 2, 8, 1, updateLMPTresholdPct);
