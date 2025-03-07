@@ -48,14 +48,14 @@ namespace sagittar {
         void updateLMPTresholdPct();
         void updateLMRTable();
 
-        PARAM(rfp_margin, 150, 50, 300, 25);
+        PARAM(rfp_margin, 50, 50, 300, 25);
 
-        PARAM_CALLBACK(lmp_treshold, 6, 2, 8, 1, updateLMPTresholdPct);
+        PARAM_CALLBACK(lmp_treshold, 8, 2, 8, 1, updateLMPTresholdPct);
 
-        PARAM_CALLBACK(lmr_alpha_tactical, 0, 0, 300, 50, updateLMRTable);
-        PARAM_CALLBACK(lmr_beta_tactical, 275, 50, 500, 25, updateLMRTable);
-        PARAM_CALLBACK(lmr_alpha_quiet, 100, 0, 300, 50, updateLMRTable);
-        PARAM_CALLBACK(lmr_beta_quiet, 150, 50, 500, 25, updateLMRTable);
+        PARAM_CALLBACK(lmr_alpha_tactical, 68, 0, 300, 50, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_tactical, 265, 50, 500, 25, updateLMRTable);
+        PARAM_CALLBACK(lmr_alpha_quiet, 131, 0, 300, 50, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_quiet, 137, 50, 500, 25, updateLMRTable);
     }
 
 }
