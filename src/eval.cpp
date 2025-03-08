@@ -103,10 +103,10 @@ namespace sagittar {
             }
         }
 
-        i32 evaluateBoard(const board::Board& board) {
-            i32 phase   = TOTAL_PHASE;
-            i32 eval_mg = 0;
-            i32 eval_eg = 0;
+        Score evaluateBoard(const board::Board& board) {
+            i32   phase   = TOTAL_PHASE;
+            Score eval_mg = 0;
+            Score eval_eg = 0;
 
             for (u8 sq = A1; sq <= H8; sq++)
             {
@@ -136,7 +136,7 @@ namespace sagittar {
 
             phase = (phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE;
 
-            i32 eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
+            Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
             const i8 stm = 1 - (2 * board.getActiveColor());
 #ifdef DEBUG
@@ -151,7 +151,7 @@ namespace sagittar {
 #endif
 
             // Tempo Bonus
-            const i32 tempo_bonus =
+            const Score tempo_bonus =
               ((mg_score(TEMPO_BONUS) * (256 - phase)) + (eg_score(TEMPO_BONUS) * phase)) / 256;
             eval += tempo_bonus * stm;
 
