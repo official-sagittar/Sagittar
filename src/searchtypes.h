@@ -38,6 +38,7 @@ namespace sagittar {
             u8                      depth;
             u64                     nodes;
             u64                     time;
+            u32                     hashfull;
             std::vector<move::Move> pv;
             move::Move              bestmove{};
         };

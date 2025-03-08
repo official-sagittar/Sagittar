@@ -18,6 +18,7 @@ namespace sagittar {
                 entries.clear();
                 entries.resize(size);
                 entries.shrink_to_fit();
+                used = 0;
             }
 
             std::size_t TranspositionTable::getSize() const { return size; }
@@ -28,6 +29,7 @@ namespace sagittar {
                     entries.at(i) = TTEntry();
                 }
                 currentage = 0;
+                used       = 0;
             }
 
             void TranspositionTable::resetForSearch() { currentage++; }
@@ -48,6 +50,8 @@ namespace sagittar {
                 {
                     return;
                 }
+
+                used += (currentry.hash == 0ULL);
 
                 if (value < -MATE_SCORE)
                 {
@@ -89,6 +93,8 @@ namespace sagittar {
 
                 return false;
             }
+
+            u32 TranspositionTable::hashfull() const { return used * 1000 / size; }
 
         }
 

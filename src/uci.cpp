@@ -180,6 +180,7 @@ namespace sagittar {
                 ss << " depth " << (unsigned int) result.depth;
                 ss << " nodes " << (unsigned long long) result.nodes;
                 ss << " time " << (unsigned long long) result.time;
+                ss << " hashfull " << (unsigned int) result.hashfull;
                 ss << " nps " << (unsigned long long) (result.nodes * 1000 / (result.time + 1));
                 ss << " pv ";
                 for (const auto& m : result.pv)

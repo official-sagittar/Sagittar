@@ -128,9 +128,10 @@ namespace sagittar {
                     result.is_mate = false;
                     result.mate_in = 0;
                 }
-                result.depth = currdepth;
-                result.time  = time;
-                result.pv    = {result.bestmove};
+                result.depth    = currdepth;
+                result.time     = time;
+                result.hashfull = tt.hashfull();
+                result.pv       = {result.bestmove};
 
                 searchProgressReportHandler(result);
             }

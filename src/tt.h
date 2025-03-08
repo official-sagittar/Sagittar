@@ -51,7 +51,7 @@ namespace sagittar {
             class TranspositionTable {
                private:
                 std::vector<TTEntry> entries;
-                std::size_t          size;
+                std::size_t          size, used;
                 u8                   currentage;
 
                public:
@@ -67,6 +67,7 @@ namespace sagittar {
                                          i32              value,
                                          const move::Move move);
                 [[nodiscard]] bool probe(TTEntry* entry, const u64 hash) const;
+                u32                hashfull() const;
             };
 
         }
