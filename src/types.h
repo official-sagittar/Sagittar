@@ -12,6 +12,9 @@ namespace sagittar {
     using i32 = int;
     using u64 = unsigned long long;
 
+    using Score = i16;
+    using Depth = i8;
+
     enum Color : u8 {
         WHITE,
         BLACK

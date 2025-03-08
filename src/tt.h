@@ -18,41 +18,68 @@ namespace sagittar {
                 EXACT
             };
 
-            struct TTEntry {
-                u64        hash;
-                i8         depth;
-                u8         age;
-                TTFlag     flag;
-                i32        value;
+            struct TTData {
+                Score      score;
+                Score      static_eval;
                 move::Move move;
+                Depth      depth;
+                bool       pv;
+                TTFlag     flag;
 
-                TTEntry() :
-                    hash(0ULL),
+                TTData() :
+                    score(0),
+                    static_eval(0),
+                    move(move::Move()),
                     depth(0),
-                    age(0),
-                    flag(TTFlag::NONE),
-                    value(0),
-                    move(move::Move()) {}
-
-                TTEntry(const u64        hash,
-                        const i8         depth,
-                        const u8         age,
-                        const TTFlag     flag,
-                        const i32        value,
-                        const move::Move move) :
-                    hash(hash),
-                    depth(depth),
-                    age(age),
-                    flag(flag),
-                    value(value),
-                    move(move) {}
+                    pv(false),
+                    flag(TTFlag::NONE) {}
             };
 
             class TranspositionTable {
                private:
-                std::vector<TTEntry> entries;
-                std::size_t          size;
-                u8                   currentage;
+                struct Entry {
+                    u16   key;
+                    Score score;
+                    Score static_eval;
+                    u16   move_id;
+                    Depth depth;
+                    u8    age_flag_pv;
+
+                    Entry() :
+                        key(0),
+                        score(0),
+                        static_eval(0),
+                        move_id(move::Move().id()),
+                        depth(0),
+                        age_flag_pv(0) {}
+
+                    u8 age() const { return static_cast<u8>(age_flag_pv >> 3); }
+
+                    TTFlag flag() const { return static_cast<TTFlag>(age_flag_pv & 3); }
+
+                    bool pv() const { return static_cast<bool>((age_flag_pv >> 2) & 1); }
+
+                    static u8 foldAgeFlagPV(u8 age, TTFlag flag, bool pv) {
+                        return static_cast<u8>(flag | (pv << 2) | (age << 3));
+                    }
+                };
+
+                struct alignas(32) TTBucket {
+                    static constexpr u8 ENTRIES_PER_BUCKET = 3;
+
+                    std::array<Entry, ENTRIES_PER_BUCKET> entries;
+                    char                                  padding[2];
+                };
+
+                std::vector<TTBucket> buckets;
+                std::size_t           size;
+                u8                    currentage;
+
+                static constexpr int AGE_CYCLE_LENGTH = 1 << 5;
+                static constexpr int AGE_MASK         = AGE_CYCLE_LENGTH - 1;
+
+               private:
+                i32 quality(const u8 age, const Depth depth) const;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
@@ -62,11 +89,11 @@ namespace sagittar {
                 void               resetForSearch();
                 void               store(const u64        hash,
                                          const i32        ply,
-                                         const i8         depth,
+                                         const Depth      depth,
                                          const TTFlag     flag,
-                                         i32              value,
+                                         Score            value,
                                          const move::Move move);
-                [[nodiscard]] bool probe(TTEntry* entry, const u64 hash) const;
+                [[nodiscard]] bool probe(TTData* ttdata, const u64 hash) const;
                 u32                hashfull() const;
             };
 

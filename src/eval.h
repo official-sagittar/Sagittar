@@ -8,9 +8,9 @@ namespace sagittar {
 
     namespace eval {
 
-        void initialize();
-        i32  evaluateBoard(const board::Board&);
-        bool isEndGame(const board::Board&);
+        void  initialize();
+        Score evaluateBoard(const board::Board&);
+        bool  isEndGame(const board::Board&);
 
     }
 

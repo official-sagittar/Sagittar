@@ -10,9 +10,9 @@ namespace sagittar {
 
         struct SearchInfo {
             // Inputs
-            bool infinite;
-            u32  wtime, btime, winc, binc, movetime, movestogo;
-            u8   depth;
+            bool  infinite;
+            u32   wtime, btime, winc, binc, movetime, movestogo;
+            Depth depth;
             // Set by timeman
             bool timeset;
             u64  starttime, stoptime;
@@ -32,10 +32,10 @@ namespace sagittar {
         };
 
         struct SearchResult {
-            i32                     score;
+            Score                   score;
             bool                    is_mate;
             i8                      mate_in;
-            u8                      depth;
+            Depth                   depth;
             u64                     nodes;
             u64                     time;
             u32                     hashfull;

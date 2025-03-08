@@ -13,40 +13,74 @@ namespace sagittar {
             }
 
             void TranspositionTable::setSize(const std::size_t mb) {
-                size = (mb * 0x100000) / sizeof(TTEntry);
-                size -= sizeof(TTEntry);
-                entries.clear();
-                entries.resize(size);
-                entries.shrink_to_fit();
+                size = (mb * 0x100000) / sizeof(TTBucket);
+                buckets.clear();
+                buckets.resize(size);
+                buckets.shrink_to_fit();
+                currentage = 0;
             }
 
             std::size_t TranspositionTable::getSize() const { return size; }
 
             void TranspositionTable::clear() {
-                for (u32 i = 0; i < size; i++)
+                for (auto& bucket : buckets)
                 {
-                    entries.at(i) = TTEntry();
+                    for (auto& entry : bucket.entries)
+                    {
+                        entry = Entry();
+                    }
                 }
                 currentage = 0;
             }
 
-            void TranspositionTable::resetForSearch() { currentage++; }
+            void TranspositionTable::resetForSearch() {
+                currentage = (currentage + 1) % AGE_CYCLE_LENGTH;
+            }
 
             void TranspositionTable::store(const u64        hash,
                                            const i32        ply,
-                                           const i8         depth,
+                                           const Depth      depth,
                                            const TTFlag     flag,
-                                           i32              value,
+                                           Score            value,
                                            const move::Move move) {
-                const u64     index     = hash % size;
-                const TTEntry currentry = entries.at(index);
+                const u64 index       = hash % size;
+                const u16 key         = hash & 0xFFFF;
+                TTBucket& bucket      = buckets.at(index);
+                i32       min_quality = INT32_MAX;
+                Entry*    entry_ptr   = nullptr;
+                for (auto& candidate : bucket.entries)
+                {
+                    if (candidate.key == key || candidate.flag() == TTFlag::NONE)
+                    {
+                        entry_ptr = &candidate;
+                        break;
+                    }
 
-                // Only handles empty indices or stale entires
-                const bool replace = (currentry.hash == 0ULL) || (currentry.age < currentage)
-                                  || (currentry.depth <= depth);
+                    i32 candidate_quality = quality(candidate.age(), candidate.depth);
+                    if (candidate_quality < min_quality)
+                    {
+                        entry_ptr   = &candidate;
+                        min_quality = candidate_quality;
+                    }
+                }
+
+#ifdef DEBUG
+                assert(entry_ptr != nullptr);
+#endif
+
+                Entry entry = *entry_ptr;
+
+                // Replacement scheme
+                const bool replace = (entry.age() < currentage) || (entry.depth <= depth);
                 if (!replace)
                 {
                     return;
+                }
+
+                // If move is a null move or current entry is from a different position, replace move
+                if (move != move::Move() || entry.key != key)
+                {
+                    entry.move_id = move.id();
                 }
 
                 if (value < -MATE_SCORE)
@@ -58,33 +92,33 @@ namespace sagittar {
                     value += ply;
                 }
 
-                // If current entry is from the current position AND if move is a null move,
-                // DO NOT replace the move in the entry
-                move::Move move_to_replace = move;
-                if ((move == move::Move()) && (currentry.hash == hash))
-                {
-                    move_to_replace = currentry.move;
-                }
+                entry.key         = key;
+                entry.static_eval = value;
+                entry.depth       = depth;
+                entry.score       = value;
+                entry.age_flag_pv = Entry::foldAgeFlagPV(currentage, flag, false);
 
-                const TTEntry newentry =
-                  TTEntry(hash, depth, currentage, flag, value, move_to_replace);
-
-                entries.at(index) = newentry;
+                *entry_ptr = entry;
             }
 
-            bool TranspositionTable::probe(TTEntry* entry, const u64 hash) const {
-                const u64     index     = hash % size;
-                const TTEntry currentry = entries.at(index);
+            bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
+                const u64 index  = hash % size;
+                TTBucket  bucket = buckets.at(index);
+                const u16 key    = hash & 0xFFFF;
 
-                if (currentry.hash == hash)
+                for (auto& entry : bucket.entries)
                 {
-                    entry->hash  = currentry.hash;
-                    entry->depth = currentry.depth;
-                    entry->age   = currentry.age;
-                    entry->flag  = currentry.flag;
-                    entry->value = currentry.value;
-                    entry->move  = currentry.move;
-                    return true;
+                    if (entry.key == key)
+                    {
+                        ttdata->score       = entry.score;
+                        ttdata->static_eval = entry.static_eval;
+                        ttdata->move        = move::Move::fromId(entry.move_id);
+                        ttdata->depth       = entry.depth;
+                        ttdata->pv          = entry.pv();
+                        ttdata->flag        = entry.flag();
+
+                        return true;
+                    }
                 }
 
                 return false;
@@ -92,11 +126,19 @@ namespace sagittar {
 
             u32 TranspositionTable::hashfull() const {
                 u32 used = 0;
-                for (auto& e : entries)
+                for (auto& bucket : buckets)
                 {
-                    used += (e.flag != TTFlag::NONE) && (e.age == currentage);
+                    for (auto& entry : bucket.entries)
+                    {
+                        used += (entry.flag() != TTFlag::NONE) && (entry.age() == currentage);
+                    }
                 }
                 return used * 1000 / size;
+            }
+
+            i32 TranspositionTable::quality(const u8 age, const Depth depth) const {
+                const i32 relative_age = (AGE_CYCLE_LENGTH + currentage - age) & AGE_MASK;
+                return depth - 2 * relative_age;
             }
 
         }

@@ -10,13 +10,13 @@ namespace sagittar {
                         const tt::TranspositionTable&      ttable,
                         const SearcherData&                data,
                         const i32                          ply) {
-            move::Move  ttmove;
-            bool        ttmove_found = false;
-            tt::TTEntry ttentry;
-            const bool  tthit = ttable.probe(&ttentry, board.getHash());
+            move::Move ttmove;
+            bool       ttmove_found = false;
+            tt::TTData ttdata;
+            const bool tthit = ttable.probe(&ttdata, board.getHash());
             if (tthit)
             {
-                ttmove       = ttentry.move;
+                ttmove       = ttdata.move;
                 ttmove_found = true;
             }
 
