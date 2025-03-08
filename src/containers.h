@@ -140,48 +140,6 @@ namespace sagittar {
             const_iterator end() const { return elements.begin() + current_size; }
         };
 
-        template<typename... Types>
-        class VariantMap {
-           public:
-            using ValueType = std::variant<Types...>;
-
-            // Insert a key-value pair
-            template<typename T>
-            void insert(const std::string& key, T value) {
-                static_assert((std::is_same_v<T, Types> || ...), "Type not supported");
-                data_[key] = value;
-            }
-
-            // Get value as optional
-            template<typename T>
-            T get(const std::string& key, const T defaultValue) const {
-                auto it = data_.find(key);
-                if (it != data_.end())
-                {
-                    return std::get<T>(it->second);
-                }
-                return defaultValue;
-            }
-
-            // Check if key exists
-            bool contains(const std::string& key) const { return data_.find(key) != data_.end(); }
-
-            // Remove a key
-            void erase(const std::string& key) { data_.erase(key); }
-
-            // Print all key-value pairs
-            void display() const {
-                for (const auto& [key, value] : data_)
-                {
-                    std::visit([&](const auto& v) { std::cout << key << ": " << v << '\n'; },
-                               value);
-                }
-            }
-
-           private:
-            std::map<std::string, ValueType> data_;
-        };
-
     }
 
 }

@@ -2,7 +2,6 @@
 
 #include "board.h"
 #include "move.h"
-#include "params.h"
 #include "pch.h"
 #include "search.h"
 #include "searchtypes.h"
@@ -11,11 +10,10 @@ namespace sagittar {
 
     class Engine {
        private:
-        std::string                name;
-        std::string                version;
-        board::Board               board;
-        search::Searcher           searcher;
-        parameters::ParameterStore params;
+        std::string      name;
+        std::string      version;
+        board::Board     board;
+        search::Searcher searcher;
 
        public:
         Engine();
@@ -29,13 +27,6 @@ namespace sagittar {
         void resetForSearch();
 
         void setTranspositionTableSize(const std::size_t);
-
-        template<typename T>
-        void setParam(const std::string& key, const T value) {
-            params.set<T>(key, value);
-        }
-
-        void setSearcherParams();
 
         void setStartpos();
 

@@ -15,8 +15,6 @@ namespace sagittar {
 
         u64 currtimeInMilliseconds();
 
-        bool isFloat(const std::string& str);
-
     }
 
 }

@@ -8,17 +8,20 @@
 #include <functional>
 #include <future>
 #include <iostream>
-#include <map>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
 #ifdef DEBUG
     #include <cassert>
 #endif
+#ifdef EXTERNAL_TUNE
+    #include <deque>
+#endif
 #ifdef TEST
     #include <filesystem>
     #include <fstream>
+    #include <map>
+    #include <regex>
 #endif
 
 #endif

@@ -2,7 +2,6 @@
 
 #include "board.h"
 #include "move.h"
-#include "params.h"
 #include "pch.h"
 #include "searchtypes.h"
 #include "tt.h"
@@ -32,18 +31,12 @@ namespace sagittar {
             void reset();
         };
 
-        struct SearcherParams {
-            int RFP_DEPTH_MAX;
-            int RFP_MARGIN;
-        };
-
         class Searcher {
            private:
             move::Move             pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
-            SearcherParams         searchParams;
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
@@ -73,8 +66,6 @@ namespace sagittar {
 
            public:
             Searcher();
-
-            void setParams(const parameters::ParameterStore&);
 
             void reset();
 

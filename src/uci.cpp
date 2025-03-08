@@ -1,5 +1,6 @@
 #include "uci.h"
 #include "board.h"
+#include "params.h"
 #include "searchtypes.h"
 #include "utils.h"
 
@@ -16,6 +17,17 @@ namespace sagittar {
             ss << "id author the Sagittar developers (see AUTHORS file)\n";
             ss << "option name Hash type spin default 16 min 1 max 512\n";
             ss << "option name Threads type spin default 1 min 1 max 1\n";
+#ifdef EXTERNAL_TUNE
+            for (auto& param : params::params())
+            {
+                ss << "option name " << param.name;
+                ss << " type spin";
+                ss << " default " << (int) param.default_value;
+                ss << " min " << (int) param.min;
+                ss << " max " << (int) param.max;
+                ss << "\n";
+            }
+#endif
             ss << "uciok";
             std::cout << ss.str() << std::endl;
         }
@@ -38,21 +50,15 @@ namespace sagittar {
                     engine.setTranspositionTableSize(ttsize);
                 }
             }
+#ifdef EXTERNAL_TUNE
             else
             {
-                if (utils::isFloat(value))
+                if (!params::set(id, std::stoi(value)))
                 {
-                    const float fvalue = std::stof(value);
-                    engine.setParam<float>(id, fvalue);
-                }
-                else
-                {
-                    const int ivalue = std::stoi(value);
-                    engine.setParam<int>(id, ivalue);
+                    std::cerr << "Invalid option!" << std::endl;
                 }
             }
-
-            engine.setSearcherParams();
+#endif
         }
 
         void UCIHandler::handlePosition(std::string& input) {
@@ -201,9 +207,30 @@ namespace sagittar {
 
         void UCIHandler::handleDisplay() { engine.displayBoard(); }
 
+#ifdef EXTERNAL_TUNE
+        void UCIHandler::handleDisplayParams() {
+            std::ostringstream ss;
+            for (auto& param : params::params())
+            {
+                ss << param.name;
+                ss << ", int";
+                ss << ", " << (int) param.value;
+                ss << ", " << (int) param.min;
+                ss << ", " << (int) param.max;
+                ss << ", " << (int) param.step;
+                ss << ", 0.002\n";
+            }
+            std::cout << ss.str() << std::endl;
+        }
+#endif
+
         void UCIHandler::start() {
             std::string       input;
             std::future<void> uci_go_future;
+
+#ifdef EXTERNAL_TUNE
+            handleDisplayParams();
+#endif
 
             while (std::getline(std::cin, input))
             {
