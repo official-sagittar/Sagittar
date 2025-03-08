@@ -13,11 +13,12 @@ namespace sagittar {
             }
 
             void TranspositionTable::setSize(const std::size_t mb) {
-                size = (mb * 0x100000) / sizeof(TTEntry);
-                size -= sizeof(TTEntry);
+                size = (mb * 0x100000) / sizeof(Entry);
+                size -= sizeof(Entry);
                 entries.clear();
                 entries.resize(size);
                 entries.shrink_to_fit();
+                currentage = 0;
             }
 
             std::size_t TranspositionTable::getSize() const { return size; }
@@ -25,7 +26,7 @@ namespace sagittar {
             void TranspositionTable::clear() {
                 for (u32 i = 0; i < size; i++)
                 {
-                    entries.at(i) = TTEntry();
+                    entries.at(i) = Entry();
                 }
                 currentage = 0;
             }
@@ -38,12 +39,12 @@ namespace sagittar {
                                            const TTFlag     flag,
                                            Score            value,
                                            const move::Move move) {
-                const u64     index     = hash % size;
-                const TTEntry currentry = entries.at(index);
+                const u64   index     = hash % size;
+                const Entry currentry = entries.at(index);
 
                 // Only handles empty indices or stale entires
-                const bool replace = (currentry.hash == 0ULL) || (currentry.age < currentage)
-                                  || (currentry.depth <= depth);
+                const bool replace = (currentry.flag() == TTFlag::NONE)
+                                  || (currentry.age() < currentage) || (currentry.depth <= depth);
                 if (!replace)
                 {
                     return;
@@ -61,29 +62,31 @@ namespace sagittar {
                 // If current entry is from the current position AND if move is a null move,
                 // DO NOT replace the move in the entry
                 move::Move move_to_replace = move;
-                if ((move == move::Move()) && (currentry.hash == hash))
+                if ((move == move::Move()) && (currentry.key == hash))
                 {
-                    move_to_replace = currentry.move;
+                    move_to_replace = currentry.move();
                 }
 
-                const TTEntry newentry =
-                  TTEntry(hash, depth, currentage, flag, value, move_to_replace);
+                Entry newentry;
+                newentry.key         = hash;
+                newentry.score       = value;
+                newentry.move_id     = move_to_replace.id();
+                newentry.depth       = depth;
+                newentry.age_flag_pv = Entry::foldAgeFlagPV(currentage, flag, false);
 
                 entries.at(index) = newentry;
             }
 
             bool TranspositionTable::probe(TTEntry* entry, const u64 hash) const {
-                const u64     index     = hash % size;
-                const TTEntry currentry = entries.at(index);
+                const u64   index     = hash % size;
+                const Entry currentry = entries.at(index);
 
-                if (currentry.hash == hash)
+                if (currentry.key == hash)
                 {
-                    entry->hash  = currentry.hash;
                     entry->depth = currentry.depth;
-                    entry->age   = currentry.age;
-                    entry->flag  = currentry.flag;
-                    entry->value = currentry.value;
-                    entry->move  = currentry.move;
+                    entry->flag  = currentry.flag();
+                    entry->value = currentry.score;
+                    entry->move  = currentry.move();
                     return true;
                 }
 
@@ -94,7 +97,7 @@ namespace sagittar {
                 u32 used = 0;
                 for (auto& e : entries)
                 {
-                    used += (e.flag != TTFlag::NONE) && (e.age == currentage);
+                    used += (e.flag() != TTFlag::NONE) && (e.age() == currentage);
                 }
                 return used * 1000 / size;
             }

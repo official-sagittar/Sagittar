@@ -19,40 +19,50 @@ namespace sagittar {
             };
 
             struct TTEntry {
-                u64        hash;
                 Depth      depth;
-                u8         age;
                 TTFlag     flag;
                 Score      value;
                 move::Move move;
 
                 TTEntry() :
-                    hash(0ULL),
                     depth(0),
-                    age(0),
                     flag(TTFlag::NONE),
                     value(0),
                     move(move::Move()) {}
-
-                TTEntry(const u64        hash,
-                        const i8         depth,
-                        const u8         age,
-                        const TTFlag     flag,
-                        const i32        value,
-                        const move::Move move) :
-                    hash(hash),
-                    depth(depth),
-                    age(age),
-                    flag(flag),
-                    value(value),
-                    move(move) {}
             };
 
             class TranspositionTable {
                private:
-                std::vector<TTEntry> entries;
-                std::size_t          size;
-                u8                   currentage;
+                struct Entry {
+                    u64   key;
+                    Score score;
+                    u16   move_id;
+                    Depth depth;
+                    u8    age_flag_pv;
+
+                    Entry() :
+                        key(0),
+                        score(0),
+                        move_id(move::Move().id()),
+                        depth(0),
+                        age_flag_pv(0) {}
+
+                    u8 age() const { return static_cast<u8>(age_flag_pv >> 3); }
+
+                    TTFlag flag() const { return static_cast<TTFlag>(age_flag_pv & 3); }
+
+                    bool pv() const { return static_cast<bool>((age_flag_pv >> 2) & 1); }
+
+                    move::Move move() const { return move::Move::fromId(move_id); }
+
+                    static u8 foldAgeFlagPV(u8 age, TTFlag flag, bool pv) {
+                        return static_cast<u8>(flag | (pv << 2) | (age << 3));
+                    }
+                };
+
+                std::vector<Entry> entries;
+                std::size_t        size;
+                u8                 currentage;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
