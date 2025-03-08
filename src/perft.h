@@ -8,8 +8,8 @@ namespace sagittar {
 
     namespace perft {
 
-        u64 perft(board::Board& board, const u8 depth);
-        u64 divide(board::Board& board, const u8 depth);
+        u64 perft(board::Board& board, const Depth depth);
+        u64 divide(board::Board& board, const Depth depth);
 
     }
 

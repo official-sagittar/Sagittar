@@ -34,9 +34,9 @@ namespace sagittar {
 
             void TranspositionTable::store(const u64        hash,
                                            const i32        ply,
-                                           const i8         depth,
+                                           const Depth      depth,
                                            const TTFlag     flag,
-                                           i32              value,
+                                           Score            value,
                                            const move::Move move) {
                 const u64     index     = hash % size;
                 const TTEntry currentry = entries.at(index);

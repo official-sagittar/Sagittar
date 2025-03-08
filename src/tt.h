@@ -20,10 +20,10 @@ namespace sagittar {
 
             struct TTEntry {
                 u64        hash;
-                i8         depth;
+                Depth      depth;
                 u8         age;
                 TTFlag     flag;
-                i32        value;
+                Score      value;
                 move::Move move;
 
                 TTEntry() :
@@ -62,9 +62,9 @@ namespace sagittar {
                 void               resetForSearch();
                 void               store(const u64        hash,
                                          const i32        ply,
-                                         const i8         depth,
+                                         const Depth      depth,
                                          const TTFlag     flag,
-                                         i32              value,
+                                         Score            value,
                                          const move::Move move);
                 [[nodiscard]] bool probe(TTEntry* entry, const u64 hash) const;
                 u32                hashfull() const;

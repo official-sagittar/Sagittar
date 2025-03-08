@@ -11,10 +11,10 @@ namespace sagittar {
 
     namespace search {
 
-        constexpr u32 INF        = 50000;
-        constexpr i32 MATE_VALUE = 49000;
-        constexpr i32 MATE_SCORE = 48000;
-        constexpr u8  MAX_DEPTH  = 64;
+        constexpr Score INF        = 15000;
+        constexpr Score MATE_VALUE = 14000;
+        constexpr Score MATE_SCORE = 13000;
+        constexpr Depth MAX_DEPTH  = 64;
 
         constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
 
@@ -48,21 +48,21 @@ namespace sagittar {
                               std::function<void(const SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
-            i32 search(board::Board&     board,
-                       i8                depth,
-                       i32               alpha,
-                       i32               beta,
-                       const i32         ply,
-                       const SearchInfo& info,
-                       SearchResult*     result,
-                       const bool        do_null);
+            Score search(board::Board&     board,
+                         Depth             depth,
+                         Score             alpha,
+                         Score             beta,
+                         const i32         ply,
+                         const SearchInfo& info,
+                         SearchResult*     result,
+                         const bool        do_null);
 
-            i32 quiescencesearch(board::Board&     board,
-                                 i32               alpha,
-                                 i32               beta,
-                                 const i32         ply,
-                                 const SearchInfo& info,
-                                 SearchResult*     result);
+            Score quiescencesearch(board::Board&     board,
+                                   Score             alpha,
+                                   Score             beta,
+                                   const i32         ply,
+                                   const SearchInfo& info,
+                                   SearchResult*     result);
 
            public:
             Searcher();

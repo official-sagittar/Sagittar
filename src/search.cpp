@@ -77,15 +77,15 @@ namespace sagittar {
           std::function<void(const SearchResult&)> searchCompleteReportHander) {
             SearchResult bestresult{};
 
-            i32 alpha = -INF;
-            i32 beta  = INF;
+            Score alpha = -INF;
+            Score beta  = INF;
 
-            for (u8 currdepth = 1; currdepth <= info.depth; currdepth++)
+            for (Depth currdepth = 1; currdepth <= info.depth; currdepth++)
             {
                 SearchResult result{};
 
                 const u64 starttime = utils::currtimeInMilliseconds();
-                i32       score =
+                Score     score =
                   search<NodeType::PV>(board, currdepth, alpha, beta, 0, info, &result, true);
                 const u64 time = utils::currtimeInMilliseconds() - starttime;
 
@@ -142,14 +142,14 @@ namespace sagittar {
         }
 
         template<NodeType nodeType>
-        i32 Searcher::search(board::Board&     board,
-                             i8                depth,
-                             i32               alpha,
-                             i32               beta,
-                             const i32         ply,
-                             const SearchInfo& info,
-                             SearchResult*     result,
-                             const bool        do_null) {
+        Score Searcher::search(board::Board&     board,
+                               Depth             depth,
+                               Score             alpha,
+                               Score             beta,
+                               const i32         ply,
+                               const SearchInfo& info,
+                               SearchResult*     result,
+                               const bool        do_null) {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
@@ -159,7 +159,7 @@ namespace sagittar {
                 }
             }
 
-            const i32 alpha_orig = alpha;
+            const Score alpha_orig = alpha;
 
             if (ply >= MAX_DEPTH - 1) [[unlikely]]
             {
@@ -199,7 +199,7 @@ namespace sagittar {
                 {
                     if (ttentry.depth >= depth)
                     {
-                        i32 ttvalue = ttentry.value;
+                        Score ttvalue = ttentry.value;
 
                         if (ttvalue < -MATE_SCORE)
                         {
@@ -226,8 +226,8 @@ namespace sagittar {
                 // Reverse Futility Pruning
                 if (depth <= 3)
                 {
-                    const i32 eval   = eval::evaluateBoard(board);
-                    const i32 margin = params::rfp_margin * depth;
+                    const Score eval   = eval::evaluateBoard(board);
+                    const Score margin = params::rfp_margin * depth;
                     if (eval >= beta + margin)
                     {
                         return eval;
@@ -242,8 +242,8 @@ namespace sagittar {
                     const u64 hash = board.getHash();
 #endif
                     board.doNullMove();
-                    const i32 score = -search<NodeType::NON_PV>(board, depth - r, -beta, -beta + 1,
-                                                                ply, info, result, false);
+                    const Score score = -search<NodeType::NON_PV>(
+                      board, depth - r, -beta, -beta + 1, ply, info, result, false);
                     board.undoNullMove();
 #ifdef DEBUG
                     assert(hash == board.getHash());
@@ -255,7 +255,7 @@ namespace sagittar {
                 }
             }
 
-            i32        best_score = -INF;
+            Score      best_score = -INF;
             move::Move best_move_so_far;
             u32        legal_moves_count = 0;
             u32        moves_searched    = 0;
@@ -281,7 +281,7 @@ namespace sagittar {
                 result->nodes++;
                 legal_moves_count++;
 
-                i32 score = -INF;
+                Score score = -INF;
 
                 // PVS + LMR
                 if (moves_searched == 0)
@@ -438,12 +438,12 @@ namespace sagittar {
             return best_score;
         }
 
-        i32 Searcher::quiescencesearch(board::Board&     board,
-                                       i32               alpha,
-                                       i32               beta,
-                                       const i32         ply,
-                                       const SearchInfo& info,
-                                       SearchResult*     result) {
+        Score Searcher::quiescencesearch(board::Board&     board,
+                                         Score             alpha,
+                                         Score             beta,
+                                         const i32         ply,
+                                         const SearchInfo& info,
+                                         SearchResult*     result) {
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
@@ -458,7 +458,7 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            const i32 stand_pat = eval::evaluateBoard(board);
+            const Score stand_pat = eval::evaluateBoard(board);
             if (stand_pat >= beta)
             {
                 return beta;
