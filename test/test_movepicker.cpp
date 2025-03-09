@@ -7,7 +7,6 @@
 #include "movepicker.h"
 #include "pch.h"
 #include "search.h"
-#include "tt.h"
 #include "types.h"
 
 using namespace sagittar;
@@ -15,8 +14,7 @@ using namespace sagittar;
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
-        search::tt::TranspositionTable tt(2);
-        search::SearcherData           data;
+        search::SearcherData data;
 
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
@@ -25,8 +23,9 @@ TEST_SUITE("Movepicker") {
         movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
+        const move::Move ttmove;
 
-        search::scoreMoves(&moves, board, pvmove, tt, data, 0);
+        search::scoreMoves(&moves, board, pvmove, ttmove, data, 0);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (moves.at(i) == pvmove)

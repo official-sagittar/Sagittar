@@ -5,7 +5,6 @@
 #include "move.h"
 #include "pch.h"
 #include "search.h"
-#include "tt.h"
 #include "types.h"
 
 namespace sagittar {
@@ -47,7 +46,7 @@ namespace sagittar {
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
-                        const tt::TranspositionTable&      ttable,
+                        const move::Move&                  ttmove,
                         const SearcherData&                data,
                         const i32                          ply);
         void sortMoves(containers::ArrayList<move::Move>* moves, const u8 index);
