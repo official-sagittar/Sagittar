@@ -7,19 +7,9 @@ namespace sagittar {
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
                         const move::Move&                  pvmove,
-                        const tt::TranspositionTable&      ttable,
+                        const move::Move&                  ttmove,
                         const SearcherData&                data,
                         const i32                          ply) {
-            move::Move  ttmove;
-            bool        ttmove_found = false;
-            tt::TTEntry ttentry;
-            const bool  tthit = ttable.probe(&ttentry, board.getHash());
-            if (tthit)
-            {
-                ttmove       = ttentry.move;
-                ttmove_found = true;
-            }
-
             for (u8 i = 0; i < moves->size(); i++)
             {
                 const move::Move move = moves->at(i);
@@ -28,7 +18,7 @@ namespace sagittar {
                 {
                     moves->at(i).setScore(PVMOVE_SCORE);
                 }
-                else if (ttmove_found && (move == ttmove))
+                else if ((ttmove != move::Move()) && (move == ttmove))
                 {
                     moves->at(i).setScore(TTMOVE_SCORE);
                 }

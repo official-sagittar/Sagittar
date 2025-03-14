@@ -262,7 +262,12 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
-            scoreMoves(&moves, board, pvmove, tt, data, ply);
+
+            tt::TTEntry      ttentry;
+            const bool       tthit  = tt.probe(&ttentry, board.getHash());
+            const move::Move ttmove = tthit ? ttentry.move : move::Move();
+
+            scoreMoves(&moves, board, pvmove, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -470,7 +475,12 @@ namespace sagittar {
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
-            scoreMoves(&moves, board, pvmove, tt, data, ply);
+
+            tt::TTEntry      ttentry;
+            const bool       tthit  = tt.probe(&ttentry, board.getHash());
+            const move::Move ttmove = tthit ? ttentry.move : move::Move();
+
+            scoreMoves(&moves, board, pvmove, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
