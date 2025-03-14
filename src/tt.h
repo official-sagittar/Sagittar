@@ -18,29 +18,29 @@ namespace sagittar {
                 EXACT
             };
 
-            struct TTEntry {
+            struct TTData {
                 Depth      depth;
                 TTFlag     flag;
-                Score      value;
+                Score      score;
                 move::Move move;
 
-                TTEntry() :
+                TTData() :
                     depth(0),
                     flag(TTFlag::NONE),
-                    value(0),
+                    score(0),
                     move(move::Move()) {}
             };
 
             class TranspositionTable {
                private:
-                struct Entry {
+                struct TTEntry {
                     u64   key;
                     Score score;
                     u16   move_id;
                     Depth depth;
                     u8    age_flag_pv;
 
-                    Entry() :
+                    TTEntry() :
                         key(0),
                         score(0),
                         move_id(move::Move().id()),
@@ -60,9 +60,9 @@ namespace sagittar {
                     }
                 };
 
-                std::vector<Entry> entries;
-                std::size_t        size;
-                u8                 currentage;
+                std::vector<TTEntry> entries;
+                std::size_t          size;
+                u8                   currentage;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
@@ -76,7 +76,7 @@ namespace sagittar {
                                          const TTFlag     flag,
                                          Score            value,
                                          const move::Move move);
-                [[nodiscard]] bool probe(TTEntry* entry, const u64 hash) const;
+                [[nodiscard]] bool probe(TTData* entry, const u64 hash) const;
                 u32                hashfull() const;
             };
 

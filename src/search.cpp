@@ -191,32 +191,27 @@ namespace sagittar {
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
             const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
-            if (ply > 0 && !is_pv_node)
+            tt::TTData ttdata;
+            const bool tthit = tt.probe(&ttdata, board.getHash());
+
+            // TT cutoff
+            if (!is_pv_node && tthit && ttdata.depth >= depth)
             {
-                tt::TTEntry ttentry;
-                const bool  tthit = tt.probe(&ttentry, board.getHash());
-                if (tthit)
+                Score ttscore = ttdata.score;
+                if (ttscore < -MATE_SCORE)
                 {
-                    if (ttentry.depth >= depth)
-                    {
-                        Score ttvalue = ttentry.value;
+                    ttscore += ply;
+                }
+                else if (ttscore > MATE_SCORE)
+                {
+                    ttscore -= ply;
+                }
 
-                        if (ttvalue < -MATE_SCORE)
-                        {
-                            ttvalue += ply;
-                        }
-                        else if (ttvalue > MATE_SCORE)
-                        {
-                            ttvalue -= ply;
-                        }
-
-                        if (ttentry.flag == tt::TTFlag::EXACT
-                            || (ttentry.flag == tt::TTFlag::LOWERBOUND && ttvalue >= beta)
-                            || (ttentry.flag == tt::TTFlag::UPPERBOUND && ttvalue <= alpha))
-                        {
-                            return ttvalue;
-                        }
-                    }
+                if (ttdata.flag == tt::TTFlag::EXACT
+                    || (ttdata.flag == tt::TTFlag::LOWERBOUND && ttscore >= beta)
+                    || (ttdata.flag == tt::TTFlag::UPPERBOUND && ttscore <= alpha))
+                {
+                    return ttscore;
                 }
             }
 
@@ -260,13 +255,12 @@ namespace sagittar {
             u32        legal_moves_count = 0;
             u32        moves_searched    = 0;
 
+            // Generate pseudolegal mooves
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
 
-            tt::TTEntry      ttentry;
-            const bool       tthit  = tt.probe(&ttentry, board.getHash());
-            const move::Move ttmove = tthit ? ttentry.move : move::Move();
-
+            // Score moves
+            const move::Move ttmove = tthit ? ttdata.move : move::Move();
             scoreMoves(&moves, board, pvmove, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
@@ -476,9 +470,9 @@ namespace sagittar {
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
 
-            tt::TTEntry      ttentry;
-            const bool       tthit  = tt.probe(&ttentry, board.getHash());
-            const move::Move ttmove = tthit ? ttentry.move : move::Move();
+            tt::TTData       ttdata;
+            const bool       tthit  = tt.probe(&ttdata, board.getHash());
+            const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
             scoreMoves(&moves, board, pvmove, ttmove, data, ply);
 
@@ -497,7 +491,7 @@ namespace sagittar {
 
                 result->nodes++;
 
-                const i32 score = -quiescencesearch(board, -beta, -alpha, ply + 1, info, result);
+                const Score score = -quiescencesearch(board, -beta, -alpha, ply + 1, info, result);
 
                 board.undoMove();
 

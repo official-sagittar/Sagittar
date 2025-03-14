@@ -18,7 +18,7 @@ namespace sagittar {
                 {
                     moves->at(i).setScore(PVMOVE_SCORE);
                 }
-                else if ((ttmove != move::Move()) && (move == ttmove))
+                else if (move == ttmove)
                 {
                     moves->at(i).setScore(TTMOVE_SCORE);
                 }
