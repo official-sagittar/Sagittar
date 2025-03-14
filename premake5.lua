@@ -13,9 +13,10 @@ project "Sagittar"
     pchheader "src/pch.h"
     pchsource "src/pch.cpp"
     includedirs { "src" }
-    flags { "FatalWarnings", "LinkTimeOptimization" }
-    buildoptions { "-Wall", "-Wextra", "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
+    warnings "Extra"
+    buildoptions { "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
     linkoptions { "-static", "-fsanitize=undefined", "-fsanitize=address" }
+    linkerfatalwarnings { "warnings" }
 
     newoption {
         trigger = "enable-san",
@@ -45,18 +46,20 @@ project "Sagittar"
     filter { "configurations:Debug" }
         defines { "DEBUG" }
         symbols "On"
-        removeflags { "FatalWarnings", "LinkTimeOptimization" }
+        linktimeoptimization "Off"
 
     filter { "configurations:Test" }
         files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
         removefiles { "src/main.cpp" }
         includedirs { "src",  "test/lib/doctest" }
-        removeflags { "FatalWarnings" }
         defines { "DEBUG", "TEST" }
+        linktimeoptimization "On"
         optimize "Speed"
 
     filter { "configurations:Release" }
         defines { "NDEBUG" }
+        fatalwarnings { "All" }
+        linktimeoptimization "On"
         optimize "Speed"
 
 newaction {

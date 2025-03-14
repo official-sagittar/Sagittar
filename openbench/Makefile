@@ -9,15 +9,15 @@ else
     PATHSEP := /
 endif
 
-EXE ?= Sagittar$(EXE_EXT)
-CXX ?= clang++
-CFLAGS := -MD -MP -DNDEBUG -m64 -Werror -flto -O3 -std=c++20 -march=native
-LDFLAGS := -m64 -static -flto
-
 BIN_DIR := .
 OBJ_DIR := ..$(PATHSEP)obj
 SRC_DIR := ..$(PATHSEP)src
 INC_DIR := -I$(SRC_DIR)
+
+EXE ?= Sagittar$(EXE_EXT)
+CXX ?= clang++
+CFLAGS := -MD -MP -DNDEBUG -I$(SRC_DIR) -m64 -Werror -flto -O3 -Wall -Wextra -std=c++20 -march=native
+LDFLAGS := -m64 -flto
 
 all: clean dir sagittar
 
