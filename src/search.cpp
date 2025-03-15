@@ -159,19 +159,13 @@ namespace sagittar {
                 }
             }
 
-            const Score alpha_orig = alpha;
-
             if (ply >= MAX_DEPTH - 1) [[unlikely]]
             {
                 return eval::evaluateBoard(board);
             }
 
-            if (ply > 0 && do_null && board.hasPositionRepeated())
-            {
-                return 0;
-            }
-
-            if (ply > 0 && board.getHalfmoveClock() >= 100)
+            if (ply > 0
+                && ((do_null && board.hasPositionRepeated()) || (board.getHalfmoveClock() >= 100)))
             {
                 return 0;
             }
@@ -216,7 +210,7 @@ namespace sagittar {
             }
 
             // Node Pruning
-            if (!is_in_check && !is_pv_node)
+            if (!is_pv_node && !is_in_check)
             {
                 // Reverse Futility Pruning
                 if (depth <= 3)
@@ -252,6 +246,7 @@ namespace sagittar {
 
             Score      best_score = -INF;
             move::Move best_move_so_far;
+            tt::TTFlag ttflag            = tt::TTFlag::UPPERBOUND;
             u32        legal_moves_count = 0;
             u32        moves_searched    = 0;
 
@@ -291,8 +286,8 @@ namespace sagittar {
                 else
                 {
                     // clang-format off
-                    if (!is_in_check
-                        && !is_pv_node
+                    if (!is_pv_node
+                        && !is_in_check
                         && !movegen::isInCheck(board))
                     // clang-format on
                     {
@@ -326,12 +321,12 @@ namespace sagittar {
                             if (move::isCapture(move.getFlag())
                                 || move::isPromotion(move.getFlag()))
                             {
-                                r = params::lmr_r_table_tactical[std::clamp(moves_searched, 0U,
-                                                                            64U)][(int) depth];
+                                r = params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                                [(int) depth];
                             }
                             else
                             {
-                                r = params::lmr_r_table_quiet[std::clamp(moves_searched, 0U, 64U)]
+                                r = params::lmr_r_table_quiet[std::min(moves_searched, 64U)]
                                                              [(int) depth];
                             }
                             score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
@@ -373,15 +368,16 @@ namespace sagittar {
                 if (score > best_score)
                 {
                     best_score = score;
-                    if (score > alpha)
+                    if (best_score > alpha)
                     {
                         alpha            = score;
                         best_move_so_far = move;
+                        ttflag           = tt::TTFlag::EXACT;
                         if (ply == 0 && !stop.load(std::memory_order_relaxed))
                         {
                             pvmove = move;
                         }
-                        if (score >= beta)
+                        if (best_score >= beta)
                         {
                             if (!move::isCapture(move.getFlag()))
                             {
@@ -393,6 +389,7 @@ namespace sagittar {
                                 const Piece piece = board.getPiece(move.getFrom());
                                 data.history[piece][move.getTo()] += depth;
                             }
+                            ttflag = tt::TTFlag::LOWERBOUND;
                             break;
                         }
                     }
@@ -413,25 +410,12 @@ namespace sagittar {
 
             if (!stop.load(std::memory_order_relaxed))
             {
-                tt::TTFlag flag = tt::TTFlag::NONE;
-                if (best_score <= alpha_orig)
-                {
-                    flag = tt::TTFlag::UPPERBOUND;
-                }
-                else if (best_score >= beta)
-                {
-                    flag = tt::TTFlag::LOWERBOUND;
-                }
-                else
-                {
-                    flag = tt::TTFlag::EXACT;
-                }
-                tt.store(board.getHash(), ply, depth, flag, best_score, best_move_so_far);
-            }
+                tt.store(board.getHash(), ply, depth, ttflag, best_score, best_move_so_far);
 
-            if (ply == 0 && !stop.load(std::memory_order_relaxed))
-            {
-                result->bestmove = pvmove;
+                if (ply == 0)
+                {
+                    result->bestmove = pvmove;
+                }
             }
 
             return best_score;

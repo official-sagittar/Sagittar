@@ -43,8 +43,8 @@ namespace sagittar {
                 const TTEntry currentry = entries.at(index);
 
                 // Only handles empty indices or stale entires
-                const bool replace = (currentry.flag() == TTFlag::NONE)
-                                  || (currentry.age() < currentage) || (currentry.depth <= depth);
+                const bool replace = (currentry.key == 0ULL) || (currentry.age() < currentage)
+                                  || (currentry.depth <= depth);
                 if (!replace)
                 {
                     return;
@@ -97,7 +97,7 @@ namespace sagittar {
                 u32 used = 0;
                 for (auto& e : entries)
                 {
-                    used += (e.flag() == TTFlag::NONE) || (e.age() == currentage);
+                    used += (e.flag() != TTFlag::NONE) || (e.age() == currentage);
                 }
                 return used * 1000 / size;
             }
