@@ -97,7 +97,7 @@ namespace sagittar {
                 u32 used = 0;
                 for (auto& e : entries)
                 {
-                    used += (e.flag() != TTFlag::NONE) || (e.age() == currentage);
+                    used += (e.flag() != TTFlag::NONE) && (e.age() == currentage);
                 }
                 return used * 1000 / size;
             }
