@@ -48,6 +48,7 @@ namespace sagittar {
         void init() {
             updateLMPTresholdPct();
             updateLMRTable();
+            updateFutilityMargin();
         }
 
         void updateLMPTresholdPct() { lmp_treshold_pct = lmp_treshold / 10.0; }
@@ -74,6 +75,13 @@ namespace sagittar {
                     r   = static_cast<u8>(std::min(r_i, depth - 1));
                     lmr_r_table_quiet[move][depth] = r;
                 }
+            }
+        }
+
+        void updateFutilityMargin() {
+            for (u8 depth = 0; depth < 5; depth++)
+            {
+                futility_margin[depth] = (futility_margin_m * depth) + futility_margin_c;
             }
         }
 
