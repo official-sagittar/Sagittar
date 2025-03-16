@@ -256,6 +256,12 @@ namespace sagittar {
                     do_futility_pruning = true;
                 }
                 // clang-format on
+
+                // Internal Iterative Reductions
+                if (depth >= 4 && (!tthit || (ttdata.move == move::Move())))
+                {
+                    depth--;
+                }
             }
 
             Score      best_score = -INF;
