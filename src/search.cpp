@@ -211,17 +211,19 @@ namespace sagittar {
                 }
             }
 
-            // Node Pruning
+            bool do_futility_pruning = false;
+
             if (!is_critical_node)
             {
+                const Score static_eval = eval::evaluateBoard(board);
+
                 // Reverse Futility Pruning
                 if (depth <= 3)
                 {
-                    const Score eval   = eval::evaluateBoard(board);
                     const Score margin = params::rfp_margin * depth;
-                    if (eval >= beta + margin)
+                    if (static_eval >= beta + margin)
                     {
-                        return eval;
+                        return static_eval;
                     }
                 }
 
@@ -244,6 +246,16 @@ namespace sagittar {
                         return beta;
                     }
                 }
+
+                // Futility Pruning Decision
+                // clang-format off
+                if (depth <= 3
+                    && alpha < WIN_SCORE
+                    && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
+                {
+                    do_futility_pruning = true;
+                }
+                // clang-format on
             }
 
             Score      best_score = -INF;
@@ -282,6 +294,13 @@ namespace sagittar {
                 // Move Loop Pruning
                 if (moves_searched > 0 && !is_critical_node && move_is_quite && !move_gives_check)
                 {
+                    // Futility Pruning
+                    if (do_futility_pruning)
+                    {
+                        board.undoMove();
+                        continue;
+                    }
+
                     // Late Move Pruning
                     if (depth <= 2 && move_piece_type != PieceType::PAWN)
                     {
