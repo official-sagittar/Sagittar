@@ -276,7 +276,7 @@ namespace sagittar {
                 legal_moves_count++;
 
                 const bool move_is_quite =
-                  !move::isCapture(move.getFlag()) && !move::isPromotion(move.getFlag());
+                  !(move::isCapture(move.getFlag()) || move::isPromotion(move.getFlag()));
                 const bool move_gives_check = movegen::isInCheck(board);
 
                 // Move Loop Pruning
