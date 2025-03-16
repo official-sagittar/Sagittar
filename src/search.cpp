@@ -248,10 +248,14 @@ namespace sagittar {
                 }
 
                 // Futility Pruning Decision
-                if (depth <= 3 && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
+                // clang-format off
+                if (depth <= 3
+                    && alpha < WIN_SCORE
+                    && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
                 {
                     do_futility_pruning = true;
                 }
+                // clang-format on
             }
 
             Score      best_score = -INF;
