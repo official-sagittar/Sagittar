@@ -185,6 +185,8 @@ namespace sagittar {
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
             const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
+            const bool is_critical_node = is_pv_node || is_in_check;
+
             tt::TTData ttdata;
             const bool tthit = tt.probe(&ttdata, board.getHash());
 
@@ -210,7 +212,7 @@ namespace sagittar {
             }
 
             // Node Pruning
-            if (!is_pv_node && !is_in_check)
+            if (!is_critical_node)
             {
                 // Reverse Futility Pruning
                 if (depth <= 3)
@@ -265,15 +267,35 @@ namespace sagittar {
                 const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
 
                 const board::DoMoveResult do_move_result = board.doMove(move);
-
                 if (do_move_result == board::DoMoveResult::ILLEGAL)
                 {
                     board.undoMove();
                     continue;
                 }
 
-                result->nodes++;
                 legal_moves_count++;
+
+                const bool move_is_quite =
+                  !(move::isCapture(move.getFlag()) || move::isPromotion(move.getFlag()));
+                const bool move_gives_check = movegen::isInCheck(board);
+
+                // Move Loop Pruning
+                if (moves_searched > 0 && !is_critical_node && move_is_quite && !move_gives_check)
+                {
+                    // Late Move Pruning
+                    if (depth <= 2 && move_piece_type != PieceType::PAWN)
+                    {
+                        const u32 LMP_MOVE_CUTOFF =
+                          moves.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
+                        if (moves_searched >= LMP_MOVE_CUTOFF)
+                        {
+                            board.undoMove();
+                            continue;
+                        }
+                    }
+                }
+
+                result->nodes++;
 
                 Score score = -INF;
 
@@ -285,57 +307,30 @@ namespace sagittar {
                 }
                 else
                 {
+                    // Late Move Reduction
                     // clang-format off
-                    if (!is_pv_node
-                        && !is_in_check
-                        && !movegen::isInCheck(board))
+                    if (depth >= 3
+                        && moves_searched >= 4
+                        && !is_critical_node
+                        && !move_gives_check
+                        && move.getScore() != KILLER_0_SCORE
+                        && move.getScore() != KILLER_1_SCORE
+                    )
                     // clang-format on
                     {
-                        // Late Move Pruning
-                        // clang-format off
-                        if (move_piece_type != PieceType::PAWN
-                            && !move::isCapture(move.getFlag())
-                            && !move::isPromotion(move.getFlag())
-                            && depth <= 2)
-                        // clang-format on
+                        u8 r = 0;
+                        if (move_is_quite)
                         {
-                            const u32 LMP_MOVE_CUTOFF =
-                              moves.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
-                            if (moves_searched >= LMP_MOVE_CUTOFF)
-                            {
-                                board.undoMove();
-                                result->nodes--;
-                                continue;
-                            }
-                        }
-
-                        // Late Move Reduction
-                        // clang-format off
-                        if (depth >= 3
-                            && moves_searched >= 4
-                            && move.getScore() != KILLER_0_SCORE
-                            && move.getScore() != KILLER_1_SCORE)
-                        // clang-format on
-                        {
-                            u8 r = 0;
-                            if (move::isCapture(move.getFlag())
-                                || move::isPromotion(move.getFlag()))
-                            {
-                                r = params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
-                                                                [(int) depth];
-                            }
-                            else
-                            {
-                                r = params::lmr_r_table_quiet[std::min(moves_searched, 64U)]
-                                                             [(int) depth];
-                            }
-                            score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
-                                                              ply + 1, info, result, do_null);
+                            r =
+                              params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth];
                         }
                         else
                         {
-                            score = alpha + 1;
+                            r = params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                            [(int) depth];
                         }
+                        score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
+                                                          ply + 1, info, result, do_null);
                     }
                     else
                     {
@@ -498,5 +493,4 @@ namespace sagittar {
         }
 
     }
-
 }
