@@ -227,6 +227,21 @@ namespace sagittar {
                     }
                 }
 
+                // Razoring
+                // clang-format off
+                if (depth <= 4
+                    && std::abs(alpha) < 2000
+                    && static_eval + params::razoring_margin * depth <= alpha)
+                // clang-format on
+                {
+                    const Score score =
+                      quiescencesearch(board, alpha, alpha + 1, ply, info, result);
+                    if (score <= alpha)
+                    {
+                        return score;
+                    }
+                }
+
                 // Null Move Pruning
                 if (do_null && depth >= 3 && !eval::isEndGame(board))
                 {
