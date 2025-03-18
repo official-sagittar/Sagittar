@@ -52,7 +52,7 @@ namespace sagittar {
 
         PARAM(rfp_margin, 50, 50, 300, 25);
 
-        PARAM(razoring_margin, 300, 50, 600, 50);
+        PARAM(razoring_margin, 500, 50, 800, 50);
 
         PARAM_CALLBACK(lmp_treshold, 8, 2, 8, 1, updateLMPTresholdPct);
 
