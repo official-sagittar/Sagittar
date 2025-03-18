@@ -230,6 +230,7 @@ namespace sagittar {
                 // Razoring
                 // clang-format off
                 if (depth <= 4
+                    && do_null
                     && std::abs(alpha) < 2000
                     && static_eval + params::razoring_margin * depth <= alpha)
                 // clang-format on
