@@ -34,8 +34,9 @@ namespace sagittar {
             class TranspositionTable {
                private:
                 struct TTEntry {
-                    u64   key;
+                    u16   key;
                     Score score;
+                    Score static_eval;
                     u16   move_id;
                     Depth depth;
                     u8    age_flag_pv;
@@ -43,6 +44,7 @@ namespace sagittar {
                     TTEntry() :
                         key(0),
                         score(0),
+                        static_eval(0),
                         move_id(move::Move().id()),
                         depth(0),
                         age_flag_pv(0) {}
@@ -60,9 +62,20 @@ namespace sagittar {
                     }
                 };
 
-                std::vector<TTEntry> entries;
-                std::size_t          size;
-                u8                   currentage;
+                struct TTBucket {
+                    static constexpr u8 ENTRIES_PER_BUCKET = 3;
+
+                    std::array<TTEntry, ENTRIES_PER_BUCKET> entries;
+                };
+
+                static constexpr int AGE_CYCLE_LENGTH = 1 << 5;
+                static constexpr int AGE_MASK         = AGE_CYCLE_LENGTH - 1;
+
+                std::vector<TTBucket> buckets;
+                std::size_t           size;
+                u8                    currentage;
+
+                i32 quality(const u8 age, const Depth depth) const;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
