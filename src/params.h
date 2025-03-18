@@ -61,8 +61,8 @@ namespace sagittar {
         PARAM_CALLBACK(lmr_alpha_quiet, 131, 0, 300, 50, updateLMRTable);
         PARAM_CALLBACK(lmr_beta_quiet, 137, 50, 500, 25, updateLMRTable);
 
-        PARAM_CALLBACK(futility_margin_c, 10, 5, 50, 10, updateFutilityMargin);
-        PARAM_CALLBACK(futility_margin_m, 160, 0, 200, 10, updateFutilityMargin);
+        PARAM_CALLBACK(futility_margin_c, 10, 5, 100, 10, updateFutilityMargin);
+        PARAM_CALLBACK(futility_margin_m, 160, 0, 500, 10, updateFutilityMargin);
     }
 
 }
