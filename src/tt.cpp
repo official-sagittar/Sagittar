@@ -7,25 +7,66 @@ namespace sagittar {
 
         namespace tt {
 
-            TranspositionTable::TranspositionTable(const std::size_t mb) {
-                setSize(mb);
-                currentage = 0;
+            template<typename T>
+            static T* alignedAlloc(std::size_t alignment, std::size_t count) {
+                const auto size = count * sizeof(T);
+
+#ifdef _WIN32
+                return static_cast<T*>(_aligned_malloc(size, alignment));
+#else
+                return static_cast<T*>(std::aligned_alloc(alignment, size));
+#endif
             }
 
+            static void alignedFree(void* ptr) {
+                if (!ptr)
+                {
+                    return;
+                }
+
+#ifdef _WIN32
+                _aligned_free(ptr);
+#else
+                std::free(ptr);
+#endif
+            }
+
+            TranspositionTable::TranspositionTable(const std::size_t mb) :
+                buckets(nullptr),
+                size(2),
+                currentage(0) {
+                setSize(mb);
+            }
+
+            TranspositionTable::~TranspositionTable() { alignedFree(buckets); }
+
             void TranspositionTable::setSize(const std::size_t mb) {
-                size = (mb * 1024 * 1024) / sizeof(TTBucket);
-                buckets.clear();
-                buckets.resize(size);
-                buckets.shrink_to_fit();
-                currentage = 0;
+                const std::size_t new_size = (mb * 1024 * 1024) / sizeof(TTBucket);
+                if (size != new_size)
+                {
+                    size = new_size;
+                    if (buckets)
+                    {
+                        alignedFree(buckets);
+                        buckets = nullptr;
+                    }
+                    buckets = alignedAlloc<TTBucket>(32, size);
+                    if (!buckets)
+                    {
+                        std::cerr << "Failed to allocated memory for Transposition Table"
+                                  << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                clear();
             }
 
             std::size_t TranspositionTable::getSize() const { return size; }
 
             void TranspositionTable::clear() {
-                for (auto& bucket : buckets)
+                for (u32 i = 0; i < (u32) size; i++)
                 {
-                    for (auto& entry : bucket.entries)
+                    for (auto& entry : buckets[i].entries)
                     {
                         entry = TTEntry();
                     }
@@ -45,7 +86,7 @@ namespace sagittar {
                                            const move::Move move) {
                 const u64 index       = hash % size;
                 const u16 key         = hash & 0xFFFF;
-                TTBucket& bucket      = buckets.at(index);
+                TTBucket& bucket      = buckets[index];
                 i32       min_quality = INT32_MAX;
                 TTEntry*  entry_ptr   = nullptr;
                 for (auto& candidate : bucket.entries)
@@ -107,9 +148,9 @@ namespace sagittar {
             }
 
             bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
-                const u64      index  = hash % size;
-                const TTBucket bucket = buckets.at(index);
-                const u16      key    = hash & 0xFFFF;
+                const u64       index  = hash % size;
+                const TTBucket& bucket = buckets[index];
+                const u16       key    = hash & 0xFFFF;
 
                 for (const auto& entry : bucket.entries)
                 {
@@ -128,9 +169,9 @@ namespace sagittar {
 
             u32 TranspositionTable::hashfull() const {
                 u32 used = 0;
-                for (const auto& bucket : buckets)
+                for (u32 i = 0; i < (u32) size; i++)
                 {
-                    for (const auto& entry : bucket.entries)
+                    for (const auto& entry : buckets[i].entries)
                     {
                         used += (entry.flag() != TTFlag::NONE) && (entry.age() == currentage);
                     }

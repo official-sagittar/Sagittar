@@ -62,23 +62,25 @@ namespace sagittar {
                     }
                 };
 
-                struct TTBucket {
+                struct alignas(32) TTBucket {
                     static constexpr u8 ENTRIES_PER_BUCKET = 3;
 
                     std::array<TTEntry, ENTRIES_PER_BUCKET> entries;
+                    char                                    padding[2];
                 };
 
                 static constexpr int AGE_CYCLE_LENGTH = 1 << 5;
                 static constexpr int AGE_MASK         = AGE_CYCLE_LENGTH - 1;
 
-                std::vector<TTBucket> buckets;
-                std::size_t           size;
-                u8                    currentage;
+                TTBucket*   buckets;
+                std::size_t size;
+                u8          currentage;
 
                 i32 quality(const u8 age, const Depth depth) const;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
+                ~TranspositionTable();
                 void               setSize(const std::size_t mb);
                 std::size_t        getSize() const;
                 void               clear();
