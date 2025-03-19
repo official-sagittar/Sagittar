@@ -33,7 +33,7 @@ namespace sagittar {
 
             TranspositionTable::TranspositionTable(const std::size_t mb) :
                 buckets(nullptr),
-                size(2),
+                size(0),
                 currentage(0) {
                 setSize(mb);
             }
@@ -41,7 +41,7 @@ namespace sagittar {
             TranspositionTable::~TranspositionTable() { alignedFree(buckets); }
 
             void TranspositionTable::setSize(const std::size_t mb) {
-                const std::size_t new_size = (mb * 1024 * 1024) / sizeof(TTBucket);
+                const std::size_t new_size = (mb * 0x100000) / sizeof(TTBucket);
                 if (size != new_size)
                 {
                     size = new_size;
@@ -84,9 +84,9 @@ namespace sagittar {
                                            const TTFlag     flag,
                                            Score            value,
                                            const move::Move move) {
-                const u64 index       = hash % size;
+                const u64 idx         = index(hash);
                 const u16 key         = hash & 0xFFFF;
-                TTBucket& bucket      = buckets[index];
+                TTBucket& bucket      = buckets[idx];
                 i32       min_quality = INT32_MAX;
                 TTEntry*  entry_ptr   = nullptr;
                 for (auto& candidate : bucket.entries)
@@ -148,8 +148,8 @@ namespace sagittar {
             }
 
             bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
-                const u64       index  = hash % size;
-                const TTBucket& bucket = buckets[index];
+                const u64       idx    = index(hash);
+                const TTBucket& bucket = buckets[idx];
                 const u16       key    = hash & 0xFFFF;
 
                 for (const auto& entry : bucket.entries)
@@ -178,6 +178,10 @@ namespace sagittar {
                 }
 
                 return (used * 1000) / (size * TTBucket::ENTRIES_PER_BUCKET);
+            }
+
+            u64 TranspositionTable::index(const u64 hash) const {
+                return static_cast<u64>((static_cast<u128>(hash) * static_cast<u128>(size)) >> 64);
             }
 
             i32 TranspositionTable::quality(const u8 age, const Depth depth) const {

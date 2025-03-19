@@ -76,6 +76,7 @@ namespace sagittar {
                 std::size_t size;
                 u8          currentage;
 
+                u64 index(const u64 hash) const;
                 i32 quality(const u8 age, const Depth depth) const;
 
                public:
