@@ -52,17 +52,17 @@ namespace sagittar {
 
         PARAM(rfp_margin, 50, 50, 300, 25);
 
-        PARAM(razoring_margin, 500, 50, 800, 50);
+        PARAM(razoring_margin, 453, 50, 800, 50);
 
         PARAM_CALLBACK(lmp_treshold, 8, 2, 8, 1, updateLMPTresholdPct);
 
-        PARAM_CALLBACK(lmr_alpha_tactical, 68, 0, 300, 50, updateLMRTable);
-        PARAM_CALLBACK(lmr_beta_tactical, 265, 50, 500, 25, updateLMRTable);
-        PARAM_CALLBACK(lmr_alpha_quiet, 131, 0, 300, 50, updateLMRTable);
-        PARAM_CALLBACK(lmr_beta_quiet, 137, 50, 500, 25, updateLMRTable);
+        PARAM_CALLBACK(lmr_alpha_tactical, 87, 0, 300, 50, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_tactical, 269, 50, 500, 25, updateLMRTable);
+        PARAM_CALLBACK(lmr_alpha_quiet, 115, 0, 300, 50, updateLMRTable);
+        PARAM_CALLBACK(lmr_beta_quiet, 148, 50, 500, 25, updateLMRTable);
 
-        PARAM_CALLBACK(futility_margin_c, 10, 5, 100, 10, updateFutilityMargin);
-        PARAM_CALLBACK(futility_margin_m, 160, 0, 500, 10, updateFutilityMargin);
+        PARAM_CALLBACK(futility_margin_c, 8, 5, 100, 10, updateFutilityMargin);
+        PARAM_CALLBACK(futility_margin_m, 165, 0, 500, 10, updateFutilityMargin);
     }
 
 }
