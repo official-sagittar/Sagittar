@@ -97,7 +97,7 @@ namespace sagittar {
                         break;
                     }
 
-                    i32 candidate_quality = quality(candidate.age(), candidate.depth);
+                    const i32 candidate_quality = quality(candidate);
                     if (candidate_quality < min_quality)
                     {
                         entry_ptr   = &candidate;
@@ -114,7 +114,7 @@ namespace sagittar {
                 // Replacement scheme
                 // clang-format off
                 if (!(flag == TTFlag::EXACT
-                        || key != entry.key
+                        || entry.key == 0
                         || currentage != entry.age()
                         || depth + 4 > entry.depth))
                 {
@@ -184,9 +184,9 @@ namespace sagittar {
                 return static_cast<u64>((static_cast<u128>(hash) * static_cast<u128>(size)) >> 64);
             }
 
-            i32 TranspositionTable::quality(const u8 age, const Depth depth) const {
-                const i32 relative_age = (AGE_CYCLE_LENGTH + currentage - age) & AGE_MASK;
-                return depth - 2 * relative_age;
+            i32 TranspositionTable::quality(const TTEntry& entry) const {
+                const i32 relative_age = (AGE_CYCLE_LENGTH + currentage - entry.age()) & AGE_MASK;
+                return entry.depth - relative_age * 2;
             }
 
         }

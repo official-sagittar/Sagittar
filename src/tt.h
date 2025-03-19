@@ -77,7 +77,7 @@ namespace sagittar {
                 u8          currentage;
 
                 u64 index(const u64 hash) const;
-                i32 quality(const u8 age, const Depth depth) const;
+                i32 quality(const TTEntry& entry) const;
 
                public:
                 explicit TranspositionTable(const std::size_t mb);
