@@ -112,21 +112,19 @@ namespace sagittar {
                 TTEntry entry = *entry_ptr;
 
                 // Replacement scheme
-                // clang-format off
-                if (!(flag == TTFlag::EXACT
-                        || entry.key == 0
-                        || currentage != entry.age()
-                        || depth + 4 > entry.depth))
+                const bool replace =
+                  (entry.key == 0) || (entry.age() != currentage) || (entry.depth <= depth);
+                if (!replace)
                 {
                     return;
                 }
-                // clang-format on
 
-                // Only if current entry is from a different position OR if move is not a null move,
-                // Replace the move in the entry
-                if (move != move::Move() || entry.key != key)
+                // If current entry is from the current position AND if move is a null move,
+                // DO NOT replace the move in the entry
+                u16 move_to_replace = move.id();
+                if ((move == move::Move()) && (entry.key == key))
                 {
-                    entry.move_id = move.id();
+                    move_to_replace = entry.move_id;
                 }
 
                 if (value < -MATE_SCORE)
@@ -141,6 +139,7 @@ namespace sagittar {
                 entry.key         = key;
                 entry.score       = value;
                 entry.static_eval = value;
+                entry.move_id     = move_to_replace;
                 entry.depth       = depth;
                 entry.age_flag_pv = TTEntry::foldAgeFlagPV(currentage, flag, false);
 
