@@ -670,11 +670,11 @@ namespace sagittar {
                 opBQ |= board.getBitboard(pieceCreate(PieceType::BISHOP, attacked_by));
                 opKing = board.getBitboard(pieceCreate(PieceType::KING, attacked_by));
                 // clang-format off
-            return (getBishopAttacks(sq, occupied) & opBQ)
-                 | (getRookAttacks(sq, occupied) & opRQ)
-                 | (ATTACK_TABLE_KNIGHT[sq] & opKnights)
-                 | (ATTACK_TABLE_PAWN[colorFlip(attacked_by)][sq] & opPawns)
-                 | (ATTACK_TABLE_KING[sq] & opKing);
+                return (getBishopAttacks(sq, occupied) & opBQ)
+                    | (getRookAttacks(sq, occupied) & opRQ)
+                    | (ATTACK_TABLE_KNIGHT[sq] & opKnights)
+                    | (ATTACK_TABLE_PAWN[colorFlip(attacked_by)][sq] & opPawns)
+                    | (ATTACK_TABLE_KING[sq] & opKing);
                 // clang-format on
             }
 

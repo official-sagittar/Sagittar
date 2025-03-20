@@ -6,8 +6,8 @@
 #include "sagittar/core/move.h"
 #include "sagittar/core/movegen.h"
 #include "sagittar/core/types.h"
+#include "sagittar/search/data.h"
 #include "sagittar/search/movepicker.h"
-#include "sagittar/search/search.h"
 
 using namespace sagittar;
 using namespace sagittar::core::types;
@@ -15,7 +15,7 @@ using namespace sagittar::core::types;
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
-        search::SearcherData data;
+        search::data::SearcherData data;
 
         core::board::Board board;
         core::fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");

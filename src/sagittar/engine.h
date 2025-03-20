@@ -8,6 +8,8 @@
 
 namespace sagittar {
 
+    using namespace core::types;
+
     class Engine {
        private:
         std::string        name;
@@ -34,9 +36,9 @@ namespace sagittar {
 
         std::string getPositionAsFEN();
 
-        core::board::DoMoveResult doMove(const std::string&);
+        DoMoveResult doMove(const std::string&);
 
-        core::board::DoMoveResult doMove(const core::move::Move&);
+        DoMoveResult doMove(const core::move::Move&);
 
         search::types::SearchResult search(search::types::SearchInfo);
 

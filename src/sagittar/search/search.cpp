@@ -11,27 +11,6 @@ namespace sagittar {
 
     namespace search {
 
-        SearcherData::SearcherData() { reset(); }
-
-        void SearcherData::reset() {
-            for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
-            {
-                for (u8 sq = Square::A1; sq <= Square::H8; sq++)
-                {
-                    history[p][sq] = 0;
-                }
-            }
-            for (u8 i = 0; i < constants::MAX_DEPTH; i++)
-            {
-                killer_moves[0][i] = core::move::Move();
-                killer_moves[1][i] = core::move::Move();
-            }
-        }
-
-        /*
-        * Searcher
-        */
-
         Searcher::Searcher() { reset(); }
 
         void Searcher::reset() {
@@ -300,8 +279,8 @@ namespace sagittar {
                 const core::move::Move move     = moves.at(i);
                 const PieceType move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
 
-                const core::board::DoMoveResult do_move_result = board.doMove(move);
-                if (do_move_result == core::board::DoMoveResult::ILLEGAL)
+                const DoMoveResult do_move_result = board.doMove(move);
+                if (do_move_result == DoMoveResult::ILLEGAL)
                 {
                     board.undoMove();
                     continue;
@@ -502,9 +481,9 @@ namespace sagittar {
                 movepicker::sortMoves(&moves, i);
                 const core::move::Move move = moves.at(i);
 
-                const core::board::DoMoveResult do_move_result = board.doMove(move);
+                const DoMoveResult do_move_result = board.doMove(move);
 
-                if (do_move_result == core::board::DoMoveResult::ILLEGAL)
+                if (do_move_result == DoMoveResult::ILLEGAL)
                 {
                     board.undoMove();
                     continue;

@@ -40,11 +40,9 @@ namespace sagittar {
 
     std::string Engine::getPositionAsFEN() { return core::fen::toFEN(board); }
 
-    core::board::DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
+    DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
 
-    core::board::DoMoveResult Engine::doMove(const core::move::Move& move) {
-        return board.doMove(move);
-    }
+    DoMoveResult Engine::doMove(const core::move::Move& move) { return board.doMove(move); }
 
     search::types::SearchResult Engine::search(search::types::SearchInfo info) {
         return searcher.startSearch(board, info);

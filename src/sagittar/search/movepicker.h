@@ -6,7 +6,7 @@
 #include "sagittar/core/board.h"
 #include "sagittar/core/move.h"
 #include "sagittar/core/types.h"
-#include "sagittar/search/search.h"
+#include "sagittar/search/data.h"
 
 namespace sagittar {
 
@@ -53,7 +53,7 @@ namespace sagittar {
                             const core::board::Board&                         board,
                             const core::move::Move&                           pvmove,
                             const core::move::Move&                           ttmove,
-                            const SearcherData&                               data,
+                            const data::SearcherData&                         data,
                             const i32                                         ply);
 
             void sortMoves(commons::containers::ArrayList<core::move::Move>* moves, const u8 index);

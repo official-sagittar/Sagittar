@@ -92,6 +92,12 @@ namespace sagittar {
             };
             // clang-format on
 
+            enum class DoMoveResult : u8 {
+                INVALID,  // Incorrect Move
+                ILLEGAL,  // Move is correct, but results in check or invalid board
+                LEGAL     // Move is correct and move is legal
+            };
+
             constexpr PieceType pieceTypeOf(const Piece p) {
                 return static_cast<PieceType>(p & 0x7);
             }

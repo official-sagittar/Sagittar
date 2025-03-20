@@ -10,7 +10,7 @@ namespace sagittar {
                             const core::board::Board&                         board,
                             const core::move::Move&                           pvmove,
                             const core::move::Move&                           ttmove,
-                            const SearcherData&                               data,
+                            const data::SearcherData&                         data,
                             const i32                                         ply) {
                 for (u8 i = 0; i < moves->size(); i++)
                 {

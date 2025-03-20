@@ -1,5 +1,4 @@
 #include "sagittar/comms/uci.h"
-#include "sagittar/core/board.h"
 #include "sagittar/search/params.h"
 #include "sagittar/search/types.h"
 #include "sagittar/utils/utils.h"
@@ -83,15 +82,15 @@ namespace sagittar {
                       (moves_pos == std::string::npos) ? input.length() : moves_pos;
                     segment = input.substr(13, len - 13);
                     // clang-format off
-                try
-                {
-                    engine.setPositionFromFEN(segment);
-                }
-                catch (const std::invalid_argument& e)
-                {
-                    is_valid_input = false;
-                    std::cerr << e.what() << std::endl;
-                }
+                    try
+                    {
+                        engine.setPositionFromFEN(segment);
+                    }
+                    catch (const std::invalid_argument& e)
+                    {
+                        is_valid_input = false;
+                        std::cerr << e.what() << std::endl;
+                    }
                     // clang-format on
                 }
 
@@ -102,7 +101,7 @@ namespace sagittar {
                     std::string       move;
                     while (movesss >> move)
                     {
-                        if (engine.doMove(move) != core::board::DoMoveResult::LEGAL) [[unlikely]]
+                        if (engine.doMove(move) != DoMoveResult::LEGAL) [[unlikely]]
                         {
                             std::cerr << "Invalid Move!" << std::endl;
                         }

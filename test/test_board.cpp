@@ -131,7 +131,7 @@ TEST_SUITE("Board") {
         board.setStartpos();
         core::move::Move m =
           core::move::Move(Square::E2, Square::E4, core::move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
-        bool is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        bool is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E2) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E4) == Piece::WHITE_PAWN);
@@ -144,7 +144,7 @@ TEST_SUITE("Board") {
         std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
         core::fen::parseFEN(&board, fen);
         m = core::move::Move(Square::E1, Square::G1, core::move::MoveFlag::MOVE_CASTLE_KING_SIDE);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E1) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::F1) == Piece::WHITE_ROOK);
@@ -161,7 +161,7 @@ TEST_SUITE("Board") {
         fen = "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 0 5";
         core::fen::parseFEN(&board, fen);
         m = core::move::Move(Square::E8, Square::G8, core::move::MoveFlag::MOVE_CASTLE_KING_SIDE);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E8) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::F8) == Piece::BLACK_ROOK);
@@ -178,7 +178,7 @@ TEST_SUITE("Board") {
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/R3KB1R w KQkq - 6 8";
         core::fen::parseFEN(&board, fen);
         m = core::move::Move(Square::E1, Square::C1, core::move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E1) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::D1) == Piece::WHITE_ROOK);
@@ -197,7 +197,7 @@ TEST_SUITE("Board") {
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/2KR1B1R b kq - 7 8";
         core::fen::parseFEN(&board, fen);
         m = core::move::Move(Square::E8, Square::C8, core::move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E8) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::D8) == Piece::BLACK_ROOK);
@@ -218,7 +218,7 @@ TEST_SUITE("Board") {
         fen = "4k3/8/8/3Pp3/8/8/8/4K3 w - e6 0 1";
         core::fen::parseFEN(&board, fen);
         m        = core::move::Move(Square::D5, Square::E6, core::move::MoveFlag::MOVE_CAPTURE_EP);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::D5) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E5) == Piece::NO_PIECE);
@@ -233,7 +233,7 @@ TEST_SUITE("Board") {
         fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
         core::fen::parseFEN(&board, fen);
         m        = core::move::Move(Square::D4, Square::E3, core::move::MoveFlag::MOVE_CAPTURE_EP);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::D4) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E4) == Piece::NO_PIECE);
@@ -250,7 +250,7 @@ TEST_SUITE("Board") {
 
         // KNIGHT
         m = core::move::Move(Square::A7, Square::A8, core::move::MoveFlag::MOVE_PROMOTION_KNIGHT);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_KNIGHT);
@@ -261,7 +261,7 @@ TEST_SUITE("Board") {
 
         // BISHOP
         m = core::move::Move(Square::A7, Square::A8, core::move::MoveFlag::MOVE_PROMOTION_BISHOP);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_BISHOP);
@@ -272,7 +272,7 @@ TEST_SUITE("Board") {
 
         // ROOK
         m = core::move::Move(Square::A7, Square::A8, core::move::MoveFlag::MOVE_PROMOTION_ROOK);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_ROOK);
@@ -283,7 +283,7 @@ TEST_SUITE("Board") {
 
         // QUEEN
         m = core::move::Move(Square::A7, Square::A8, core::move::MoveFlag::MOVE_PROMOTION_QUEEN);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_QUEEN);
@@ -297,7 +297,7 @@ TEST_SUITE("Board") {
         // KNIGHT
         m        = core::move::Move(Square::A7, Square::B8,
                                     core::move::MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_KNIGHT);
@@ -309,7 +309,7 @@ TEST_SUITE("Board") {
         // BISHOP
         m        = core::move::Move(Square::A7, Square::B8,
                                     core::move::MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_BISHOP);
@@ -321,7 +321,7 @@ TEST_SUITE("Board") {
         // ROOK
         m        = core::move::Move(Square::A7, Square::B8,
                                     core::move::MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_ROOK);
@@ -333,7 +333,7 @@ TEST_SUITE("Board") {
         // QUEEN
         m        = core::move::Move(Square::A7, Square::B8,
                                     core::move::MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
-        is_valid = (board.doMove(m) == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove(m) == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_QUEEN);
@@ -348,7 +348,7 @@ TEST_SUITE("Board") {
 
         // MOVE_QUIET_PAWN_DBL_PUSH
         board.setStartpos();
-        bool is_valid = (board.doMove("e2e4") == core::board::DoMoveResult::LEGAL);
+        bool is_valid = (board.doMove("e2e4") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E2) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E4) == Piece::WHITE_PAWN);
@@ -360,7 +360,7 @@ TEST_SUITE("Board") {
         // MOVE_CASTLE_KING_SIDE WHITE
         std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("e1g1") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("e1g1") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E1) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::F1) == Piece::WHITE_ROOK);
@@ -376,7 +376,7 @@ TEST_SUITE("Board") {
         // MOVE_CASTLE_KING_SIDE BLACK
         fen = "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 0 5";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("e8g8") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("e8g8") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E8) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::F8) == Piece::BLACK_ROOK);
@@ -392,7 +392,7 @@ TEST_SUITE("Board") {
         // MOVE_CASTLE_QUEEN_SIDE WHITE
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/R3KB1R w KQkq - 6 8";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("e1c1") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("e1c1") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E1) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::D1) == Piece::WHITE_ROOK);
@@ -410,7 +410,7 @@ TEST_SUITE("Board") {
         // MOVE_CASTLE_QUEEN_SIDE BLACK
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/2KR1B1R b kq - 7 8";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("e8c8") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("e8c8") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::E8) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::D8) == Piece::BLACK_ROOK);
@@ -430,7 +430,7 @@ TEST_SUITE("Board") {
         // WHITE
         fen = "4k3/8/8/3Pp3/8/8/8/4K3 w - e6 0 1";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("d5e6") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("d5e6") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::D5) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E5) == Piece::NO_PIECE);
@@ -444,7 +444,7 @@ TEST_SUITE("Board") {
         // BLACK
         fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
         core::fen::parseFEN(&board, fen);
-        is_valid = (board.doMove("d4e3") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("d4e3") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::D4) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::E4) == Piece::NO_PIECE);
@@ -460,7 +460,7 @@ TEST_SUITE("Board") {
         core::fen::parseFEN(&board, fen);
 
         // KNIGHT
-        is_valid = (board.doMove("a7a8n") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7a8n") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_KNIGHT);
@@ -470,7 +470,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::A8) == Piece::NO_PIECE);
 
         // BISHOP
-        is_valid = (board.doMove("a7a8b") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7a8b") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_BISHOP);
@@ -480,7 +480,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::A8) == Piece::NO_PIECE);
 
         // ROOK
-        is_valid = (board.doMove("a7a8r") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7a8r") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_ROOK);
@@ -490,7 +490,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::A8) == Piece::NO_PIECE);
 
         // QUEEN
-        is_valid = (board.doMove("a7a8q") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7a8q") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::A8) == Piece::WHITE_QUEEN);
@@ -502,7 +502,7 @@ TEST_SUITE("Board") {
         // MOVE_CAPTURE_PROMOTION
 
         // KNIGHT
-        is_valid = (board.doMove("a7b8n") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7b8n") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_KNIGHT);
@@ -512,7 +512,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::B8) == Piece::BLACK_QUEEN);
 
         // BISHOP
-        is_valid = (board.doMove("a7b8b") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7b8b") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_BISHOP);
@@ -522,7 +522,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::B8) == Piece::BLACK_QUEEN);
 
         // ROOK
-        is_valid = (board.doMove("a7b8r") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7b8r") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_ROOK);
@@ -532,7 +532,7 @@ TEST_SUITE("Board") {
         CHECK(board.getPiece(Square::B8) == Piece::BLACK_QUEEN);
 
         // QUEEN
-        is_valid = (board.doMove("a7b8q") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("a7b8q") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.getPiece(Square::A7) == Piece::NO_PIECE);
         CHECK(board.getPiece(Square::B8) == Piece::WHITE_QUEEN);
@@ -548,42 +548,42 @@ TEST_SUITE("Board") {
 
         const u64 startpos_hash = board.getHash();
 
-        bool is_valid = (board.doMove("g1f3") == core::board::DoMoveResult::LEGAL);
+        bool is_valid = (board.doMove("g1f3") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == false);
         CHECK(board.getActiveColor() == Color::BLACK);
 
-        is_valid = (board.doMove("g8f6") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("g8f6") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == false);
         CHECK(board.getActiveColor() == Color::WHITE);
 
-        is_valid = (board.doMove("f3g1") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("f3g1") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == false);
         CHECK(board.getActiveColor() == Color::BLACK);
 
-        is_valid = (board.doMove("f6g8") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("f6g8") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == true);
         CHECK(board.getActiveColor() == Color::WHITE);
 
-        is_valid = (board.doMove("g1f3") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("g1f3") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == true);
         CHECK(board.getActiveColor() == Color::BLACK);
 
-        is_valid = (board.doMove("g8f6") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("g8f6") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == true);
         CHECK(board.getActiveColor() == Color::WHITE);
 
-        is_valid = (board.doMove("f3g1") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("f3g1") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == true);
         CHECK(board.getActiveColor() == Color::BLACK);
 
-        is_valid = (board.doMove("f6g8") == core::board::DoMoveResult::LEGAL);
+        is_valid = (board.doMove("f6g8") == DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(board.hasPositionRepeated() == true);
         CHECK(board.getActiveColor() == Color::WHITE);

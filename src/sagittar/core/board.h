@@ -46,12 +46,6 @@ namespace sagittar {
                 BQCA = 8
             };
 
-            enum class DoMoveResult : u8 {
-                INVALID,  // Incorrect Move
-                ILLEGAL,  // Move is correct, but results in check or invalid board
-                LEGAL     // Move is correct and move is legal
-            };
-
             struct MoveHistoryEntry {
                 move::Move move;
                 Piece      captured;

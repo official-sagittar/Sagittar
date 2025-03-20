@@ -6,6 +6,7 @@
 #include "sagittar/core/move.h"
 #include "sagittar/core/types.h"
 #include "sagittar/search/constants.h"
+#include "sagittar/search/data.h"
 #include "sagittar/search/tt.h"
 #include "sagittar/search/types.h"
 
@@ -22,20 +23,12 @@ namespace sagittar {
             PV
         };
 
-        struct SearcherData {
-            u32              history[15][64];  // [piece][to]
-            core::move::Move killer_moves[2][constants::MAX_DEPTH];
-
-            SearcherData();
-            void reset();
-        };
-
         class Searcher {
            private:
             core::move::Move       pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(constants::DEFAULT_TT_SIZE_MB);
-            SearcherData           data;
+            data::SearcherData     data;
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
