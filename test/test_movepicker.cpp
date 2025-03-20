@@ -1,38 +1,39 @@
-#include "board.h"
-#include "containers.h"
+#include "commons/containers.h"
+#include "commons/pch.h"
 #include "doctest/doctest.h"
-#include "fen.h"
-#include "move.h"
-#include "movegen.h"
-#include "movepicker.h"
-#include "pch.h"
-#include "search.h"
-#include "types.h"
+#include "sagittar/core/board.h"
+#include "sagittar/core/fen.h"
+#include "sagittar/core/move.h"
+#include "sagittar/core/movegen.h"
+#include "sagittar/core/types.h"
+#include "sagittar/search/movepicker.h"
+#include "sagittar/search/search.h"
 
 using namespace sagittar;
+using namespace sagittar::core::types;
 
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::sortMoves") {
         search::SearcherData data;
 
-        board::Board board;
-        fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
+        core::board::Board board;
+        core::fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
-        containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
+        commons::containers::ArrayList<core::move::Move> moves;
+        core::movegen::generatePseudolegalMoves(&moves, board, core::movegen::MovegenType::ALL);
 
-        const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
-        const move::Move ttmove;
+        const core::move::Move pvmove(Square::E1, Square::F2, core::move::MoveFlag::MOVE_CAPTURE);
+        const core::move::Move ttmove;
 
-        search::scoreMoves(&moves, board, pvmove, ttmove, data, 0);
+        search::movepicker::scoreMoves(&moves, board, pvmove, ttmove, data, 0);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (moves.at(i) == pvmove)
             {
                 REQUIRE(moves.at(i).getScore() == 40000);
             }
-            else if (move::isCapture(moves.at(i).getFlag()))
+            else if (core::move::isCapture(moves.at(i).getFlag()))
             {
                 REQUIRE(moves.at(i).getScore() >= 10100);
             }
@@ -42,13 +43,13 @@ TEST_SUITE("Movepicker") {
             }
         }
 
-        search::sortMoves(&moves, 0);
+        search::movepicker::sortMoves(&moves, 0);
 
         REQUIRE(moves.at(0).getScore() == 40000);
 
         for (u8 i = 1; i < moves.size(); i++)
         {
-            search::sortMoves(&moves, i);
+            search::movepicker::sortMoves(&moves, i);
             REQUIRE(moves.at(i).getScore() <= moves.at(i - 1).getScore());
         }
     }

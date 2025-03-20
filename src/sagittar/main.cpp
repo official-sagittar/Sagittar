@@ -1,0 +1,21 @@
+#include "commons/pch.h"
+#include "sagittar/comms/uci.h"
+#include "sagittar/engine.h"
+
+int main(int argc, char* argv[]) {
+    sagittar::Engine engine;
+    if (argc == 1)
+    {
+        sagittar::comms::uci::UCIHandler ucihandler(engine);
+        ucihandler.start();
+    }
+    else if (argc == 2)
+    {
+        std::string cmd = std::string(argv[1]);
+        if (cmd == "bench")
+        {
+            engine.bench();
+        }
+    }
+    return 0;
+}

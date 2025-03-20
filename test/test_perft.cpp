@@ -1,20 +1,24 @@
-#include "board.h"
+#include "commons/pch.h"
+#include "commons/types.h"
 #include "doctest/doctest.h"
-#include "fen.h"
-#include "pch.h"
-#include "perft.h"
-#include "types.h"
+#include "sagittar/core/board.h"
+#include "sagittar/core/fen.h"
+#include "sagittar/core/perft.h"
+#include "sagittar/core/types.h"
 
 using namespace sagittar;
+using namespace sagittar::commons::types;
+using namespace sagittar::core::types;
+
 using pair_type = std::pair<std::string, std::vector<u64>>;
 
 TEST_SUITE("Perft") {
 
     TEST_CASE("Perft - startpos") {
-        board::Board board;
+        core::board::Board board;
         board.setStartpos();
 
-        u64 nodes = perft::perft(board, 6);
+        u64 nodes = core::perft::perft(board, 6);
         CHECK(nodes == 119060324);
     }
 
@@ -30,11 +34,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -58,11 +62,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -78,11 +82,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -96,11 +100,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -117,11 +121,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -135,11 +139,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -165,11 +169,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -193,11 +197,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -234,11 +238,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i + 1);
+                const u64 result = core::perft::perft(board, i + 1);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -252,11 +256,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -274,11 +278,11 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(board, i);
+                const u64 result = core::perft::perft(board, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -318,14 +322,14 @@ TEST_SUITE("Perft Full") {
                 depth_perft_part = match.suffix().str();
             }
 
-            board::Board board;
-            fen::parseFEN(&board, fen);
+            core::board::Board board;
+            core::fen::parseFEN(&board, fen);
 
             for (const auto& [key, value] : extracted_perft_values)
             {
                 SUBCASE("Perft - Full - Standard - FEN") {
                     const u8  depth  = std::stoi(key);
-                    const u64 result = perft::perft(board, depth);
+                    const u64 result = core::perft::perft(board, depth);
                     REQUIRE(result == value);
                 }
             }

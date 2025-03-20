@@ -10,22 +10,22 @@ project "Sagittar"
     targetdir "bin/%{cfg.buildcfg}"
     entrypoint ("main()")
     files { "src/**.h", "src/**.cpp" }
-    pchheader "src/pch.h"
-    pchsource "src/pch.cpp"
+    pchheader "src/commons/pch.h"
+    pchsource "src/commons/pch.cpp"
     includedirs { "src" }
     warnings "Extra"
-    buildoptions { "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
-    linkoptions { "-static", "-fsanitize=undefined", "-fsanitize=address" }
+    buildoptions { "-march=native" }
+    linkoptions { "-static" }
     linkerfatalwarnings { "warnings" }
 
     newoption {
         trigger = "enable-san",
         description = "Enable ASan and UBSan"
-     }
+    }
 
-    filter { "not options:enable-san" }
-        removebuildoptions { "-fsanitize=undefined", "-fsanitize=address" }
-        removelinkoptions { "-fsanitize=undefined", "-fsanitize=address" }
+    filter { "options:enable-san" }
+        buildoptions { "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
+        linkoptions { "-static", "-fsanitize=undefined", "-fsanitize=address" }
 
     filter { "platforms:macos64" }
         system "macosx"
@@ -50,7 +50,7 @@ project "Sagittar"
 
     filter { "configurations:Test" }
         files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
-        removefiles { "src/main.cpp" }
+        removefiles { "src/sagittar/main.cpp" }
         includedirs { "src",  "test/lib/doctest" }
         defines { "DEBUG", "TEST" }
         linktimeoptimization "On"

@@ -1,11 +1,13 @@
-#include "board.h"
+#include "commons/pch.h"
 #include "doctest/doctest.h"
-#include "fen.h"
-#include "move.h"
-#include "tt.h"
-#include "types.h"
+#include "sagittar/core/board.h"
+#include "sagittar/core/fen.h"
+#include "sagittar/core/move.h"
+#include "sagittar/core/types.h"
+#include "sagittar/search/tt.h"
 
 using namespace sagittar;
+using namespace sagittar::core::types;
 
 TEST_SUITE("TT") {
 
@@ -20,14 +22,14 @@ TEST_SUITE("TT") {
     }
 
     TEST_CASE("TranspositionTable::store and TranspositionTable::probe") {
-        board::Board board;
+        core::board::Board board;
         board.setStartpos();
 
         search::tt::TranspositionTable tt(2);
 
         REQUIRE(tt.getSize() > 0);
 
-        move::Move m(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
+        core::move::Move m(Square::E2, Square::E4, core::move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
         tt.store(board.getHash(), 0, 1, search::tt::TTFlag::EXACT, 10, m);
 
@@ -42,9 +44,9 @@ TEST_SUITE("TT") {
         REQUIRE(ttdata.move == m);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&board, fen);
+        core::fen::parseFEN(&board, fen);
 
-        m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
+        m = core::move::Move(Square::E2, Square::A6, core::move::MoveFlag::MOVE_CAPTURE);
 
         tt.store(board.getHash(), 0, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
 
@@ -58,16 +60,17 @@ TEST_SUITE("TT") {
     }
 
     TEST_CASE("Null Move Replacement from the same position") {
-        board::Board board;
+        core::board::Board board;
 
         search::tt::TranspositionTable tt(2);
 
         REQUIRE(tt.getSize() > 0);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&board, fen);
+        core::fen::parseFEN(&board, fen);
 
-        const move::Move m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
+        const core::move::Move m =
+          core::move::Move(Square::E2, Square::A6, core::move::MoveFlag::MOVE_CAPTURE);
 
         tt.store(board.getHash(), 0, 3, search::tt::TTFlag::EXACT, 100, m);
 
@@ -80,7 +83,7 @@ TEST_SUITE("TT") {
         REQUIRE(ttdata.score == 100);
         REQUIRE(ttdata.move == m);
 
-        const move::Move nullmove;
+        const core::move::Move nullmove;
 
         tt.store(board.getHash(), 0, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
 

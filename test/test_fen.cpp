@@ -1,37 +1,38 @@
-#include "board.h"
+#include "commons/pch.h"
 #include "doctest/doctest.h"
-#include "fen.h"
-#include "pch.h"
-#include "types.h"
+#include "sagittar/core/board.h"
+#include "sagittar/core/fen.h"
+#include "sagittar/core/types.h"
 
 using namespace sagittar;
+using namespace sagittar::core::types;
 
 TEST_SUITE("FEN") {
 
     TEST_CASE("fen::parseFEN") {
-        board::Board board;
+        core::board::Board board;
 
         std::string startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        fen::parseFEN(&board, startpos_fen);
+        core::fen::parseFEN(&board, startpos_fen);
 
-        board::Board startpos_board;
+        core::board::Board startpos_board;
         startpos_board.setStartpos();
 
         CHECK(board == startpos_board);
 
         startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
-        fen::parseFEN(&board, startpos_fen);
+        core::fen::parseFEN(&board, startpos_fen);
 
         CHECK(board == startpos_board);
 
         startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - \"1/2-1/2\"";
-        fen::parseFEN(&board, startpos_fen, false);
+        core::fen::parseFEN(&board, startpos_fen, false);
 
         CHECK(board == startpos_board);
 
         // Test with Kiwipete
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
-        fen::parseFEN(&board, fen);
+        core::fen::parseFEN(&board, fen);
 
         REQUIRE(board.isValid());
 
@@ -108,10 +109,10 @@ TEST_SUITE("FEN") {
         REQUIRE(board.getPiece(Square::H8) == Piece::BLACK_ROOK);
 
         REQUIRE(board.getActiveColor() == Color::WHITE);
-        REQUIRE((board.getCastelingRights() & board::CastleFlag::WKCA) != 0);
-        REQUIRE((board.getCastelingRights() & board::CastleFlag::WQCA) != 0);
-        REQUIRE((board.getCastelingRights() & board::CastleFlag::BKCA) != 0);
-        REQUIRE((board.getCastelingRights() & board::CastleFlag::BQCA) != 0);
+        REQUIRE((board.getCastelingRights() & core::board::CastleFlag::WKCA) != 0);
+        REQUIRE((board.getCastelingRights() & core::board::CastleFlag::WQCA) != 0);
+        REQUIRE((board.getCastelingRights() & core::board::CastleFlag::BKCA) != 0);
+        REQUIRE((board.getCastelingRights() & core::board::CastleFlag::BQCA) != 0);
         REQUIRE(board.getEnpassantTarget() == Square::NO_SQ);
         REQUIRE(board.getHalfmoveClock() == 0);
         REQUIRE(board.getFullmoveNumber() == 1);
