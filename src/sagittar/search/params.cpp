@@ -91,8 +91,8 @@ namespace sagittar {
                 }
             }
 
-        }
+        }  // namespace params
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

@@ -50,8 +50,8 @@ namespace sagittar {
                 }
             }
 
-        }
+        }  // namespace timeman
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

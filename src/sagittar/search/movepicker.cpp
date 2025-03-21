@@ -75,8 +75,8 @@ namespace sagittar {
                 }
             }
 
-        }
+        }  // namespace movepicker
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

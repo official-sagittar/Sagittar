@@ -27,10 +27,10 @@ namespace sagittar {
                     return static_cast<i16>((score + 0x8000) >> 16);
                 }
 
-            }
+            }  // namespace types
 
-        }
+        }  // namespace hce
 
-    }
+    }  // namespace eval
 
-}
+}  // namespace sagittar

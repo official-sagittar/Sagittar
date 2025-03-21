@@ -18,8 +18,8 @@ namespace sagittar {
 
             constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
 
-        }
+        }  // namespace constants
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

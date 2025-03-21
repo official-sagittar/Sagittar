@@ -16,8 +16,8 @@ namespace sagittar {
             using i32 = std::int32_t;
             using u64 = std::uint64_t;
 
-        }
+        }  // namespace types
 
-    }
+    }  // namespace commons
 
-}
+}  // namespace sagittar

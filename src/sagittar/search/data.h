@@ -36,8 +36,8 @@ namespace sagittar {
                 }
             };
 
-        }
+        }  // namespace data
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

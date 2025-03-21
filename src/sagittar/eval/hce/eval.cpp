@@ -184,8 +184,8 @@ namespace sagittar {
                 return is_end_game;
             }
 
-        }
+        }  // namespace hce
 
-    }
+    }  // namespace eval
 
-}
+}  // namespace sagittar

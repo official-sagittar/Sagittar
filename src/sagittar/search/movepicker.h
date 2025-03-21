@@ -58,8 +58,8 @@ namespace sagittar {
 
             void sortMoves(commons::containers::ArrayList<core::move::Move>* moves, const u8 index);
 
-        }
+        }  // namespace movepicker
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

@@ -54,8 +54,8 @@ namespace sagittar {
                 return total_nodes;
             }
 
-        }
+        }  // namespace perft
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

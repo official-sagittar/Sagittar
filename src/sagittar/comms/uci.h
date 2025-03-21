@@ -32,8 +32,8 @@ namespace sagittar {
                 void start();
             };
 
-        }
+        }  // namespace uci
 
-    }
+    }  // namespace comms
 
-}
+}  // namespace sagittar

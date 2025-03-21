@@ -69,8 +69,9 @@ namespace sagittar {
 
             PARAM_CALLBACK(futility_margin_c, 8, 5, 100, 10, updateFutilityMargin);
             PARAM_CALLBACK(futility_margin_m, 165, 0, 500, 10, updateFutilityMargin);
-        }
 
-    }
+        }  // namespace params
 
-}
+    }  // namespace search
+
+}  // namespace sagittar

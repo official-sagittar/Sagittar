@@ -30,8 +30,8 @@ namespace sagittar {
                                           const board::Board&                         board,
                                           const MovegenType                           type);
 
-        }
+        }  // namespace movegen
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

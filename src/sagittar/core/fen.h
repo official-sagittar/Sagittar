@@ -13,8 +13,8 @@ namespace sagittar {
 
             std::string toFEN(const board::Board&);
 
-        }
+        }  // namespace fen
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

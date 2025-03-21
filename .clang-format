@@ -16,7 +16,7 @@ BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterFunction: false 
+  AfterFunction: false
   AfterClass: false
   AfterControlStatement: true
   BeforeElse: true
@@ -26,6 +26,7 @@ BreakStringLiterals: false
 ColumnLimit: 100
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: true
+FixNamespaceComments: true
 IndentCaseLabels: true
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash

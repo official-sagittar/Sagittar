@@ -139,4 +139,4 @@ namespace sagittar {
 
     void Engine::displayBoard() const { board.display(); }
 
-}
+}  // namespace sagittar

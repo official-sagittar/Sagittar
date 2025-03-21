@@ -702,8 +702,8 @@ namespace sagittar {
                 }
             }
 
-        }
+        }  // namespace movegen
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

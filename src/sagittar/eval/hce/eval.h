@@ -18,8 +18,8 @@ namespace sagittar {
 
             bool isEndGame(const core::board::Board&);
 
-        }
+        }  // namespace hce
 
-    }
+    }  // namespace eval
 
-}
+}  // namespace sagittar

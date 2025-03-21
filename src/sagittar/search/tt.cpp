@@ -102,8 +102,8 @@ namespace sagittar {
                 return used * 1000 / size;
             }
 
-        }
+        }  // namespace tt
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

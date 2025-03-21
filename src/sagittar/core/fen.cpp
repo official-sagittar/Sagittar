@@ -240,8 +240,8 @@ namespace sagittar {
                 return oss.str();
             }
 
-        }
+        }  // namespace fen
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

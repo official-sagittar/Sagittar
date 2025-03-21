@@ -14,6 +14,6 @@ namespace sagittar {
 
         }
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

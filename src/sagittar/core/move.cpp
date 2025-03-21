@@ -74,7 +74,9 @@ namespace sagittar {
             bool Move::operator==(const Move& rhs) const { return id() == rhs.id(); }
 
             bool Move::operator!=(const Move& rhs) const { return id() != rhs.id(); };
-        }
-    }
 
-}
+        }  // namespace move
+
+    }  // namespace core
+
+}  // namespace sagittar

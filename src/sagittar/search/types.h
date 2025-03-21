@@ -49,7 +49,8 @@ namespace sagittar {
                 core::move::Move              bestmove{};
             };
 
-        }
-    }
+        }  // namespace types
 
-}
+    }  // namespace search
+
+}  // namespace sagittar

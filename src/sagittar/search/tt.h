@@ -84,8 +84,8 @@ namespace sagittar {
                 u32                hashfull() const;
             };
 
-        }
+        }  // namespace tt
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

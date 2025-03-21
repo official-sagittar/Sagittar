@@ -59,8 +59,8 @@ namespace sagittar {
 
             constexpr bool isPromotion(const MoveFlag m) { return (m & 0x8); }
 
-        }
+        }  // namespace move
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

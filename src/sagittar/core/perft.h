@@ -17,8 +17,8 @@ namespace sagittar {
             u64 perft(board::Board& board, const Depth depth);
             u64 divide(board::Board& board, const Depth depth);
 
-        }
+        }  // namespace perft
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

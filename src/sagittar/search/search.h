@@ -76,6 +76,6 @@ namespace sagittar {
             void stopSearch();
         };
 
-    }
+    }  // namespace search
 
-}
+}  // namespace sagittar

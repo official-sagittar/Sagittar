@@ -145,8 +145,8 @@ namespace sagittar {
                 const_iterator end() const { return elements.begin() + current_size; }
             };
 
-        }
+        }  // namespace containers
 
-    }
+    }  // namespace commons
 
-}
+}  // namespace sagittar

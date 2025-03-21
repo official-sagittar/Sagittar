@@ -135,8 +135,9 @@ namespace sagittar {
             const std::string PIECES_STR = ".PNBRQKXXpnbrqk";
             const std::string COLORS_STR = "wb";
             const std::string FILE_STR   = "abcdefgh";
-        }
 
-    }
+        }  // namespace types
 
-}
+    }  // namespace core
+
+}  // namespace sagittar

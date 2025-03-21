@@ -142,8 +142,8 @@ namespace sagittar {
                 void                       display() const;
             };
 
-        }
+        }  // namespace board
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar

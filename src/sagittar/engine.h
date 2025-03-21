@@ -54,4 +54,4 @@ namespace sagittar {
         void displayBoard() const;
     };
 
-}
+}  // namespace sagittar

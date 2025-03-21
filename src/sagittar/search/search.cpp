@@ -513,5 +513,6 @@ namespace sagittar {
             return alpha;
         }
 
-    }
-}
+    }  // namespace search
+
+}  // namespace sagittar

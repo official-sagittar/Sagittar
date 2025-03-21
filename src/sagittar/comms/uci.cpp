@@ -286,8 +286,8 @@ namespace sagittar {
                 }
             }
 
-        }
+        }  // namespace uci
 
-    }
+    }  // namespace comms
 
-}
+}  // namespace sagittar

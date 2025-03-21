@@ -700,8 +700,8 @@ namespace sagittar {
                 std::cout << ss.str() << fen::toFEN(*this) << std::endl;
             }
 
-        }
+        }  // namespace board
 
-    }
+    }  // namespace core
 
-}
+}  // namespace sagittar
