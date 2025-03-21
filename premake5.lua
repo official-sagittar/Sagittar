@@ -6,7 +6,7 @@ project "Sagittar"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
-    targetname "%{prj.name}"
+    targetname ("%{prj.name}-" .. os.target() .. "-")
     targetdir "bin/%{cfg.buildcfg}"
     entrypoint ("main()")
     files { "src/**.h", "src/**.cpp" }
@@ -32,16 +32,19 @@ project "Sagittar"
         architecture "x86_64"
         removelinkoptions { "-static" }
         toolset ("clang")
+        targetsuffix ("x86_64")
 
     filter { "platforms:linux64" }
         system "linux"
         architecture "x86_64"
         toolset ("gcc")
+        targetsuffix ("x86_64")
 
     filter { "platforms:windows64" }
         system "windows"
         architecture "x86_64"
         toolset ("gcc")
+        targetsuffix ("x86_64")
 
     filter { "configurations:Debug" }
         defines { "DEBUG" }

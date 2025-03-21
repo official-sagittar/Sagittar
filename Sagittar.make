@@ -46,7 +46,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Debug
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/macos64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
@@ -66,7 +66,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Debug
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/linux64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
@@ -86,7 +86,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Debug
-TARGET = $(TARGETDIR)/Sagittar.exe
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64.exe
 OBJDIR = obj/windows64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
@@ -106,7 +106,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Test
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/macos64/Test
 DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
@@ -126,7 +126,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Test
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/linux64/Test
 DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
@@ -146,7 +146,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Test
-TARGET = $(TARGETDIR)/Sagittar.exe
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64.exe
 OBJDIR = obj/windows64/Test
 DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
@@ -166,7 +166,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Release
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/macos64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
@@ -186,7 +186,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Release
-TARGET = $(TARGETDIR)/Sagittar
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64
 OBJDIR = obj/linux64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
@@ -206,7 +206,7 @@ ifeq ($(origin AR), default)
 endif
 RESCOMP = windres
 TARGETDIR = bin/Release
-TARGET = $(TARGETDIR)/Sagittar.exe
+TARGET = $(TARGETDIR)/Sagittar-windows-x86_64.exe
 OBJDIR = obj/windows64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
