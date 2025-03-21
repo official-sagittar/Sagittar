@@ -5,7 +5,6 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <cstdint>
 #include <functional>
 #include <future>
 #include <iostream>

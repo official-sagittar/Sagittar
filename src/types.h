@@ -4,13 +4,13 @@
 
 namespace sagittar {
 
-    using u8  = std::uint8_t;
-    using i8  = std::int8_t;
-    using u16 = std::uint16_t;
-    using i16 = std::int16_t;
-    using u32 = std::uint32_t;
-    using i32 = std::int32_t;
-    using u64 = std::uint64_t;
+    using u8  = unsigned char;
+    using i8  = char;
+    using u16 = unsigned short int;
+    using i16 = short int;
+    using u32 = unsigned int;
+    using i32 = int;
+    using u64 = unsigned long long;
 
     using Score = i16;
     using Depth = i8;
