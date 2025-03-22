@@ -7,9 +7,10 @@ namespace sagittar {
 
         namespace tt {
 
-            TranspositionTable::TranspositionTable(const std::size_t mb) {
+            TranspositionTable::TranspositionTable(const std::size_t mb) :
+                size(0),
+                currentage(0) {
                 setSize(mb);
-                currentage = 0;
             }
 
             void TranspositionTable::setSize(const std::size_t mb) {
@@ -31,7 +32,9 @@ namespace sagittar {
                 currentage = 0;
             }
 
-            void TranspositionTable::resetForSearch() { currentage++; }
+            void TranspositionTable::resetForSearch() {
+                currentage = (currentage + 1) % AGE_CYCLE_LEN;
+            }
 
             void TranspositionTable::store(const u64        hash,
                                            const i32        ply,
@@ -40,10 +43,11 @@ namespace sagittar {
                                            Score            value,
                                            const move::Move move) {
                 const u64     index     = hash % size;
+                const u16     key       = static_cast<u16>(hash);
                 const TTEntry currentry = entries.at(index);
 
                 // Only handles empty indices or stale entires
-                const bool replace = (currentry.key == 0ULL) || (currentry.age() < currentage)
+                const bool replace = (currentry.key == 0) || (currentry.age() != currentage)
                                   || (currentry.depth <= depth);
                 if (!replace)
                 {
@@ -62,14 +66,15 @@ namespace sagittar {
                 // If current entry is from the current position AND if move is a null move,
                 // DO NOT replace the move in the entry
                 move::Move move_to_replace = move;
-                if ((move == move::Move()) && (currentry.key == hash))
+                if ((move == move::Move()) && (currentry.key == key))
                 {
                     move_to_replace = currentry.move();
                 }
 
                 TTEntry newentry;
-                newentry.key         = hash;
+                newentry.key         = key;
                 newentry.score       = value;
+                newentry.static_eval = value;
                 newentry.move_id     = move_to_replace.id();
                 newentry.depth       = depth;
                 newentry.age_flag_pv = TTEntry::foldAgeFlagPV(currentage, flag, false);
@@ -79,9 +84,10 @@ namespace sagittar {
 
             bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
                 const u64     index     = hash % size;
+                const u16     key       = static_cast<u16>(hash);
                 const TTEntry currentry = entries.at(index);
 
-                if (currentry.key == hash)
+                if (currentry.key == key)
                 {
                     ttdata->depth = currentry.depth;
                     ttdata->flag  = currentry.flag();

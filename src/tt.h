@@ -34,8 +34,11 @@ namespace sagittar {
             class TranspositionTable {
                private:
                 struct TTEntry {
-                    u64   key;
+                    static constexpr u8 AGE_BITS = 5;
+
+                    u16   key;
                     Score score;
+                    Score static_eval;
                     u16   move_id;
                     Depth depth;
                     u8    age_flag_pv;
@@ -43,6 +46,7 @@ namespace sagittar {
                     TTEntry() :
                         key(0),
                         score(0),
+                        static_eval(0),
                         move_id(move::Move().id()),
                         depth(0),
                         age_flag_pv(0) {}
@@ -55,10 +59,12 @@ namespace sagittar {
 
                     move::Move move() const { return move::Move::fromId(move_id); }
 
-                    static u8 foldAgeFlagPV(u8 age, TTFlag flag, bool pv) {
+                    static u8 foldAgeFlagPV(const u8 age, const TTFlag flag, const bool pv) {
                         return static_cast<u8>(flag | (pv << 2) | (age << 3));
                     }
                 };
+
+                static constexpr u8 AGE_CYCLE_LEN = 1 << TTEntry::AGE_BITS;
 
                 std::vector<TTEntry> entries;
                 std::size_t          size;
