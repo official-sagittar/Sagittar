@@ -7,9 +7,10 @@ namespace sagittar {
 
         namespace tt {
 
-            TranspositionTable::TranspositionTable(const std::size_t mb) {
+            TranspositionTable::TranspositionTable(const std::size_t mb) :
+                size(0),
+                currentage(0) {
                 setSize(mb);
-                currentage = 0;
             }
 
             void TranspositionTable::setSize(const std::size_t mb) {
@@ -31,7 +32,9 @@ namespace sagittar {
                 currentage = 0;
             }
 
-            void TranspositionTable::resetForSearch() { currentage++; }
+            void TranspositionTable::resetForSearch() {
+                currentage = (currentage + 1) % AGE_CYCLE_LEN;
+            }
 
             void TranspositionTable::store(const u64        hash,
                                            const i32        ply,
@@ -43,7 +46,7 @@ namespace sagittar {
                 const TTEntry currentry = entries.at(index);
 
                 // Only handles empty indices or stale entires
-                const bool replace = (currentry.key == 0ULL) || (currentry.age() < currentage)
+                const bool replace = (currentry.key == 0ULL) || (currentry.age() != currentage)
                                   || (currentry.depth <= depth);
                 if (!replace)
                 {
