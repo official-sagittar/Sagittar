@@ -95,11 +95,12 @@ namespace sagittar {
 
             u32 TranspositionTable::hashfull() const {
                 u32 used = 0;
-                for (auto& e : entries)
+                for (u16 i = 0; i < 1000; i++)
                 {
+                    const TTEntry& e = entries.at(i);
                     used += (e.flag() != TTFlag::NONE) && (e.age() == currentage);
                 }
-                return used * 1000 / size;
+                return used;
             }
 
         }
