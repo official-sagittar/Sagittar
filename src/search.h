@@ -58,6 +58,7 @@ namespace sagittar {
                          SearchResult*     result,
                          const bool        do_null);
 
+            template<NodeType nodeType>
             Score quiescencesearch(board::Board&     board,
                                    Score             alpha,
                                    Score             beta,

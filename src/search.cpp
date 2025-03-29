@@ -179,7 +179,7 @@ namespace sagittar {
 
             if (depth <= 0)
             {
-                return quiescencesearch(board, alpha, beta, ply, info, result);
+                return quiescencesearch<nodeType>(board, alpha, beta, ply, info, result);
             }
 
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
@@ -441,6 +441,7 @@ namespace sagittar {
             return best_score;
         }
 
+        template<NodeType nodeType>
         Score Searcher::quiescencesearch(board::Board&     board,
                                          Score             alpha,
                                          Score             beta,
@@ -461,6 +462,34 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
+            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
+            const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
+
+            const bool is_in_check = movegen::isInCheck(board);
+
+            tt::TTData ttdata;
+            const bool tthit = tt.probe(&ttdata, board.getHash());
+
+            if (!is_pv_node && tthit)
+            {
+                Score ttscore = ttdata.score;
+                if (ttscore < -MATE_SCORE)
+                {
+                    ttscore += ply;
+                }
+                else if (ttscore > MATE_SCORE)
+                {
+                    ttscore -= ply;
+                }
+
+                if (ttdata.flag == tt::TTFlag::EXACT
+                    || (ttdata.flag == tt::TTFlag::LOWERBOUND && ttscore >= beta)
+                    || (ttdata.flag == tt::TTFlag::UPPERBOUND && ttscore <= alpha))
+                {
+                    return ttscore;
+                }
+            }
+
             const Score stand_pat = eval::evaluateBoard(board);
             if (stand_pat >= beta)
             {
@@ -471,13 +500,14 @@ namespace sagittar {
                 alpha = stand_pat;
             }
 
+            Score      best_score = is_in_check ? -INF : stand_pat;
+            move::Move best_move_so_far;
+            tt::TTFlag ttflag = tt::TTFlag::UPPERBOUND;
+
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
 
-            tt::TTData       ttdata;
-            const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
-
             scoreMoves(&moves, board, pvmove, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
@@ -495,7 +525,8 @@ namespace sagittar {
 
                 result->nodes++;
 
-                const Score score = -quiescencesearch(board, -beta, -alpha, ply + 1, info, result);
+                const Score score =
+                  -quiescencesearch<nodeType>(board, -beta, -alpha, ply + 1, info, result);
 
                 board.undoMove();
 
@@ -504,17 +535,30 @@ namespace sagittar {
                     return 0;
                 }
 
+                if (score > best_score)
+                {
+                    best_score = score;
+                }
+
                 if (score > alpha)
                 {
-                    alpha = score;
+                    alpha            = score;
+                    best_move_so_far = move;
+                    ttflag           = tt::TTFlag::EXACT;
                     if (score >= beta)
                     {
-                        return beta;
+                        ttflag = tt::TTFlag::LOWERBOUND;
+                        break;
                     }
                 }
             }
 
-            return alpha;
+            if (!stop.load(std::memory_order_relaxed))
+            {
+                tt.store(board.getHash(), ply, 0, ttflag, best_score, best_move_so_far);
+            }
+
+            return best_score;
         }
 
     }
