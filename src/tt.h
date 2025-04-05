@@ -68,6 +68,9 @@ namespace sagittar {
                 std::size_t          size;
                 u8                   currentage;
 
+               private:
+                [[nodiscard]] inline u64 getIndex(const u64 key) const;
+
                public:
                 explicit TranspositionTable(const std::size_t mb);
                 void               setSize(const std::size_t mb);

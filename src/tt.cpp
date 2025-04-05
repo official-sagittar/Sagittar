@@ -42,7 +42,7 @@ namespace sagittar {
                                            const TTFlag     flag,
                                            Score            value,
                                            const move::Move move) {
-                const u64     index     = hash % size;
+                const u64     index     = getIndex(hash);
                 const TTEntry currentry = entries.at(index);
 
                 // Only handles empty indices or stale entires
@@ -81,7 +81,7 @@ namespace sagittar {
             }
 
             bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
-                const u64     index     = hash % size;
+                const u64     index     = getIndex(hash);
                 const TTEntry currentry = entries.at(index);
 
                 if (currentry.key == hash)
@@ -104,6 +104,11 @@ namespace sagittar {
                     used += (e.flag() != TTFlag::NONE) && (e.age() == currentage);
                 }
                 return used;
+            }
+
+            [[nodiscard]] inline u64 TranspositionTable::getIndex(const u64 key) const {
+                // this emits a single mul on both x64 and arm64
+                return static_cast<u64>((static_cast<u128>(key) * static_cast<u128>(size)) >> 64);
             }
 
         }
