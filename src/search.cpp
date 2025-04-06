@@ -461,6 +461,8 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
+            const bool is_in_check = movegen::isInCheck(board);
+
             const Score stand_pat = eval::evaluateBoard(board);
             if (stand_pat >= beta)
             {
@@ -470,6 +472,8 @@ namespace sagittar {
             {
                 alpha = stand_pat;
             }
+
+            u32 legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
@@ -493,6 +497,7 @@ namespace sagittar {
                     continue;
                 }
 
+                legal_moves_count++;
                 result->nodes++;
 
                 const Score score = -quiescencesearch(board, -beta, -alpha, ply + 1, info, result);
@@ -512,6 +517,11 @@ namespace sagittar {
                         return beta;
                     }
                 }
+            }
+
+            if (is_in_check && legal_moves_count == 0)
+            {
+                return -MATE_VALUE + ply;
             }
 
             return alpha;
