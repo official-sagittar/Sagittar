@@ -1,8 +1,9 @@
+#include "commons/types.h"
 #include "doctest/doctest.h"
-#include "types.h"
-#include "utils.h"
+#include "sagittar/utils/utils.h"
 
 using namespace sagittar;
+using namespace sagittar::commons::types;
 
 TEST_SUITE("Utils") {
 

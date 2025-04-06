@@ -58,49 +58,61 @@ sagittar: main.o board.o engine.o eval.o fen.o move.o movegen.o movepicker.o par
 		$(OBJ_DIR)$(PATHSEP)uci.o \
 		$(OBJ_DIR)$(PATHSEP)utils.o
 
-main.o: $(SRC_DIR)$(PATHSEP)main.cpp
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)main.cpp -o $(OBJ_DIR)$(PATHSEP)main.o -MF $(OBJ_DIR)$(PATHSEP)main.d
+# sagittar/comms
 
-board.o: $(SRC_DIR)$(PATHSEP)board.cpp $(SRC_DIR)$(PATHSEP)board.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)board.cpp -o $(OBJ_DIR)$(PATHSEP)board.o -MF $(OBJ_DIR)$(PATHSEP)board.d
+uci.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)comms$(PATHSEP)uci.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)comms$(PATHSEP)uci.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)comms$(PATHSEP)uci.cpp -o $(OBJ_DIR)$(PATHSEP)uci.o -MF $(OBJ_DIR)$(PATHSEP)uci.d
 
-engine.o: $(SRC_DIR)$(PATHSEP)engine.cpp $(SRC_DIR)$(PATHSEP)engine.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)engine.cpp -o $(OBJ_DIR)$(PATHSEP)engine.o -MF $(OBJ_DIR)$(PATHSEP)engine.d
+# sagittar/core
 
-eval.o: $(SRC_DIR)$(PATHSEP)eval.cpp $(SRC_DIR)$(PATHSEP)eval.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)eval.cpp -o $(OBJ_DIR)$(PATHSEP)eval.o -MF $(OBJ_DIR)$(PATHSEP)eval.d
+board.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)board.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)board.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)board.cpp -o $(OBJ_DIR)$(PATHSEP)board.o -MF $(OBJ_DIR)$(PATHSEP)board.d
 
-fen.o: $(SRC_DIR)$(PATHSEP)fen.cpp $(SRC_DIR)$(PATHSEP)fen.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)fen.cpp -o $(OBJ_DIR)$(PATHSEP)fen.o -MF $(OBJ_DIR)$(PATHSEP)fen.d
+fen.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)fen.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)fen.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)fen.cpp -o $(OBJ_DIR)$(PATHSEP)fen.o -MF $(OBJ_DIR)$(PATHSEP)fen.d
 
-move.o: $(SRC_DIR)$(PATHSEP)move.cpp $(SRC_DIR)$(PATHSEP)move.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)move.cpp -o $(OBJ_DIR)$(PATHSEP)move.o -MF $(OBJ_DIR)$(PATHSEP)move.d
+move.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)move.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)move.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)move.cpp -o $(OBJ_DIR)$(PATHSEP)move.o -MF $(OBJ_DIR)$(PATHSEP)move.d
 
-movegen.o: $(SRC_DIR)$(PATHSEP)movegen.cpp $(SRC_DIR)$(PATHSEP)movegen.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)movegen.cpp -o $(OBJ_DIR)$(PATHSEP)movegen.o -MF $(OBJ_DIR)$(PATHSEP)movegen.d
+movegen.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)movegen.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)movegen.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)movegen.cpp -o $(OBJ_DIR)$(PATHSEP)movegen.o -MF $(OBJ_DIR)$(PATHSEP)movegen.d
 
-movepicker.o: $(SRC_DIR)$(PATHSEP)movepicker.cpp $(SRC_DIR)$(PATHSEP)movepicker.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)movepicker.cpp -o $(OBJ_DIR)$(PATHSEP)movepicker.o -MF $(OBJ_DIR)$(PATHSEP)movepicker.d
+perft.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)perft.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)perft.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)core$(PATHSEP)perft.cpp -o $(OBJ_DIR)$(PATHSEP)perft.o -MF $(OBJ_DIR)$(PATHSEP)perft.d
 
-params.o: $(SRC_DIR)$(PATHSEP)params.cpp $(SRC_DIR)$(PATHSEP)params.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)params.cpp -o $(OBJ_DIR)$(PATHSEP)params.o -MF $(OBJ_DIR)$(PATHSEP)params.d
+# sagittar/eval/hce
 
-perft.o: $(SRC_DIR)$(PATHSEP)perft.cpp $(SRC_DIR)$(PATHSEP)perft.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)perft.cpp -o $(OBJ_DIR)$(PATHSEP)perft.o -MF $(OBJ_DIR)$(PATHSEP)perft.d
+eval.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.cpp -o $(OBJ_DIR)$(PATHSEP)eval.o -MF $(OBJ_DIR)$(PATHSEP)eval.d
 
-search.o: $(SRC_DIR)$(PATHSEP)search.cpp $(SRC_DIR)$(PATHSEP)search.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search.cpp -o $(OBJ_DIR)$(PATHSEP)search.o -MF $(OBJ_DIR)$(PATHSEP)search.d
+# sagittar/search
 
-timeman.o: $(SRC_DIR)$(PATHSEP)timeman.cpp $(SRC_DIR)$(PATHSEP)timeman.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)timeman.cpp -o $(OBJ_DIR)$(PATHSEP)timeman.o -MF $(OBJ_DIR)$(PATHSEP)timeman.d
+movepicker.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)movepicker.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)movepicker.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)movepicker.cpp -o $(OBJ_DIR)$(PATHSEP)movepicker.o -MF $(OBJ_DIR)$(PATHSEP)movepicker.d
 
-tt.o: $(SRC_DIR)$(PATHSEP)tt.cpp $(SRC_DIR)$(PATHSEP)tt.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)tt.cpp -o $(OBJ_DIR)$(PATHSEP)tt.o -MF $(OBJ_DIR)$(PATHSEP)tt.d
+params.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)params.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)params.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)params.cpp -o $(OBJ_DIR)$(PATHSEP)params.o -MF $(OBJ_DIR)$(PATHSEP)params.d
 
-uci.o: $(SRC_DIR)$(PATHSEP)uci.cpp $(SRC_DIR)$(PATHSEP)uci.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)uci.cpp -o $(OBJ_DIR)$(PATHSEP)uci.o -MF $(OBJ_DIR)$(PATHSEP)uci.d
+search.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)search.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)search.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)search.cpp -o $(OBJ_DIR)$(PATHSEP)search.o -MF $(OBJ_DIR)$(PATHSEP)search.d
 
-utils.o: $(SRC_DIR)$(PATHSEP)utils.cpp $(SRC_DIR)$(PATHSEP)utils.h
-	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)utils.cpp -o $(OBJ_DIR)$(PATHSEP)utils.o -MF $(OBJ_DIR)$(PATHSEP)utils.d
+timeman.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)timeman.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)timeman.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)timeman.cpp -o $(OBJ_DIR)$(PATHSEP)timeman.o -MF $(OBJ_DIR)$(PATHSEP)timeman.d
+
+tt.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)tt.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)tt.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)search$(PATHSEP)tt.cpp -o $(OBJ_DIR)$(PATHSEP)tt.o -MF $(OBJ_DIR)$(PATHSEP)tt.d
+
+# sagittar/utils
+
+utils.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)utils$(PATHSEP)utils.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)utils$(PATHSEP)utils.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)utils$(PATHSEP)utils.cpp -o $(OBJ_DIR)$(PATHSEP)utils.o -MF $(OBJ_DIR)$(PATHSEP)utils.d
+
+# sagittar
+
+engine.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)engine.cpp $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)engine.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)engine.cpp -o $(OBJ_DIR)$(PATHSEP)engine.o -MF $(OBJ_DIR)$(PATHSEP)engine.d
+
+main.o: $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)main.cpp
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)sagittar$(PATHSEP)main.cpp -o $(OBJ_DIR)$(PATHSEP)main.o -MF $(OBJ_DIR)$(PATHSEP)main.d
 
 .PHONY: clean dir

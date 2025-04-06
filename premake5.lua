@@ -2,35 +2,9 @@ workspace "Sagittar"
     configurations { "Debug", "Test", "Release" }
     platforms { "macos64", "linux64", "windows64" }
 
-project "Sagittar"
-    kind "ConsoleApp"
-    language "C++"
-    cppdialect "C++20"
-    targetname "%{prj.name}"
-    targetdir "bin/%{cfg.buildcfg}"
-    entrypoint ("main()")
-    files { "src/**.h", "src/**.cpp" }
-    pchheader "src/pch.h"
-    pchsource "src/pch.cpp"
-    includedirs { "src" }
-    warnings "Extra"
-    buildoptions { "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
-    linkoptions { "-static", "-fsanitize=undefined", "-fsanitize=address" }
-    linkerfatalwarnings { "warnings" }
-
-    newoption {
-        trigger = "enable-san",
-        description = "Enable ASan and UBSan"
-     }
-
-    filter { "not options:enable-san" }
-        removebuildoptions { "-fsanitize=undefined", "-fsanitize=address" }
-        removelinkoptions { "-fsanitize=undefined", "-fsanitize=address" }
-
     filter { "platforms:macos64" }
         system "macosx"
         architecture "x86_64"
-        removelinkoptions { "-static" }
         toolset ("clang")
 
     filter { "platforms:linux64" }
@@ -43,24 +17,52 @@ project "Sagittar"
         architecture "x86_64"
         toolset ("gcc")
 
-    filter { "configurations:Debug" }
-        defines { "DEBUG" }
-        symbols "On"
-        linktimeoptimization "Off"
+    project "Sagittar"
+        kind "ConsoleApp"
+        language "C++"
+        cppdialect "C++20"
+        targetname "%{prj.name}"
+        targetdir "bin/%{cfg.buildcfg}"
+        entrypoint ("main()")
+        files { "src/**.h", "src/**.cpp" }
+        pchheader "src/commons/pch.h"
+        pchsource "src/commons/pch.cpp"
+        includedirs { "src" }
+        warnings "Extra"
+        buildoptions { "-march=native" }
+        linkoptions { "-static" }
+        linkerfatalwarnings { "warnings" }
 
-    filter { "configurations:Test" }
-        files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
-        removefiles { "src/main.cpp" }
-        includedirs { "src",  "test/lib/doctest" }
-        defines { "DEBUG", "TEST" }
-        linktimeoptimization "On"
-        optimize "Speed"
+        newoption {
+            trigger = "enable-san",
+            description = "Enable ASan and UBSan"
+        }
 
-    filter { "configurations:Release" }
-        defines { "NDEBUG" }
-        fatalwarnings { "All" }
-        linktimeoptimization "On"
-        optimize "Speed"
+        filter { "options:enable-san" }
+            buildoptions { "-march=native", "-fsanitize=undefined", "-fsanitize=address" }
+            linkoptions { "-static", "-fsanitize=undefined", "-fsanitize=address" }
+
+        filter { "platforms:macos64" }
+            removelinkoptions { "-static" }
+
+        filter { "configurations:Debug" }
+            defines { "DEBUG" }
+            symbols "On"
+            linktimeoptimization "Off"
+
+        filter { "configurations:Test" }
+            files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
+            removefiles { "src/sagittar/main.cpp" }
+            includedirs { "src",  "test/lib/doctest" }
+            defines { "DEBUG", "TEST" }
+            linktimeoptimization "On"
+            optimize "Speed"
+
+        filter { "configurations:Release" }
+            defines { "NDEBUG" }
+            fatalwarnings { "All" }
+            linktimeoptimization "On"
+            optimize "Speed"
 
 newaction {
     trigger = "clean",
