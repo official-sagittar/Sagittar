@@ -19,11 +19,13 @@ namespace sagittar {
         void perft(const int depth);
         void reset_for_search();
         search::SearchResult
-             search(search::SearchInfo                               info,
-                    std::function<void(const search::SearchResult&)> progress_handler,
-                    std::function<void(const search::SearchResult&)> complete_hander);
-        void stop_search();
-        void display_position() const;
+                             search(search::SearchInfo                               info,
+                                    std::function<void(const search::SearchResult&)> progress_handler,
+                                    std::function<void(const search::SearchResult&)> complete_hander);
+        search::SearchResult search(search::SearchInfo info);
+        void                 stop_search();
+        void                 bench();
+        void                 display_position() const;
         ~Engine() = default;
 
        private:
