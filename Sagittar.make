@@ -234,6 +234,7 @@ GENERATED += $(OBJDIR)/pch.o
 GENERATED += $(OBJDIR)/perft.o
 GENERATED += $(OBJDIR)/position.o
 GENERATED += $(OBJDIR)/tt.o
+GENERATED += $(OBJDIR)/uci.o
 GENERATED += $(OBJDIR)/utils.o
 OBJECTS += $(OBJDIR)/board.o
 OBJECTS += $(OBJDIR)/engine.o
@@ -243,6 +244,7 @@ OBJECTS += $(OBJDIR)/pch.o
 OBJECTS += $(OBJDIR)/perft.o
 OBJECTS += $(OBJDIR)/position.o
 OBJECTS += $(OBJDIR)/tt.o
+OBJECTS += $(OBJDIR)/uci.o
 OBJECTS += $(OBJDIR)/utils.o
 
 ifeq ($(config),debug_macos64)
@@ -351,6 +353,9 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/uci.o: src/comms/uci.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/board.o: src/core/board.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
