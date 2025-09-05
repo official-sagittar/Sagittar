@@ -2,6 +2,7 @@
 #include "core/move.h"
 #include "core/movegen.h"
 #include "core/utils.h"
+#include "eval/hce/eval.h"
 
 namespace sagittar {
 
@@ -19,7 +20,7 @@ namespace sagittar {
 
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
-        SearchResult Searcher::start(core::Position const*                    pos,
+        SearchResult Searcher::start(Position const*                          pos,
                                      SearchInfo                               info,
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
@@ -27,33 +28,36 @@ namespace sagittar {
             return search(pos, info, progress_handler, complete_hander);
         }
 
-        SearchResult Searcher::start(core::Position const* pos, SearchInfo info) {
+        SearchResult Searcher::start(Position const* pos, SearchInfo info) {
             return start(pos, info, [](auto&) {}, [](auto&) {});
         }
 
         void Searcher::check_timeup(const SearchInfo& info) {
-            if (info.timeset && (core::currtime_ms() >= info.stoptime))
+            if (info.timeset && (currtime_ms() >= info.stoptime))
             {
                 stopped.store(true, std::memory_order_relaxed);
             }
         }
 
-        SearchResult Searcher::search(core::Position const*                    pos,
-                                      SearchInfo                               info,
+        SearchResult Searcher::search(Position const*                          pos,
+                                      const SearchInfo&                        info,
                                       std::function<void(const SearchResult&)> progress_handler,
                                       std::function<void(const SearchResult&)> complete_hander) {
-            SearchResult      result;
-            const core::Score score = search_random(pos, info, &result);
-            result.score            = score;
+            SearchResult result{};
+            const auto   starttime = currtime_ms();
+            const Score  score     = search_root(pos, info.depth, 0, info, &result);
+            const auto   time      = currtime_ms() - starttime;
 
-            if (score == MATE_SCORE)
+            result.score         = score;
+            const auto score_abs = abs(score);
+            if (score_abs >= (MATE_SCORE - DEPTH_MAX))
             {
-                result.is_mate = true;
-                result.mate_in = 0;
+                result.is_mate          = true;
+                const int moves_to_mate = ((MATE_SCORE - score_abs) + 1) / 2;
+                result.mate_in          = (score > 0) ? moves_to_mate : -moves_to_mate;
             }
-
-            result.depth = 1;
-            result.time  = 0;
+            result.depth = info.depth;
+            result.time  = time;
 
             progress_handler(result);
             complete_hander(result);
@@ -61,26 +65,105 @@ namespace sagittar {
             return result;
         }
 
-        core::Score Searcher::search_random(core::Position const* pos,
-                                            const SearchInfo      info,
-                                            SearchResult*         result) {
-            core::MoveList moves_list = {};
-            core::movegen_generate_pseudolegal_moves<core::MovegenType::MOVEGEN_ALL>(pos,
-                                                                                     &moves_list);
-            for (auto [move, score] : moves_list)
+        Score Searcher::search_root(Position const*   pos,
+                                    int               depth,
+                                    const int         ply,
+                                    const SearchInfo& info,
+                                    SearchResult*     result) {
+            if (depth <= 0)
             {
-                core::Position pos_dup = *pos;
-                if (pos_dup.do_move(move))
+                return eval::hce::eval(pos);
+            }
+
+            Score max               = -INF;
+            Move  bestmovesofar     = NULL_MOVE;
+            int   legal_moves_count = 0;
+
+            MoveList moves_list = {};
+            movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
+
+            for (auto [move, move_score] : moves_list)
+            {
+                Position pos_dup = *pos;
+                if (!pos_dup.do_move(move))
                 {
-                    result->bestmove = move;
-                    result->nodes    = 1;
+                    continue;
+                }
+                legal_moves_count++;
+                result->nodes++;
+                const Score score = -search_negamax(&pos_dup, depth - 1, ply + 1, info, result);
+                if (stopped.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
+                if (score > max)
+                {
+                    max           = score;
+                    bestmovesofar = move;
+                }
+            }
+
+            result->bestmove = bestmovesofar;
+
+            if (legal_moves_count == 0)
+            {
+                return pos->is_in_check() ? ply - MATE_SCORE : 0;
+            }
+
+            return max;
+        }
+
+        Score Searcher::search_negamax(Position const*   pos,
+                                       int               depth,
+                                       const int         ply,
+                                       const SearchInfo& info,
+                                       SearchResult*     result) {
+            if ((result->nodes & 2047) == 0)
+            {
+                check_timeup(info);
+                if (stopped.load(std::memory_order_relaxed))
+                {
                     return 0;
                 }
             }
 
-            result->nodes = 1;
+            if (depth <= 0)
+            {
+                return eval::hce::eval(pos);
+            }
 
-            return pos->is_in_check() ? MATE_SCORE : 0;
+            Score max               = -INF;
+            int   legal_moves_count = 0;
+
+            MoveList moves_list = {};
+            movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
+
+            for (auto [move, move_score] : moves_list)
+            {
+                Position pos_dup = *pos;
+                if (!pos_dup.do_move(move))
+                {
+                    continue;
+                }
+                legal_moves_count++;
+                result->nodes++;
+                const Score score = -search_negamax(&pos_dup, depth - 1, ply + 1, info, result);
+                if (stopped.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
+                if (score > max)
+                {
+                    max = score;
+                }
+            }
+
+            if (legal_moves_count == 0)
+            {
+                return pos->is_in_check() ? ply - MATE_SCORE : 0;
+            }
+
+            return max;
         }
 
     }

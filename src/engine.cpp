@@ -2,6 +2,7 @@
 #include "core/movegen.h"
 #include "core/perft.h"
 #include "core/tt.h"
+#include "eval/hce/eval.h"
 
 namespace sagittar {
 
@@ -9,6 +10,7 @@ namespace sagittar {
         tt_size_mb(core::TT_SIZE_DEFAULT) {
         core::position_init();
         core::movegen_init();
+        eval::hce::eval_init();
         pos.reset();
     }
 
@@ -105,13 +107,13 @@ namespace sagittar {
           "3br1k1/p1pn3p/1p3n2/5pNq/2P1p3/1PN3PP/P2Q1PB1/4R1K1 w - - 0 23",
           "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"};
 
-        int total_nodes = 0;
+        uint64_t total_nodes = 0;
 
         for (const auto& fen : positions)
         {
             set_fen(fen);
 
-            search::SearchInfo info;
+            search::SearchInfo info{};
             info.depth = 4;
 
             searcher.reset();
@@ -120,7 +122,7 @@ namespace sagittar {
             total_nodes += result.nodes;
         }
 
-        std::cout << "nodes " << (int) total_nodes << std::endl;
+        std::cout << "nodes " << (uint64_t) total_nodes << std::endl;
     }
 
     void Engine::display_position() const { pos.display(); }
