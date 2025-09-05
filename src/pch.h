@@ -2,27 +2,12 @@
 #define PCH_H
 
 #include <array>
-#include <atomic>
+#include <cassert>
 #include <chrono>
-#include <cmath>
 #include <cstdint>
-#include <functional>
-#include <future>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <vector>
-#ifdef DEBUG
-    #include <cassert>
-#endif
-#ifdef EXTERNAL_TUNE
-    #include <deque>
-#endif
-#ifdef TEST
-    #include <filesystem>
-    #include <fstream>
-    #include <map>
-    #include <regex>
-#endif
 
 #endif
