@@ -20,6 +20,7 @@ namespace sagittar {
             bool      is_repeated() const;
             bool      is_in_check() const;
             bool      do_move(const Move move);
+            bool      do_move(const std::string& move_str);
             void      display() const;
             Position& operator=(const Position&) = default;
             ~Position()                          = default;

@@ -2,12 +2,14 @@
 #define PCH_H
 
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <future>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <string>
 #ifdef TEST

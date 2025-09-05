@@ -45,6 +45,20 @@ namespace sagittar {
 #endif
         }
 
+        uint64_t currtime_ms() {
+            // Get the current time point
+            auto now = std::chrono::system_clock::now();
+
+            // Convert the time point to duration since epoch
+            auto duration = now.time_since_epoch();
+
+            // Convert duration to milliseconds
+            auto milliseconds =
+              std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+            return milliseconds;
+        }
+
     }
 
 }

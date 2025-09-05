@@ -12,7 +12,10 @@ namespace sagittar {
         pos.reset();
     }
 
-    void Engine::reset() { pos.reset(); }
+    void Engine::reset() {
+        pos.reset();
+        searcher.reset();
+    }
 
     void Engine::set_tt_size_mb(const size_t tt_size_mb) { this->tt_size_mb = tt_size_mb; }
 
@@ -20,7 +23,7 @@ namespace sagittar {
 
     bool Engine::do_move(const core::Move move) { return pos.do_move(move); }
 
-    bool Engine::do_move(const std::string& move) { return false; }
+    bool Engine::do_move(const std::string& move_str) { return pos.do_move(move_str); }
 
     void Engine::perft(const int depth) {
         core::TranspositionTable tt(tt_size_mb);
@@ -33,6 +36,17 @@ namespace sagittar {
         std::cout << "Elapsed = " << elapsed_ms
                   << " ms\nNPS = " << (double) (nodes / (elapsed_ms / 1000)) << std::endl;
     }
+
+    void Engine::reset_for_search() { searcher.reset_for_search(); }
+
+    search::SearchResult
+    Engine::search(search::SearchInfo                               info,
+                   std::function<void(const search::SearchResult&)> progress_handler,
+                   std::function<void(const search::SearchResult&)> complete_hander) {
+        return searcher.start(&pos, info, progress_handler, complete_hander);
+    }
+
+    void Engine::stop_search() { searcher.stop(); }
 
     void Engine::display_position() const { pos.display(); }
 

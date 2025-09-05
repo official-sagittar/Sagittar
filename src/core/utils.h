@@ -21,6 +21,8 @@ namespace sagittar {
 
         void aligned_free(void* ptr);
 
+        uint64_t currtime_ms();
+
     }
 
 }

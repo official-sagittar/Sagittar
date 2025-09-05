@@ -356,6 +356,156 @@ namespace sagittar {
             return valid && _do_move_wrapper(this, move);
         }
 
+        bool Position::do_move(const std::string& move_str) {
+            const std::size_t len = move_str.length();
+            if (len < 4 || len > 5) [[unlikely]]
+                return false;
+
+            const int from_file = move_str[0] - 'a';
+            const int from_rank = (move_str[1] - '0') - 1;
+            const int to_file   = move_str[2] - 'a';
+            const int to_rank   = (move_str[3] - '0') - 1;
+
+            if (from_file < FILE_A || from_file > FILE_H) [[unlikely]]
+                return false;
+
+            if (to_file < FILE_A || to_file > FILE_H) [[unlikely]]
+                return false;
+
+            if (from_rank < RANK_1 || from_rank > RANK_8) [[unlikely]]
+                return false;
+
+            if (to_rank < RANK_1 || to_rank > RANK_8) [[unlikely]]
+                return false;
+
+            const Square from = RF_TO_SQ(from_rank, from_file);
+            const Square to   = RF_TO_SQ(to_rank, to_file);
+
+            const Piece move_p = board.pieces[from];
+            if (move_p == NO_PIECE) [[unlikely]]
+                return false;
+
+            const Color us = static_cast<Color>(black_to_play);
+
+            if (PIECE_COLOR_OF(move_p) != us) [[unlikely]]
+                return false;
+
+            const PieceType move_pt = PIECE_TYPE_OF(move_p);
+
+            const bool is_promotion = (len == 5);
+
+            if (is_promotion)
+            {
+                if (move_pt != PAWN) [[unlikely]]
+                    return false;
+
+                if (black_to_play)
+                {
+                    if (from_rank != RANK_2 || to_rank != RANK_1) [[unlikely]]
+                        return false;
+                }
+                else
+                {
+                    if (from_rank != RANK_7 || to_rank != RANK_8) [[unlikely]]
+                        return false;
+                }
+
+                const bool is_valid_promo_pt = (move_str[4] == 'q') || (move_str[4] == 'r')
+                                            || (move_str[4] == 'n') || (move_str[4] == 'b');
+                if (!is_valid_promo_pt) [[unlikely]]
+                    return false;
+            }
+
+            const Piece captured_p = board.pieces[to];
+            const bool  is_capture = (captured_p != NO_PIECE);
+
+            if (is_capture)
+            {
+                if ((PIECE_COLOR_OF(captured_p) == us) || (PIECE_TYPE_OF(captured_p) == KING))
+                  [[unlikely]]
+                    return false;
+            }
+
+            MoveFlag flag;
+
+            if (move_pt == PAWN)
+            {
+                if (!is_promotion)
+                {
+                    if (!is_capture)
+                    {
+                        if (us == WHITE && from_rank == RANK_2 && to_rank == RANK_4)
+                            flag = MOVE_QUIET_PAWN_DBL_PUSH;
+                        else if (us == BLACK && from_rank == RANK_7 && to_rank == RANK_5)
+                            flag = MOVE_QUIET_PAWN_DBL_PUSH;
+                        else if (to == ep_target)
+                            flag = MOVE_CAPTURE_EP;
+                        else
+                            flag = MOVE_QUIET;
+                    }
+                    else
+                        flag = MOVE_CAPTURE;
+                }
+                else
+                {
+                    const char promoted_ch = move_str[4];
+                    int        promo_flag  = (promoted_ch == 'q') ? MOVE_PROMOTION_QUEEN
+                                           : (promoted_ch == 'r') ? MOVE_PROMOTION_ROOK
+                                           : (promoted_ch == 'n') ? MOVE_PROMOTION_KNIGHT
+                                           : (promoted_ch == 'b') ? MOVE_PROMOTION_BISHOP
+                                                                  : MOVE_PROMOTION_QUEEN;
+                    if (is_capture)
+                        promo_flag |= MOVE_CAPTURE;
+                    flag = static_cast<MoveFlag>(promo_flag);
+                }
+            }
+            else if (move_pt == KING)
+            {
+                if (us == WHITE)
+                {
+                    if (from == E1 && to == G1)
+                    {
+                        if ((ca_rights & WKCA) == 0) [[unlikely]]
+                            return false;
+                        flag = MOVE_CASTLE_KING_SIDE;
+                    }
+                    else if (from == E1 && to == C1)
+                    {
+                        if ((ca_rights & WQCA) == 0) [[unlikely]]
+                            return false;
+                        flag = MOVE_CASTLE_QUEEN_SIDE;
+                    }
+                    else
+                        flag = is_capture ? MOVE_CAPTURE : MOVE_QUIET;
+                }
+                else
+                {
+                    if (from == E8 && to == G8)
+                    {
+                        if ((ca_rights & BKCA) == 0) [[unlikely]]
+                            return false;
+                        flag = MOVE_CASTLE_KING_SIDE;
+                    }
+                    else if (from == E8 && to == C8)
+                    {
+                        if ((ca_rights & BQCA) == 0) [[unlikely]]
+                            return false;
+                        flag = MOVE_CASTLE_QUEEN_SIDE;
+                    }
+                    else
+                        flag = is_capture ? MOVE_CAPTURE : MOVE_QUIET;
+                }
+            }
+            else
+            {
+                flag = is_capture ? MOVE_CAPTURE : MOVE_QUIET;
+            }
+
+            const Move move = MOVE_CREATE(from, to, flag);
+
+            return do_move(move);
+        }
+
         void Position::display() const {
             board.display();
 
