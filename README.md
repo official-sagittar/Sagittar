@@ -12,8 +12,6 @@ A free UCI Chess engine
 
 <br />
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/codemaniac)
-
 # Building Sagittar
 
 See [BUILDING.md](BUILDING.md) for instructions on how to build Sagittar from source and a list of supported platforms.
