@@ -155,7 +155,7 @@ namespace sagittar {
             ss >> segment;
             if (segment.empty() || segment == "-")
             {
-                full_moves = 0;
+                full_moves = 1;
             }
             else
             {

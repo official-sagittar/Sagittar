@@ -20,6 +20,8 @@ namespace sagittar {
 
     bool Engine::do_move(const core::Move move) { return pos.do_move(move); }
 
+    bool Engine::do_move(const std::string& move) { return false; }
+
     void Engine::perft(const int depth) {
         core::TranspositionTable tt(tt_size_mb);
         using clock = std::chrono::high_resolution_clock;
