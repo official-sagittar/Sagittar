@@ -9,5 +9,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#ifdef TEST
+    #include <filesystem>
+    #include <fstream>
+    #include <regex>
+    #include <vector>
+#endif
 
 #endif

@@ -1,7 +1,12 @@
 #define DOCTEST_CONFIG_IMPLEMENT
+#include "core/movegen.h"
+#include "core/position.h"
 #include "doctest/doctest.h"
 
 int main(int argc, char** argv) {
+
+    sagittar::core::position_init();
+    sagittar::core::movegen_init();
 
     doctest::Context context;
     context.applyCommandLine(argc, argv);
