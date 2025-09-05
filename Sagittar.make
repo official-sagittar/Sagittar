@@ -233,6 +233,7 @@ GENERATED += $(OBJDIR)/movegen.o
 GENERATED += $(OBJDIR)/pch.o
 GENERATED += $(OBJDIR)/perft.o
 GENERATED += $(OBJDIR)/position.o
+GENERATED += $(OBJDIR)/search.o
 GENERATED += $(OBJDIR)/tt.o
 GENERATED += $(OBJDIR)/uci.o
 GENERATED += $(OBJDIR)/utils.o
@@ -243,6 +244,7 @@ OBJECTS += $(OBJDIR)/movegen.o
 OBJECTS += $(OBJDIR)/pch.o
 OBJECTS += $(OBJDIR)/perft.o
 OBJECTS += $(OBJDIR)/position.o
+OBJECTS += $(OBJDIR)/search.o
 OBJECTS += $(OBJDIR)/tt.o
 OBJECTS += $(OBJDIR)/uci.o
 OBJECTS += $(OBJDIR)/utils.o
@@ -381,6 +383,9 @@ $(OBJDIR)/engine.o: src/engine.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/pch.o: src/pch.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/search.o: src/search/search.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

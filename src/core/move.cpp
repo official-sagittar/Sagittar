@@ -5,11 +5,17 @@ namespace sagittar {
     namespace core {
 
         std::string move_tostring(const Move m) {
+            std::ostringstream oss;
+
+            if (m == NULL_MOVE)
+            {
+                oss << "(none)";
+                return oss.str();
+            }
+
             const Square   from = MOVE_FROM(m);
             const Square   to   = MOVE_TO(m);
             const MoveFlag flag = MOVE_FLAG(m);
-
-            std::ostringstream oss;
 
             oss << static_cast<char>('a' + SQ_TO_FILE(from));
             oss << static_cast<char>('1' + SQ_TO_RANK(from));

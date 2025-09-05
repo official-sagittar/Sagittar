@@ -11,6 +11,8 @@ namespace sagittar {
 
         using Move = uint16_t;
 
+        constexpr Move NULL_MOVE = 0;
+
         enum MoveFlag {
             MOVE_QUIET,
             MOVE_QUIET_PAWN_DBL_PUSH,

@@ -1,4 +1,6 @@
 #include "uci.h"
+#include "core/move.h"
+#include "search/types.h"
 
 namespace sagittar {
 
@@ -14,7 +16,8 @@ namespace sagittar {
             struct TaskData {
                 TaskType task;
                 union {
-                    int perft_depth;
+                    int                perft_depth;
+                    search::SearchInfo search_info;
                 };
             };
 
@@ -116,7 +119,55 @@ namespace sagittar {
                     }
                     else
                     {
-                        task_data.task = TaskType::SEARCH;
+                        task_data.task        = TaskType::SEARCH;
+                        task_data.search_info = {};
+
+                        if (token == "infinite")
+                        {
+                            task_data.search_info.infinite = true;
+                        }
+                        else if (token == "wtime")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.wtime = value;
+                        }
+                        else if (token == "btime")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.btime = value;
+                        }
+                        else if (token == "winc")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.winc = value;
+                        }
+                        else if (token == "binc")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.binc = value;
+                        }
+                        else if (token == "movestogo")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.movestogo = value;
+                        }
+                        else if (token == "movetime")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.movetime = value;
+                        }
+                        else if (token == "depth")
+                        {
+                            int value;
+                            ss >> value;
+                            task_data.search_info.depth = value;
+                        }
                     }
                 }
 
@@ -130,8 +181,38 @@ namespace sagittar {
                         });
                         break;
 
-                    case TaskType::SEARCH :
+                    case TaskType::SEARCH : {
+                        auto progress_handler = [](const search::SearchResult& result) {
+                            std::ostringstream ss;
+                            ss << "info score ";
+                            if (result.is_mate)
+                            {
+                                ss << "mate " << (int) result.mate_in;
+                            }
+                            else
+                            {
+                                ss << "cp " << (int) result.score;
+                            }
+                            ss << " depth " << (int) result.depth;
+                            ss << " nodes " << (int) result.nodes;
+                            ss << " time " << (int) result.time;
+                            ss << " nps " << (int) (result.nodes * 1000 / (result.time + 1));
+                            std::cout << ss.str() << std::endl;
+                        };
+
+                        auto complete_hander = [](const search::SearchResult& result) {
+                            std::cout << "bestmove " << core::move_tostring(result.bestmove)
+                                      << std::endl;
+                        };
+
+                        f = std::async(std::launch::async,
+                                       [this, task_data, progress_handler, complete_hander] {
+                                           (void) engine.search(task_data.search_info,
+                                                                progress_handler, complete_hander);
+                                       });
+
                         break;
+                    }
 
                     default :
                         break;
@@ -178,6 +259,7 @@ namespace sagittar {
                     }
                     else if (input == "stop")
                     {
+                        engine.stop_search();
                         if (uci_go_future.valid())
                         {
                             uci_go_future.wait();
@@ -185,6 +267,7 @@ namespace sagittar {
                     }
                     else if (input == "quit")
                     {
+                        engine.stop_search();
                         if (uci_go_future.valid())
                         {
                             uci_go_future.wait();
