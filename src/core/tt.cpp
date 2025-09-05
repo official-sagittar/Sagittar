@@ -5,12 +5,17 @@
 namespace sagittar {
 
     namespace core {
-        static constexpr size_t TT_SIZE_DEFAULT = 16;
 
         TranspositionTable::TranspositionTable() :
             entries(nullptr),
             size(0) {
             resize(TT_SIZE_DEFAULT);
+        }
+
+        TranspositionTable::TranspositionTable(const size_t size_mb) :
+            entries(nullptr),
+            size(size_mb) {
+            resize(size_mb);
         }
 
         void TranspositionTable::clear() {
@@ -20,8 +25,8 @@ namespace sagittar {
             }
         }
 
-        void TranspositionTable::resize(const size_t mb) {
-            const auto   bytes    = mb * 1024 * 1024;
+        void TranspositionTable::resize(const size_t size_mb) {
+            const auto   bytes    = size_mb * 1024 * 1024;
             const size_t new_size = bytes / sizeof(TTEntry);
             if (new_size != size)
             {
