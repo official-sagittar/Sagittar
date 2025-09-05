@@ -1,5 +1,5 @@
 workspace "Sagittar"
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Test", "Release" }
     platforms { "macos64", "linux64", "windows64" }
 
     project "Sagittar"
@@ -30,6 +30,14 @@ workspace "Sagittar"
         filter { "configurations:Debug" }
             defines { "DEBUG" }
             symbols "On"
+
+        filter { "configurations:Test" }
+            files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
+            removefiles { "src/main.cpp" }
+            includedirs { "src",  "test/lib/doctest" }
+            defines { "TEST" }
+            optimize "Speed"
+            linktimeoptimization "On"
 
         filter { "configurations:Release" }
             defines { "NDEBUG" }
