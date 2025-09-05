@@ -7,6 +7,8 @@ namespace sagittar {
 
     namespace core {
 
+        constexpr size_t TT_SIZE_DEFAULT = 16;
+
         struct TTEntry {
             uint64_t key;
             int      depth;
@@ -16,6 +18,7 @@ namespace sagittar {
         class TranspositionTable {
            public:
             TranspositionTable();
+            TranspositionTable(const size_t size_mb);
             void clear();
             void resize(const size_t mb);
             void store(const uint64_t key, const int depth, const int value);
