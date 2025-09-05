@@ -80,7 +80,7 @@ namespace sagittar {
 
             result->nodes = 1;
 
-            return MATE_SCORE;
+            return pos->is_in_check() ? MATE_SCORE : 0;
         }
 
     }
