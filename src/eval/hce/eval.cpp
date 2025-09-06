@@ -6,8 +6,6 @@ namespace sagittar {
 
         namespace hce {
 
-            using namespace sagittar::core;
-
             static constexpr std::array<int, 7> piece_scores = {0, 1, 3, 3, 5, 9, 0};
 
             void eval_init() {}

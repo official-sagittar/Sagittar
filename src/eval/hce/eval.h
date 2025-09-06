@@ -8,9 +8,11 @@ namespace sagittar {
 
     namespace eval {
 
+        using namespace sagittar::core;
+
         namespace hce {
             void        eval_init();
-            core::Score eval(const core::Position* const pos);
+            core::Score eval(const Position* const pos);
         }
 
     }
