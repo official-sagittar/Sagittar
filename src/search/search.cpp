@@ -87,6 +87,11 @@ namespace sagittar {
                                     const int         ply,
                                     const SearchInfo& info,
                                     SearchResult*     result) {
+
+            depth += pos->is_in_check();
+
+            depth = std::min(depth, DEPTH_MAX - 1);
+
             if (depth <= 0)
             {
                 return eval::hce::eval(pos);
@@ -143,6 +148,15 @@ namespace sagittar {
                     return 0;
                 }
             }
+
+            if (ply >= DEPTH_MAX - 1) [[unlikely]]
+            {
+                return eval::hce::eval(pos);
+            }
+
+            depth += pos->is_in_check();
+
+            depth = std::min(depth, DEPTH_MAX - 1);
 
             if (depth <= 0)
             {

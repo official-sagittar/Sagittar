@@ -28,7 +28,7 @@ namespace sagittar {
                 }
             }
 
-            info->depth = info->depth == 0 ? DEPTH_MAX : info->depth;
+            info->depth = (info->depth == 0) ? (DEPTH_MAX - 1) : info->depth;
 
             info->timeset = false;
 
