@@ -129,7 +129,7 @@ namespace sagittar {
 
             if (legal_moves_count == 0)
             {
-                return is_in_check ? ply - MATE_SCORE : 0;
+                return is_in_check * (ply - MATE_SCORE);
             }
 
             return max;
@@ -184,15 +184,12 @@ namespace sagittar {
                 {
                     return 0;
                 }
-                if (score > max)
-                {
-                    max = score;
-                }
+                max = std::max(max, score);
             }
 
             if (legal_moves_count == 0)
             {
-                return is_in_check ? ply - MATE_SCORE : 0;
+                return is_in_check * (ply - MATE_SCORE);
             }
 
             return max;
