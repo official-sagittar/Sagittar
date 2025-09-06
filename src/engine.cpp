@@ -125,7 +125,12 @@ namespace sagittar {
         }
         const auto time = core::currtime_ms() - starttime;
 
-        std::cout << "nodes " << (int) total_nodes << std::endl;
+        std::ostringstream ss;
+
+        ss << "nodes " << (unsigned long long) total_nodes;
+        ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
+
+        std::cout << ss.str() << std::endl;
     }
 
     void Engine::display_position() const { pos.display(); }
