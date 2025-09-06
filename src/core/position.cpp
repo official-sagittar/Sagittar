@@ -195,8 +195,8 @@ namespace sagittar {
 
             uint64_t hash_local = pos->hash;
 
-            hash_local ^=
-              SEL(pos->ep_target != 0ULL, 0ULL, ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos->ep_target]);
+            hash_local ^= SEL(pos->ep_target != 0ULL, static_cast<uint64_t>(0),
+                              ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos->ep_target]);
 
             pos->ep_target = static_cast<Square>(0);
             pos->half_moves++;
