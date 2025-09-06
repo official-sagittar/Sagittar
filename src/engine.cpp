@@ -127,8 +127,8 @@ namespace sagittar {
 
         std::ostringstream ss;
 
-        ss << "nodes " << (unsigned long long) total_nodes;
-        ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
+        ss << "nodes " << (uint64_t) total_nodes;
+        ss << " nps " << (uint64_t) ((total_nodes * 1000) / (time + 1));
 
         std::cout << ss.str() << std::endl;
     }
