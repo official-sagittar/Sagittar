@@ -88,9 +88,9 @@ namespace sagittar {
                                     const SearchInfo& info,
                                     SearchResult*     result) {
 
-            depth += pos->is_in_check();
+            const bool is_in_check = pos->is_in_check();
 
-            depth = std::min(depth, DEPTH_MAX - 1);
+            depth += is_in_check;
 
             if (depth <= 0)
             {
@@ -129,7 +129,7 @@ namespace sagittar {
 
             if (legal_moves_count == 0)
             {
-                return pos->is_in_check() ? ply - MATE_SCORE : 0;
+                return is_in_check ? ply - MATE_SCORE : 0;
             }
 
             return max;
@@ -140,6 +140,7 @@ namespace sagittar {
                                        const int         ply,
                                        const SearchInfo& info,
                                        SearchResult*     result) {
+
             if ((result->nodes & 2047) == 0)
             {
                 check_timeup(info);
@@ -154,9 +155,9 @@ namespace sagittar {
                 return eval::hce::eval(pos);
             }
 
-            depth += pos->is_in_check();
+            const bool is_in_check = pos->is_in_check();
 
-            depth = std::min(depth, DEPTH_MAX - 1);
+            depth += is_in_check;
 
             if (depth <= 0)
             {
@@ -191,7 +192,7 @@ namespace sagittar {
 
             if (legal_moves_count == 0)
             {
-                return pos->is_in_check() ? ply - MATE_SCORE : 0;
+                return is_in_check ? ply - MATE_SCORE : 0;
             }
 
             return max;
