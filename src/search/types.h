@@ -8,6 +8,8 @@ namespace sagittar {
 
     namespace search {
 
+        constexpr int DEPTH_MAX = 64;
+
         struct SearchInfo {
             // Inputs
             bool infinite;

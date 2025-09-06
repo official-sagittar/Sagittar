@@ -102,6 +102,8 @@ namespace sagittar {
                 std::string        token;
 
                 TaskData task_data;
+                task_data.task        = TaskType::SEARCH;
+                task_data.search_info = {};
 
                 ss >> token;
 
@@ -117,57 +119,51 @@ namespace sagittar {
 
                         break;
                     }
-                    else
+                    else if (token == "infinite")
                     {
-                        task_data.task        = TaskType::SEARCH;
-                        task_data.search_info = {};
-
-                        if (token == "infinite")
-                        {
-                            task_data.search_info.infinite = true;
-                        }
-                        else if (token == "wtime")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.wtime = value;
-                        }
-                        else if (token == "btime")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.btime = value;
-                        }
-                        else if (token == "winc")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.winc = value;
-                        }
-                        else if (token == "binc")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.binc = value;
-                        }
-                        else if (token == "movestogo")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.movestogo = value;
-                        }
-                        else if (token == "movetime")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.movetime = value;
-                        }
-                        else if (token == "depth")
-                        {
-                            int value;
-                            ss >> value;
-                            task_data.search_info.depth = value;
-                        }
+                        task_data.search_info.infinite = true;
+                    }
+                    else if (token == "wtime")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.wtime = value;
+                    }
+                    else if (token == "btime")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.btime = value;
+                    }
+                    else if (token == "winc")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.winc = value;
+                    }
+                    else if (token == "binc")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.binc = value;
+                    }
+                    else if (token == "movestogo")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.movestogo = value;
+                    }
+                    else if (token == "movetime")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.movetime = value;
+                    }
+                    else if (token == "depth")
+                    {
+                        int value;
+                        ss >> value;
+                        task_data.search_info.depth = value;
                     }
                 }
 
@@ -248,6 +244,7 @@ namespace sagittar {
                     else if (input.rfind("position", 0) == 0)
                     {
                         handle_position(input);
+                        engine.reset_for_search();
                     }
                     else if (input.rfind("go", 0) == 0)
                     {
