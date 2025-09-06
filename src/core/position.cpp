@@ -294,11 +294,17 @@ namespace sagittar {
             pos->ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
             hash_local ^= ZOBRIST_CA[pos->ca_rights];
 
-            BitBoard king_bb = board_ptr->bb_pieces[KING] & board_ptr->bb_colors[US];
-            pos->king_sq     = static_cast<Square>(__builtin_ctzll(king_bb));
-            pos->checkers    = movegen_get_square_attackers(pos, pos->king_sq, them);
+            const BitBoard k_bb = board_ptr->bb_pieces[KING];
 
-            const bool is_valid_move = (pos->checkers == 0ULL) && board_ptr->is_valid();
+            const BitBoard king_bb_us  = k_bb & board_ptr->bb_colors[US];
+            const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
+            const BitBoard checkers_us = movegen_get_square_attackers(pos, king_sq_us, them);
+
+            const bool is_valid_move = (checkers_us == 0ULL) && board_ptr->is_valid();
+
+            const BitBoard king_bb_them = k_bb & board_ptr->bb_colors[them];
+            pos->king_sq                = static_cast<Square>(__builtin_ctzll(king_bb_them));
+            pos->checkers               = movegen_get_square_attackers(pos, pos->king_sq, US);
 
             pos->black_to_play = !pos->black_to_play;
             hash_local ^= ZOBRIST_SIDE;

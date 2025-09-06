@@ -228,6 +228,7 @@ OBJECTS :=
 
 GENERATED += $(OBJDIR)/board.o
 GENERATED += $(OBJDIR)/engine.o
+GENERATED += $(OBJDIR)/eval.o
 GENERATED += $(OBJDIR)/move.o
 GENERATED += $(OBJDIR)/movegen.o
 GENERATED += $(OBJDIR)/pch.o
@@ -239,6 +240,7 @@ GENERATED += $(OBJDIR)/uci.o
 GENERATED += $(OBJDIR)/utils.o
 OBJECTS += $(OBJDIR)/board.o
 OBJECTS += $(OBJDIR)/engine.o
+OBJECTS += $(OBJDIR)/eval.o
 OBJECTS += $(OBJDIR)/move.o
 OBJECTS += $(OBJDIR)/movegen.o
 OBJECTS += $(OBJDIR)/pch.o
@@ -380,6 +382,9 @@ $(OBJDIR)/utils.o: src/core/utils.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/engine.o: src/engine.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/eval.o: src/eval/hce/eval.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/pch.o: src/pch.cpp
