@@ -45,7 +45,7 @@ namespace sagittar {
                                       std::function<void(const SearchResult&)> complete_hander) {
             SearchResult result{};
             const auto   starttime = currtime_ms();
-            const Score  score     = search_root(pos, info.depth, 0, info, &result);
+            const Score  score     = search_root(pos, 4, 0, info, &result);
             const auto   time      = currtime_ms() - starttime;
 
             result.score         = score;
