@@ -3,6 +3,7 @@
 #include "core/movegen.h"
 #include "core/utils.h"
 #include "eval/hce/eval.h"
+#include "search/timeman.h"
 
 namespace sagittar {
 
@@ -10,7 +11,6 @@ namespace sagittar {
 
         static constexpr int INF        = 32000;
         static constexpr int MATE_SCORE = 30000;
-        static constexpr int DEPTH_MAX  = 64;
 
         Searcher::Searcher() { reset(); }
 
@@ -25,6 +25,10 @@ namespace sagittar {
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
             stopped.store(false, std::memory_order_relaxed);
+            if (pos->black_to_play)
+                set_hardbound_time<BLACK>(&info);
+            else
+                set_hardbound_time<WHITE>(&info);
             return search(pos, info, progress_handler, complete_hander);
         }
 
@@ -43,26 +47,39 @@ namespace sagittar {
                                       const SearchInfo&                        info,
                                       std::function<void(const SearchResult&)> progress_handler,
                                       std::function<void(const SearchResult&)> complete_hander) {
-            SearchResult result{};
-            const auto   starttime = currtime_ms();
-            const Score  score     = search_root(pos, 4, 0, info, &result);
-            const auto   time      = currtime_ms() - starttime;
+            SearchResult best_result{};
 
-            result.score         = score;
-            const auto score_abs = abs(score);
-            if (score_abs >= (MATE_SCORE - DEPTH_MAX))
+            for (int currdepth = 1; currdepth <= info.depth; currdepth++)
             {
-                result.is_mate          = true;
-                const int moves_to_mate = ((MATE_SCORE - score_abs) + 1) / 2;
-                result.mate_in          = (score > 0) ? moves_to_mate : -moves_to_mate;
+                SearchResult result{};
+                const auto   starttime = currtime_ms();
+                const Score  score     = search_root(pos, currdepth, 0, info, &result);
+                const auto   time      = currtime_ms() - starttime;
+
+                if (stopped.load(std::memory_order_relaxed))
+                {
+                    break;
+                }
+
+                best_result = result;
+
+                result.score         = score;
+                const auto score_abs = abs(score);
+                if (score_abs >= (MATE_SCORE - DEPTH_MAX))
+                {
+                    result.is_mate          = true;
+                    const int moves_to_mate = ((MATE_SCORE - score_abs) + 1) / 2;
+                    result.mate_in          = (score > 0) ? moves_to_mate : -moves_to_mate;
+                }
+                result.depth = currdepth;
+                result.time  = time;
+
+                progress_handler(result);
             }
-            result.depth = info.depth;
-            result.time  = time;
 
-            progress_handler(result);
-            complete_hander(result);
+            complete_hander(best_result);
 
-            return result;
+            return best_result;
         }
 
         Score Searcher::search_root(Position const*   pos,

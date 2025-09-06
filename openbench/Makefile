@@ -15,7 +15,7 @@ SRC_DIR := ..$(PATHSEP)src
 INC_DIR := -I$(SRC_DIR)
 
 EXE ?= Sagittar$(EXE_EXT)
-CXX ?= clang++
+CXX ?= g++
 CFLAGS := -MD -MP -DNDEBUG -I$(SRC_DIR) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
 LDFLAGS := -m64 -static -flto
 
@@ -39,7 +39,7 @@ else
 	@mkdir -p $(OBJ_DIR)
 endif
 
-sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o utils.o eval.o search.o
+sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o utils.o eval.o search.o timeman.o
 	@echo "==== Building Sagittar ===="
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)$(PATHSEP)$(EXE) \
 		$(OBJ_DIR)$(PATHSEP)main.o \
@@ -53,7 +53,8 @@ sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o
 		$(OBJ_DIR)$(PATHSEP)tt.o \
 		$(OBJ_DIR)$(PATHSEP)utils.o \
 		$(OBJ_DIR)$(PATHSEP)eval.o \
-		$(OBJ_DIR)$(PATHSEP)search.o
+		$(OBJ_DIR)$(PATHSEP)search.o \
+		$(OBJ_DIR)$(PATHSEP)timeman.o
 
 main.o: $(SRC_DIR)$(PATHSEP)main.cpp
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)main.cpp -o $(OBJ_DIR)$(PATHSEP)main.o -MF $(OBJ_DIR)$(PATHSEP)main.d
@@ -90,5 +91,8 @@ eval.o: $(SRC_DIR)$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.cpp $(SRC_DIR)$(PATH
 
 search.o: $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.cpp $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.cpp -o $(OBJ_DIR)$(PATHSEP)search.o -MF $(OBJ_DIR)$(PATHSEP)search.d
+
+timeman.o: $(SRC_DIR)$(PATHSEP)search$(PATHSEP)timeman.cpp $(SRC_DIR)$(PATHSEP)search$(PATHSEP)timeman.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search$(PATHSEP)timeman.cpp -o $(OBJ_DIR)$(PATHSEP)timeman.o -MF $(OBJ_DIR)$(PATHSEP)timeman.d
 
 .PHONY: clean dir
