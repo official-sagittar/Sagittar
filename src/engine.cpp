@@ -2,6 +2,7 @@
 #include "core/movegen.h"
 #include "core/perft.h"
 #include "core/tt.h"
+#include "core/utils.h"
 
 namespace sagittar {
 
@@ -107,6 +108,7 @@ namespace sagittar {
 
         int total_nodes = 0;
 
+        const auto starttime = core::currtime_ms();
         for (const auto& fen : positions)
         {
             set_fen(fen);
@@ -119,8 +121,14 @@ namespace sagittar {
 
             total_nodes += result.nodes;
         }
+        const auto time = core::currtime_ms() - starttime;
 
-        std::cout << "nodes " << (int) total_nodes << std::endl;
+        std::ostringstream ss;
+
+        ss << "nodes " << (unsigned long long) total_nodes;
+        ss << " nps " << (unsigned long long) ((total_nodes * 1000) / (time + 1));
+
+        std::cout << ss.str() << std::endl;
     }
 
     void Engine::display_position() const { pos.display(); }
