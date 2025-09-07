@@ -11,7 +11,7 @@ namespace sagittar {
 
             static constexpr std::array<Score, 7> piece_scores = {0, 100, 320, 330, 500, 900, 0};
 
-            static constexpr std::array<PSQT, 7> psqt_w = []() {
+            static constexpr std::array<PSQT, 7> psqt_b = []() {
                 std::array<PSQT, 7> table = {};
 
                 // clang-format off
@@ -94,7 +94,7 @@ namespace sagittar {
                 return table;
             }();
 
-            static constexpr std::array<PSQT, 7> psqt_b = []() {
+            static constexpr std::array<PSQT, 7> psqt_w = []() {
                 std::array<PSQT, 7> table = {};
 
                 for (int sq = A1; sq <= H8; sq++)
@@ -102,7 +102,7 @@ namespace sagittar {
                     const int mirrored_sq = sq ^ 56;
                     for (int pt = PIECE_TYPE_INVALID; pt <= KING; pt++)
                     {
-                        table[pt][sq] = psqt_w[pt][mirrored_sq];
+                        table[pt][sq] = psqt_b[pt][mirrored_sq];
                     }
                 }
 
