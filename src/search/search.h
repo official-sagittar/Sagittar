@@ -31,14 +31,17 @@ namespace sagittar {
                                 std::function<void(const SearchResult&)> complete_hander);
             Score        search_root(Position const*   pos,
                                      int               depth,
-                                     const int         ply,
+                                     Score             alpha,
+                                     Score             beta,
                                      const SearchInfo& info,
                                      SearchResult*     result);
-            Score        search_negamax(Position const*   pos,
-                                        int               depth,
-                                        const int         ply,
-                                        const SearchInfo& info,
-                                        SearchResult*     result);
+            Score        search_alphabeta(Position const*   pos,
+                                          int               depth,
+                                          Score             alpha,
+                                          Score             beta,
+                                          const int         ply,
+                                          const SearchInfo& info,
+                                          SearchResult*     result);
 
             std::atomic_bool stopped;
         };
