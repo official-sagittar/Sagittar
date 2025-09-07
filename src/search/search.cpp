@@ -53,7 +53,7 @@ namespace sagittar {
             {
                 SearchResult result{};
                 const auto   starttime = currtime_ms();
-                const Score  score     = search_root(pos, currdepth, 0, info, &result);
+                const Score  score     = search_root(pos, currdepth, -INF, INF, info, &result);
                 const auto   time      = currtime_ms() - starttime;
 
                 if (stopped.load(std::memory_order_relaxed))
@@ -84,7 +84,8 @@ namespace sagittar {
 
         Score Searcher::search_root(Position const*   pos,
                                     int               depth,
-                                    const int         ply,
+                                    Score             alpha,
+                                    Score             beta,
                                     const SearchInfo& info,
                                     SearchResult*     result) {
 
@@ -97,8 +98,8 @@ namespace sagittar {
                 return eval::hce::eval(pos);
             }
 
-            Score max               = -INF;
-            Move  bestmovesofar     = NULL_MOVE;
+            Score best_score        = -INF;
+            Move  best_move         = NULL_MOVE;
             int   legal_moves_count = 0;
 
             MoveList moves_list = {};
@@ -113,33 +114,42 @@ namespace sagittar {
                 }
                 legal_moves_count++;
                 result->nodes++;
-                const Score score = -search_negamax(&pos_dup, depth - 1, ply + 1, info, result);
+                const Score score =
+                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, 1, info, result);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
                 }
-                if (score > max)
+                // Fail-soft
+                best_score = std::max(best_score, score);
+                if (best_score > alpha)
                 {
-                    max           = score;
-                    bestmovesofar = move;
+                    alpha     = best_score;
+                    best_move = move;
+                    if (best_score >= beta)
+                    {
+                        return beta;
+                    }
                 }
             }
 
-            result->bestmove = bestmovesofar;
+            result->bestmove = best_move;
 
             if (legal_moves_count == 0)
             {
-                return is_in_check * (ply - MATE_SCORE);
+                return is_in_check * (-MATE_SCORE);
             }
 
-            return max;
+            return best_score;
         }
 
-        Score Searcher::search_negamax(Position const*   pos,
-                                       int               depth,
-                                       const int         ply,
-                                       const SearchInfo& info,
-                                       SearchResult*     result) {
+        Score Searcher::search_alphabeta(Position const*   pos,
+                                         int               depth,
+                                         Score             alpha,
+                                         Score             beta,
+                                         const int         ply,
+                                         const SearchInfo& info,
+                                         SearchResult*     result) {
 
             if ((result->nodes & 2047) == 0)
             {
@@ -164,7 +174,7 @@ namespace sagittar {
                 return eval::hce::eval(pos);
             }
 
-            Score max               = -INF;
+            Score best_score        = -INF;
             int   legal_moves_count = 0;
 
             MoveList moves_list = {};
@@ -179,12 +189,22 @@ namespace sagittar {
                 }
                 legal_moves_count++;
                 result->nodes++;
-                const Score score = -search_negamax(&pos_dup, depth - 1, ply + 1, info, result);
+                const Score score =
+                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, ply + 1, info, result);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
                 }
-                max = std::max(max, score);
+                // Fail-soft
+                best_score = std::max(best_score, score);
+                if (best_score > alpha)
+                {
+                    alpha = best_score;
+                    if (best_score >= beta)
+                    {
+                        return beta;
+                    }
+                }
             }
 
             if (legal_moves_count == 0)
@@ -192,7 +212,7 @@ namespace sagittar {
                 return is_in_check * (ply - MATE_SCORE);
             }
 
-            return max;
+            return best_score;
         }
 
     }
