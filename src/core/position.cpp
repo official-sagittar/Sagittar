@@ -27,6 +27,22 @@ namespace sagittar {
         template<Color US>
         constexpr int EP_DIR = (US == WHITE) ? 8 : -8;
 
+        PositionHistory::PositionHistory() :
+            top(0) {
+            hash_history = {};
+        }
+
+        void PositionHistory::reset() {
+            hash_history = {};
+            top          = 0;
+        }
+
+        void PositionHistory::push(const uint64_t hash) { hash_history.at(top++) = hash; }
+
+        uint64_t PositionHistory::peek(const size_t i) { return hash_history.at(i); }
+
+        uint64_t PositionHistory::pop() { return hash_history.at(top--); }
+
         Position::Position() :
             board(Board{}),
             black_to_play(false),
@@ -354,7 +370,8 @@ namespace sagittar {
                 return do_move_dispatch_table<WHITE>[flag](pos, move);
         }
 
-        bool Position::do_move(const Move move) {
+        bool Position::do_move(const Move move, PositionHistory* history) {
+            history->push(hash);
             const Color  us               = static_cast<Color>(black_to_play);
             const Square from             = MOVE_FROM(move);
             const Color  move_piece_color = PIECE_COLOR_OF(board.pieces[from]);
@@ -362,7 +379,7 @@ namespace sagittar {
             return valid && _do_move_wrapper(this, move);
         }
 
-        bool Position::do_move(const std::string& move_str) {
+        bool Position::do_move(const std::string& move_str, PositionHistory* history) {
             const std::size_t len = move_str.length();
             if (len < 4 || len > 5) [[unlikely]]
                 return false;
@@ -509,8 +526,10 @@ namespace sagittar {
 
             const Move move = MOVE_CREATE(from, to, flag);
 
-            return do_move(move);
+            return do_move(move, history);
         }
+
+        void Position::undo_move(PositionHistory* history) { (void) history->pop(); }
 
         void Position::display() const {
             board.display();

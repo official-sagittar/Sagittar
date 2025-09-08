@@ -18,14 +18,16 @@ namespace sagittar {
             void         reset_for_search();
             void         stop();
             SearchResult start(Position const*                          pos,
+                               PositionHistory*                         history,
                                SearchInfo                               info,
                                std::function<void(const SearchResult&)> progress_handler,
                                std::function<void(const SearchResult&)> complete_hander);
-            SearchResult start(Position const* pos, SearchInfo info);
+            SearchResult start(Position const* pos, PositionHistory* history, SearchInfo info);
 
            private:
             void         check_timeup(const SearchInfo& info);
             SearchResult search(Position const*                          pos,
+                                PositionHistory*                         history,
                                 const SearchInfo&                        info,
                                 std::function<void(const SearchResult&)> progress_handler,
                                 std::function<void(const SearchResult&)> complete_hander);
@@ -33,6 +35,7 @@ namespace sagittar {
                                      int               depth,
                                      Score             alpha,
                                      Score             beta,
+                                     PositionHistory*  history,
                                      const SearchInfo& info,
                                      SearchResult*     result);
             Score        search_alphabeta(Position const*   pos,
@@ -40,6 +43,7 @@ namespace sagittar {
                                           Score             alpha,
                                           Score             beta,
                                           const int         ply,
+                                          PositionHistory*  history,
                                           const SearchInfo& info,
                                           SearchResult*     result);
 
