@@ -29,9 +29,10 @@ namespace sagittar {
         ~Engine() = default;
 
        private:
-        core::Position   pos;
-        search::Searcher searcher;
-        size_t           tt_size_mb;
+        core::Position        pos;
+        core::PositionHistory history;
+        search::Searcher      searcher;
+        size_t                tt_size_mb;
     };
 
 }

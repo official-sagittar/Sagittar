@@ -9,6 +9,21 @@ namespace sagittar {
 
     namespace core {
 
+        class PositionHistory {
+           public:
+            PositionHistory();
+            void     reset();
+            void     push(const uint64_t hash);
+            uint64_t peek(const size_t i);
+            void     pop();
+            ~PositionHistory() = default;
+
+           private:
+            static constexpr int HISTORY_SIZE_MAX = 2048;
+
+            std::vector<uint64_t> hash_history;
+        };
+
         class Position {
            public:
             Position();
@@ -17,10 +32,11 @@ namespace sagittar {
             void      reset_hash();
             bool      set_fen(std::string);
             bool      is_valid() const;
-            bool      is_repeated() const;
+            bool      is_repeated(PositionHistory* const history) const;
             bool      is_in_check() const;
-            bool      do_move(const Move move);
-            bool      do_move(const std::string& move_str);
+            bool      do_move(const Move move, PositionHistory* const history);
+            bool      do_move(const std::string& move_str, PositionHistory* const history);
+            void      undo_move(PositionHistory* const history);
             void      display() const;
             Position& operator=(const Position&) = default;
             ~Position()                          = default;

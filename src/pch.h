@@ -12,6 +12,7 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <vector>
 #ifdef TEST
     #include <filesystem>
     #include <fstream>

@@ -21,6 +21,7 @@ namespace sagittar {
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
         SearchResult Searcher::start(Position const*                          pos,
+                                     PositionHistory* const                   history,
                                      SearchInfo                               info,
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
@@ -29,11 +30,12 @@ namespace sagittar {
                 set_hardbound_time<BLACK>(&info);
             else
                 set_hardbound_time<WHITE>(&info);
-            return search(pos, info, progress_handler, complete_hander);
+            return search(pos, history, info, progress_handler, complete_hander);
         }
 
-        SearchResult Searcher::start(Position const* pos, SearchInfo info) {
-            return start(pos, info, [](auto&) {}, [](auto&) {});
+        SearchResult
+        Searcher::start(Position const* pos, PositionHistory* const history, SearchInfo info) {
+            return start(pos, history, info, [](auto&) {}, [](auto&) {});
         }
 
         void Searcher::check_timeup(const SearchInfo& info) {
@@ -44,6 +46,7 @@ namespace sagittar {
         }
 
         SearchResult Searcher::search(Position const*                          pos,
+                                      PositionHistory* const                   history,
                                       const SearchInfo&                        info,
                                       std::function<void(const SearchResult&)> progress_handler,
                                       std::function<void(const SearchResult&)> complete_hander) {
@@ -53,8 +56,8 @@ namespace sagittar {
             {
                 SearchResult result{};
                 const auto   starttime = currtime_ms();
-                const Score  score     = search_root(pos, currdepth, -INF, INF, info, &result);
-                const auto   time      = currtime_ms() - starttime;
+                const Score  score = search_root(pos, currdepth, -INF, INF, history, info, &result);
+                const auto   time  = currtime_ms() - starttime;
 
                 if (stopped.load(std::memory_order_relaxed))
                 {
@@ -82,12 +85,13 @@ namespace sagittar {
             return best_result;
         }
 
-        Score Searcher::search_root(Position const*   pos,
-                                    int               depth,
-                                    Score             alpha,
-                                    Score             beta,
-                                    const SearchInfo& info,
-                                    SearchResult*     result) {
+        Score Searcher::search_root(Position const*        pos,
+                                    int                    depth,
+                                    Score                  alpha,
+                                    Score                  beta,
+                                    PositionHistory* const history,
+                                    const SearchInfo&      info,
+                                    SearchResult*          result) {
 
             const bool is_in_check = pos->is_in_check();
 
@@ -108,14 +112,16 @@ namespace sagittar {
             for (auto [move, move_score] : moves_list)
             {
                 Position pos_dup = *pos;
-                if (!pos_dup.do_move(move))
+                if (!pos_dup.do_move(move, history))
                 {
+                    pos_dup.undo_move(history);
                     continue;
                 }
                 legal_moves_count++;
                 result->nodes++;
                 const Score score =
-                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, 1, info, result);
+                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, 1, history, info, result);
+                pos_dup.undo_move(history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
@@ -143,13 +149,14 @@ namespace sagittar {
             return best_score;
         }
 
-        Score Searcher::search_alphabeta(Position const*   pos,
-                                         int               depth,
-                                         Score             alpha,
-                                         Score             beta,
-                                         const int         ply,
-                                         const SearchInfo& info,
-                                         SearchResult*     result) {
+        Score Searcher::search_alphabeta(Position const*        pos,
+                                         int                    depth,
+                                         Score                  alpha,
+                                         Score                  beta,
+                                         const int              ply,
+                                         PositionHistory* const history,
+                                         const SearchInfo&      info,
+                                         SearchResult*          result) {
 
             if ((result->nodes & 2047) == 0)
             {
@@ -183,14 +190,16 @@ namespace sagittar {
             for (auto [move, move_score] : moves_list)
             {
                 Position pos_dup = *pos;
-                if (!pos_dup.do_move(move))
+                if (!pos_dup.do_move(move, history))
                 {
+                    pos_dup.undo_move(history);
                     continue;
                 }
                 legal_moves_count++;
                 result->nodes++;
-                const Score score =
-                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, ply + 1, info, result);
+                const Score score = -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, ply + 1,
+                                                      history, info, result);
+                pos_dup.undo_move(history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
