@@ -24,13 +24,17 @@ namespace sagittar {
 
     void Engine::set_tt_size_mb(const size_t tt_size_mb) { this->tt_size_mb = tt_size_mb; }
 
-    bool Engine::set_fen(std::string fen) { return pos.set_fen(fen); }
+    bool Engine::set_fen(std::string fen) {
+        history.reset();
+        return pos.set_fen(fen);
+    }
 
     bool Engine::do_move(const core::Move move) { return pos.do_move(move, &history); }
 
     bool Engine::do_move(const std::string& move_str) { return pos.do_move(move_str, &history); }
 
     void Engine::perft(const int depth) {
+        history.reset();
         core::TranspositionTable tt(tt_size_mb);
         using clock = std::chrono::high_resolution_clock;
         auto start  = clock::now();
@@ -115,6 +119,7 @@ namespace sagittar {
         const auto starttime = core::currtime_ms();
         for (const auto& fen : positions)
         {
+            history.reset();
             set_fen(fen);
 
             search::SearchInfo info{};

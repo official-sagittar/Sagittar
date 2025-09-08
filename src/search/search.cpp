@@ -21,7 +21,7 @@ namespace sagittar {
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
         SearchResult Searcher::start(Position const*                          pos,
-                                     PositionHistory*                         history,
+                                     PositionHistory* const                   history,
                                      SearchInfo                               info,
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
@@ -34,7 +34,7 @@ namespace sagittar {
         }
 
         SearchResult
-        Searcher::start(Position const* pos, PositionHistory* history, SearchInfo info) {
+        Searcher::start(Position const* pos, PositionHistory* const history, SearchInfo info) {
             return start(pos, history, info, [](auto&) {}, [](auto&) {});
         }
 
@@ -46,7 +46,7 @@ namespace sagittar {
         }
 
         SearchResult Searcher::search(Position const*                          pos,
-                                      PositionHistory*                         history,
+                                      PositionHistory* const                   history,
                                       const SearchInfo&                        info,
                                       std::function<void(const SearchResult&)> progress_handler,
                                       std::function<void(const SearchResult&)> complete_hander) {
@@ -85,13 +85,13 @@ namespace sagittar {
             return best_result;
         }
 
-        Score Searcher::search_root(Position const*   pos,
-                                    int               depth,
-                                    Score             alpha,
-                                    Score             beta,
-                                    PositionHistory*  history,
-                                    const SearchInfo& info,
-                                    SearchResult*     result) {
+        Score Searcher::search_root(Position const*        pos,
+                                    int                    depth,
+                                    Score                  alpha,
+                                    Score                  beta,
+                                    PositionHistory* const history,
+                                    const SearchInfo&      info,
+                                    SearchResult*          result) {
 
             const bool is_in_check = pos->is_in_check();
 
@@ -149,14 +149,14 @@ namespace sagittar {
             return best_score;
         }
 
-        Score Searcher::search_alphabeta(Position const*   pos,
-                                         int               depth,
-                                         Score             alpha,
-                                         Score             beta,
-                                         const int         ply,
-                                         PositionHistory*  history,
-                                         const SearchInfo& info,
-                                         SearchResult*     result) {
+        Score Searcher::search_alphabeta(Position const*        pos,
+                                         int                    depth,
+                                         Score                  alpha,
+                                         Score                  beta,
+                                         const int              ply,
+                                         PositionHistory* const history,
+                                         const SearchInfo&      info,
+                                         SearchResult*          result) {
 
             if ((result->nodes & 2047) == 0)
             {

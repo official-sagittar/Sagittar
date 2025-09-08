@@ -27,21 +27,19 @@ namespace sagittar {
         template<Color US>
         constexpr int EP_DIR = (US == WHITE) ? 8 : -8;
 
-        PositionHistory::PositionHistory() :
-            top(0) {
-            hash_history = {};
+        PositionHistory::PositionHistory() {
+            hash_history.reserve(HISTORY_SIZE_MAX);
+            hash_history.shrink_to_fit();
+            hash_history.clear();
         }
 
-        void PositionHistory::reset() {
-            hash_history = {};
-            top          = 0;
-        }
+        void PositionHistory::reset() { hash_history.clear(); }
 
-        void PositionHistory::push(const uint64_t hash) { hash_history.at(top++) = hash; }
+        void PositionHistory::push(const uint64_t hash) { hash_history.emplace_back(hash); }
 
         uint64_t PositionHistory::peek(const size_t i) { return hash_history.at(i); }
 
-        uint64_t PositionHistory::pop() { return hash_history.at(top--); }
+        void PositionHistory::pop() { return hash_history.pop_back(); }
 
         Position::Position() :
             board(Board{}),
@@ -199,7 +197,15 @@ namespace sagittar {
 
         bool Position::is_valid() const { return board.is_valid(); }
 
-        bool Position::is_repeated() const { return false; }
+        bool Position::is_repeated(PositionHistory* const history) const {
+            for (size_t i = std::max(ply_count - half_moves, static_cast<uint32_t>(0));
+                 i < ply_count - 1; ++i)
+            {
+                if (hash == history->peek(i))
+                    return true;
+            }
+            return false;
+        }
 
         bool Position::is_in_check() const { return (checkers != 0ULL); }
 
@@ -364,13 +370,11 @@ namespace sagittar {
 
         static bool _do_move_wrapper(Position* pos, const Move move) {
             const MoveFlag flag = MOVE_FLAG(move);
-            if (pos->black_to_play)
-                return do_move_dispatch_table<BLACK>[flag](pos, move);
-            else
-                return do_move_dispatch_table<WHITE>[flag](pos, move);
+            return pos->black_to_play ? do_move_dispatch_table<BLACK>[flag](pos, move)
+                                      : do_move_dispatch_table<WHITE>[flag](pos, move);
         }
 
-        bool Position::do_move(const Move move, PositionHistory* history) {
+        bool Position::do_move(const Move move, PositionHistory* const history) {
             history->push(hash);
             const Color  us               = static_cast<Color>(black_to_play);
             const Square from             = MOVE_FROM(move);
@@ -379,7 +383,7 @@ namespace sagittar {
             return valid && _do_move_wrapper(this, move);
         }
 
-        bool Position::do_move(const std::string& move_str, PositionHistory* history) {
+        bool Position::do_move(const std::string& move_str, PositionHistory* const history) {
             const std::size_t len = move_str.length();
             if (len < 4 || len > 5) [[unlikely]]
                 return false;
@@ -529,7 +533,7 @@ namespace sagittar {
             return do_move(move, history);
         }
 
-        void Position::undo_move(PositionHistory* history) { (void) history->pop(); }
+        void Position::undo_move(PositionHistory* const history) { history->pop(); }
 
         void Position::display() const {
             board.display();
@@ -573,7 +577,8 @@ namespace sagittar {
             std::cout << "\n";
             std::cout << "Halfmove Clock\t\t: " << (int) half_moves << "\n";
             std::cout << "Fullmove Number\t\t: " << (int) full_moves << "\n";
-            std::cout << "Hash\t\t\t: " << (uint64_t) hash << "\n" << std::endl;
+            std::cout << "Hash\t\t\t: " << (uint64_t) hash << "\n";
+            std::cout << "Checkers\t\t: " << (uint64_t) checkers << "\n" << std::endl;
         }
 
         void position_init() {
