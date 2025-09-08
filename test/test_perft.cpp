@@ -11,26 +11,30 @@ using pair_type = std::pair<std::string, std::vector<uint64_t>>;
 TEST_SUITE("Perft") {
 
     TEST_CASE("Perft - startpos") {
-        Position   pos;
+        Position        pos;
+        PositionHistory history;
+
         const bool is_valid =
           pos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         CHECK(is_valid);
 
         TranspositionTable tt;
 
-        auto nodes = perft(&pos, 6, &tt);
+        auto nodes = perft(&pos, 6, &tt, &history);
         CHECK(nodes == 119060324);
     }
 
     TEST_CASE("Perft - kiwipete") {
-        Position   pos;
+        Position        pos;
+        PositionHistory history;
+
         const bool is_valid =
           pos.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
         CHECK(is_valid);
 
         TranspositionTable tt;
 
-        auto nodes = perft(&pos, 5, &tt);
+        auto nodes = perft(&pos, 5, &tt, &history);
         CHECK(nodes == 193690690);
     }
 
@@ -48,12 +52,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -80,12 +86,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -104,12 +112,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -126,12 +136,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -151,12 +163,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -173,12 +187,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -207,12 +223,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -239,12 +257,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -284,12 +304,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i + 1, &tt);
+                const auto result = perft(&pos, i + 1, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -306,12 +328,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -332,12 +356,14 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt);
+                const auto result = perft(&pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -367,7 +393,9 @@ TEST_SUITE("Perft Full") {
             auto              first_semicolon_pos = line.find(';');
             const std::string fen                 = line.substr(0, first_semicolon_pos);
 
-            Position   pos;
+            Position        pos;
+            PositionHistory history;
+
             const bool is_valid = pos.set_fen(fen);
             CHECK(is_valid);
 
@@ -378,7 +406,7 @@ TEST_SUITE("Perft Full") {
                 const int      depth       = std::stoi(match[1].str());
                 const uint64_t perft_value = std::stoull(match[2].str());
 
-                const auto result = perft(&pos, depth, &tt);
+                const auto result = perft(&pos, depth, &tt, &history);
                 REQUIRE(result == perft_value);
 
                 depth_perft_part = match.suffix().str();
