@@ -172,6 +172,11 @@ namespace sagittar {
                 return eval::hce::eval(pos);
             }
 
+            if (pos->is_repeated(history) || pos->half_moves >= 100)
+            {
+                return 0;
+            }
+
             const bool is_in_check = pos->is_in_check();
 
             depth += is_in_check;
