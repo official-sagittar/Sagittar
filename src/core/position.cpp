@@ -39,7 +39,7 @@ namespace sagittar {
 
         uint64_t PositionHistory::peek(const size_t i) { return hash_history.at(i); }
 
-        void PositionHistory::pop() { return hash_history.pop_back(); }
+        void PositionHistory::pop() { hash_history.pop_back(); }
 
         Position::Position() :
             board(Board{}),
