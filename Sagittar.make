@@ -50,9 +50,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/macos64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -m64 -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -m64
 
 else ifeq ($(config),debug_linux64)
 ifeq ($(origin CC), default)
@@ -70,9 +70,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/linux64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -static
 
 else ifeq ($(config),debug_windows64)
 ifeq ($(origin CC), default)
@@ -90,9 +90,9 @@ TARGET = $(TARGETDIR)/Sagittar.exe
 OBJDIR = obj/windows64/Debug
 DEFINES += -DDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -static
 
 else ifeq ($(config),test_macos64)
 ifeq ($(origin CC), default)
@@ -110,9 +110,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/macos64/Test
 DEFINES += -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -m64 -flto -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -m64 -flto
 
 else ifeq ($(config),test_linux64)
 ifeq ($(origin CC), default)
@@ -130,9 +130,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/linux64/Test
 DEFINES += -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 else ifeq ($(config),test_windows64)
 ifeq ($(origin CC), default)
@@ -150,9 +150,9 @@ TARGET = $(TARGETDIR)/Sagittar.exe
 OBJDIR = obj/windows64/Test
 DEFINES += -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 else ifeq ($(config),release_macos64)
 ifeq ($(origin CC), default)
@@ -170,9 +170,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/macos64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -m64 -flto -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -m64 -flto
 
 else ifeq ($(config),release_linux64)
 ifeq ($(origin CC), default)
@@ -190,9 +190,9 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/linux64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 else ifeq ($(config),release_windows64)
 ifeq ($(origin CC), default)
@@ -210,9 +210,9 @@ TARGET = $(TARGETDIR)/Sagittar.exe
 OBJDIR = obj/windows64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native -fsanitize=undefined -fsanitize=address
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native -fsanitize=undefined -fsanitize=address
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static -fsanitize=undefined -fsanitize=address
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 endif
 
@@ -269,30 +269,36 @@ OBJECTS += $(OBJDIR)/main.o
 
 else ifeq ($(config),test_macos64)
 GENERATED += $(OBJDIR)/test_main.o
+GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
+OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_linux64)
 GENERATED += $(OBJDIR)/test_main.o
+GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
+OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_windows64)
 GENERATED += $(OBJDIR)/test_main.o
+GENERATED += $(OBJDIR)/test_movegen.o
 GENERATED += $(OBJDIR)/test_movepicker.o
 GENERATED += $(OBJDIR)/test_perft.o
 GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
+OBJECTS += $(OBJDIR)/test_movegen.o
 OBJECTS += $(OBJDIR)/test_movepicker.o
 OBJECTS += $(OBJDIR)/test_perft.o
 OBJECTS += $(OBJDIR)/test_position.o
@@ -435,6 +441,9 @@ else ifeq ($(config),test_macos64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -449,6 +458,9 @@ else ifeq ($(config),test_linux64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -461,6 +473,9 @@ $(OBJDIR)/test_position.o: test/test_position.cpp
 
 else ifeq ($(config),test_windows64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/test_movepicker.o: test/test_movepicker.cpp

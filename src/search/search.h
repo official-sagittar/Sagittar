@@ -47,6 +47,13 @@ namespace sagittar {
                                           PositionHistory* const history,
                                           const SearchInfo&      info,
                                           SearchResult*          result);
+            Score        search_quiescence(Position const*        pos,
+                                           Score                  alpha,
+                                           Score                  beta,
+                                           const int              ply,
+                                           PositionHistory* const history,
+                                           const SearchInfo&      info,
+                                           SearchResult*          result);
 
             std::atomic_bool stopped;
         };

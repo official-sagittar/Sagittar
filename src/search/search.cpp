@@ -100,7 +100,7 @@ namespace sagittar {
 
             if (depth <= 0)
             {
-                return eval::hce::eval(pos);
+                return search_quiescence(pos, alpha, beta, 0, history, info, result);
             }
 
             Score best_score        = -INF;
@@ -188,7 +188,7 @@ namespace sagittar {
 
             if (depth <= 0)
             {
-                return eval::hce::eval(pos);
+                return search_quiescence(pos, alpha, beta, ply, history, info, result);
             }
 
             Score best_score        = -INF;
@@ -236,6 +236,68 @@ namespace sagittar {
             }
 
             return best_score;
+        }
+
+        Score Searcher::search_quiescence(Position const*        pos,
+                                          Score                  alpha,
+                                          Score                  beta,
+                                          const int              ply,
+                                          PositionHistory* const history,
+                                          const SearchInfo&      info,
+                                          SearchResult*          result) {
+
+            if ((result->nodes & 2047) == 0)
+            {
+                check_timeup(info);
+                if (stopped.load(std::memory_order_relaxed) && ply > 0)
+                {
+                    return 0;
+                }
+            }
+
+            if (ply >= DEPTH_MAX - 1)
+            {
+                return eval::hce::eval(pos);
+            }
+
+            const Score stand_pat = eval::hce::eval(pos);
+            if (stand_pat >= beta)
+            {
+                return beta;
+            }
+            alpha = std::max(alpha, stand_pat);
+
+            MoveList moves_list = {};
+            movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
+
+            MovePicker move_picker(&moves_list, pos);
+
+            while (move_picker.has_next())
+            {
+                const auto [move, move_score] = move_picker.next();
+
+                Position pos_dup = *pos;
+                if (!pos_dup.do_move(move, history))
+                {
+                    pos_dup.undo_move(history);
+                    continue;
+                }
+                result->nodes++;
+                const Score score =
+                  -search_quiescence(&pos_dup, -beta, -alpha, ply + 1, history, info, result);
+                pos_dup.undo_move(history);
+                if (stopped.load(std::memory_order_relaxed))
+                {
+                    return 0;
+                }
+                if (score >= beta)
+                {
+                    return beta;
+                }
+                alpha = std::max(alpha, score);
+            }
+
+            return alpha;
         }
 
     }
