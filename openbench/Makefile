@@ -39,7 +39,7 @@ else
 	@mkdir -p $(OBJ_DIR)
 endif
 
-sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o utils.o eval.o search.o timeman.o
+sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o utils.o eval.o movepicker.o search.o timeman.o
 	@echo "==== Building Sagittar ===="
 	@$(CXX) $(LDFLAGS) -o $(BIN_DIR)$(PATHSEP)$(EXE) \
 		$(OBJ_DIR)$(PATHSEP)main.o \
@@ -53,6 +53,7 @@ sagittar: main.o engine.o uci.o board.o move.o movegen.o perft.o position.o tt.o
 		$(OBJ_DIR)$(PATHSEP)tt.o \
 		$(OBJ_DIR)$(PATHSEP)utils.o \
 		$(OBJ_DIR)$(PATHSEP)eval.o \
+		$(OBJ_DIR)$(PATHSEP)movepicker.o \
 		$(OBJ_DIR)$(PATHSEP)search.o \
 		$(OBJ_DIR)$(PATHSEP)timeman.o
 
@@ -88,6 +89,9 @@ utils.o: $(SRC_DIR)$(PATHSEP)core$(PATHSEP)utils.cpp $(SRC_DIR)$(PATHSEP)core$(P
 
 eval.o: $(SRC_DIR)$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.cpp $(SRC_DIR)$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)eval$(PATHSEP)hce$(PATHSEP)eval.cpp -o $(OBJ_DIR)$(PATHSEP)eval.o -MF $(OBJ_DIR)$(PATHSEP)eval.d
+
+movepicker.o: $(SRC_DIR)$(PATHSEP)search$(PATHSEP)movepicker.cpp $(SRC_DIR)$(PATHSEP)search$(PATHSEP)movepicker.h
+	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search$(PATHSEP)movepicker.cpp -o $(OBJ_DIR)$(PATHSEP)movepicker.o -MF $(OBJ_DIR)$(PATHSEP)movepicker.d
 
 search.o: $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.cpp $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.h
 	@$(CXX) $(CFLAGS) $(INC_DIR) -c $(SRC_DIR)$(PATHSEP)search$(PATHSEP)search.cpp -o $(OBJ_DIR)$(PATHSEP)search.o -MF $(OBJ_DIR)$(PATHSEP)search.d

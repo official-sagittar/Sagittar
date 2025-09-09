@@ -3,6 +3,7 @@
 #include "core/movegen.h"
 #include "core/utils.h"
 #include "eval/hce/eval.h"
+#include "search/movepicker.h"
 #include "search/timeman.h"
 
 namespace sagittar {
@@ -109,8 +110,12 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            for (auto [move, move_score] : moves_list)
+            MovePicker move_picker(&moves_list, pos);
+
+            while (move_picker.has_next())
             {
+                const auto [move, move_score] = move_picker.next();
+
                 Position pos_dup = *pos;
                 if (!pos_dup.do_move(move, history))
                 {
@@ -192,8 +197,12 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            for (auto [move, move_score] : moves_list)
+            MovePicker move_picker(&moves_list, pos);
+
+            while (move_picker.has_next())
             {
+                const auto [move, move_score] = move_picker.next();
+
                 Position pos_dup = *pos;
                 if (!pos_dup.do_move(move, history))
                 {
