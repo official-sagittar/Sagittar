@@ -103,7 +103,6 @@ namespace sagittar {
             Iterator end() { return Iterator(moves.data() + size, scores.data() + size); }
             ~MoveList() = default;
 
-           private:
             std::array<Move, MOVE_LIST_SIZE_MAX>  moves;
             std::array<Score, MOVE_LIST_SIZE_MAX> scores;
             size_t                                size;
