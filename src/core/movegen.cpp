@@ -8,11 +8,11 @@ namespace sagittar {
         static constexpr int MAGIC_MAX_TRIES = 500000;
 
         static constexpr BitBoard BITBOARD_MASK_RANK_1      = 0x00000000000000FF;
-        static constexpr BitBoard BITBOARD_MASK_NOT_RANK_1  = 0xFFFFFFFFFFFFFF00;
+        static constexpr BitBoard BITBOARD_MASK_NOT_RANK_1  = ~BITBOARD_MASK_RANK_1;
         static constexpr BitBoard BITBOARD_MASK_RANK_4      = 0x00000000FF000000;
         static constexpr BitBoard BITBOARD_MASK_RANK_5      = 0x000000FF00000000;
         static constexpr BitBoard BITBOARD_MASK_RANK_8      = 0xFF00000000000000;
-        static constexpr BitBoard BITBOARD_MASK_NOT_RANK_8  = 0x00FFFFFFFFFFFFFF;
+        static constexpr BitBoard BITBOARD_MASK_NOT_RANK_8  = ~BITBOARD_MASK_RANK_8;
         static constexpr BitBoard BITBOARD_MASK_NOT_A_FILE  = 0xFEFEFEFEFEFEFEFE;
         static constexpr BitBoard BITBOARD_MASK_NOT_H_FILE  = 0x7F7F7F7F7F7F7F7F;
         static constexpr BitBoard BITBOARD_MASK_NOT_AB_FILE = 0xFCFCFCFCFCFCFCFC;
@@ -477,7 +477,7 @@ namespace sagittar {
             const BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
             const BitBoard capture_l                     = fwd_l & enemies_not_on_promotion_dest;
             const BitBoard capture_r                     = fwd_r & enemies_not_on_promotion_dest;
-            const BitBoard ep_target_bb                  = BB(pos->ep_target);
+            const BitBoard ep_target_bb                  = BB(pos->ep_target) & not_promo_dest;
             const BitBoard capture_ep_l                  = fwd_l & ep_target_bb;
             const BitBoard capture_ep_r                  = fwd_r & ep_target_bb;
             const BitBoard quite_promo                   = pawns_fwd & promo_dest & empty;
