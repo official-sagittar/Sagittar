@@ -15,7 +15,10 @@ namespace sagittar {
 
         Searcher::Searcher() { reset(); }
 
-        void Searcher::reset() { stopped.store(false, std::memory_order_relaxed); }
+        void Searcher::reset() {
+            stopped.store(false, std::memory_order_relaxed);
+            pv_move = NULL_MOVE;
+        }
 
         void Searcher::reset_for_search() {}
 
@@ -27,6 +30,7 @@ namespace sagittar {
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
             stopped.store(false, std::memory_order_relaxed);
+            pv_move = NULL_MOVE;
             if (pos->black_to_play)
                 set_hardbound_time<BLACK>(&info);
             else
@@ -110,7 +114,7 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos);
+            MovePicker move_picker(&moves_list, pos, pv_move);
 
             while (move_picker.has_next())
             {
@@ -144,6 +148,7 @@ namespace sagittar {
                 }
             }
 
+            pv_move          = best_move;
             result->bestmove = best_move;
 
             if (legal_moves_count == 0)
@@ -197,7 +202,7 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos);
+            MovePicker move_picker(&moves_list, pos, pv_move);
 
             while (move_picker.has_next())
             {
@@ -270,7 +275,7 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos);
+            MovePicker move_picker(&moves_list, pos, pv_move);
 
             while (move_picker.has_next())
             {

@@ -18,10 +18,12 @@ TEST_SUITE("Search::MovePicker") {
         MoveList moves_list = {};
         movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(&pos, &moves_list);
 
+        const Move pv_move = MOVE_CREATE(E1, F2, MOVE_CAPTURE);
+
         size_t size       = 0;
         Score  prev_score = -1;
 
-        MovePicker move_picker(&moves_list, &pos);
+        MovePicker move_picker(&moves_list, &pos, pv_move);
         while (move_picker.has_next())
         {
             const auto [move, move_score] = move_picker.next();
@@ -40,9 +42,14 @@ TEST_SUITE("Search::MovePicker") {
                 prev_score = move_score;
             }
 
-            if (MOVE_IS_CAPTURE(move))
+            if (move == pv_move)
             {
-                CHECK(move_score > 5000);
+                CHECK(move_score == 20000);
+            }
+            else if (MOVE_IS_CAPTURE(move))
+            {
+                CHECK(move_score >= 5100);
+                CHECK(move_score <= 5605);
             }
             else
             {

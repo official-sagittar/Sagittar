@@ -56,6 +56,7 @@ namespace sagittar {
                                            SearchResult*          result);
 
             std::atomic_bool stopped;
+            Move             pv_move;
         };
 
     }
