@@ -102,17 +102,17 @@ ifeq ($(origin CXX), default)
   CXX = clang++
 endif
 ifeq ($(origin AR), default)
-  AR = llvm-ar
+  AR = ar
 endif
 RESCOMP = windres
 TARGETDIR = bin/Test
 TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/macos64/Test
-DEFINES += -DTEST
+DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
-ALL_LDFLAGS += $(LDFLAGS) -m64 -flto
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -m64
 
 else ifeq ($(config),test_linux64)
 ifeq ($(origin CC), default)
@@ -128,11 +128,11 @@ RESCOMP = windres
 TARGETDIR = bin/Test
 TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/linux64/Test
-DEFINES += -DTEST
+DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -static
 
 else ifeq ($(config),test_windows64)
 ifeq ($(origin CC), default)
@@ -148,11 +148,11 @@ RESCOMP = windres
 TARGETDIR = bin/Test
 TARGET = $(TARGETDIR)/Sagittar.exe
 OBJDIR = obj/windows64/Test
-DEFINES += -DTEST
+DEFINES += -DDEBUG -DTEST
 INCLUDES += -Isrc -Itest/lib/doctest
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
-ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Wall -Wextra -std=c++20 -march=native
+ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s -static
 
 else ifeq ($(config),release_macos64)
 ifeq ($(origin CC), default)

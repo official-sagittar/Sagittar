@@ -35,9 +35,7 @@ workspace "Sagittar"
             files { "src/**.h", "src/**.cpp", "test/*.h", "test/*.cpp" }
             removefiles { "src/main.cpp" }
             includedirs { "src",  "test/lib/doctest" }
-            defines { "TEST" }
-            optimize "Speed"
-            linktimeoptimization "On"
+            defines { "DEBUG", "TEST" }
 
         filter { "configurations:Release" }
             defines { "NDEBUG" }
