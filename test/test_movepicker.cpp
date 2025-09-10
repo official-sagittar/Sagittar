@@ -23,7 +23,7 @@ TEST_SUITE("Search::MovePicker") {
         size_t size       = 0;
         Score  prev_score = -1;
 
-        MovePicker move_picker(&moves_list, &pos, pv_move);
+        MovePicker move_picker(&moves_list, &pos, pv_move, NULL_MOVE);
         while (move_picker.has_next())
         {
             const auto [move, move_score] = move_picker.next();

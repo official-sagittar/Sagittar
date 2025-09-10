@@ -18,7 +18,7 @@ TEST_SUITE("Perft") {
           pos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         CHECK(is_valid);
 
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         auto nodes = perft(&pos, 6, &tt, &history);
         CHECK(nodes == 119060324);
@@ -32,14 +32,14 @@ TEST_SUITE("Perft") {
           pos.set_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
         CHECK(is_valid);
 
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         auto nodes = perft(&pos, 5, &tt, &history);
         CHECK(nodes == 193690690);
     }
 
     TEST_CASE("Perft - Sanity") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 7> positions = {
           {{"8/4k3/8/8/8/8/4K3/8 w - - 0 1", {1, 8}},
@@ -67,7 +67,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Diagonal pin") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 12> positions = {{
           {"4k3/b7/8/2Pp4/8/8/8/6K1 w - d6 0 2", {1, 5}},
@@ -101,7 +101,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Horizontal pin") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 4> positions = {{
           {"4k3/8/8/K2pP2r/8/8/8/8 w - d6 0 1", {1, 6}},
@@ -127,7 +127,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Vertical pin") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 2> positions = {{
           {"k7/8/4r3/3pP3/8/8/8/4K3 w - d6 0 1", {1, 5}},
@@ -151,7 +151,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Legal") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 5> positions = {{
           {"8/8/8/8/1k1PpN1R/8/8/4K3 b - d3 0 1", {1, 9, 193, 1322}},
@@ -178,7 +178,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Capture checker") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 2> positions = {{
           {"4k3/8/8/4pP2/3K4/8/8/8 w - e6 0 2", {1, 9}},
@@ -202,7 +202,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- In check") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 14> positions = {{
           {"2b1k3/8/8/2Pp4/8/7K/8/8 w - - 0 1", {1, 4, 52}},
@@ -238,7 +238,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - En passant -- Block check") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 12> positions = {{
           {"4k3/8/K6r/3pP3/8/8/8/8 w - d6 0 1", {1, 6, 109}},
@@ -272,7 +272,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - Shallow") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 25> positions = {{
           {"4k3/b7/8/2Pp4/8/8/8/6K1 w - d6 0 2", {5}},
@@ -319,7 +319,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - Double Check") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 2> positions = {{
           {"4k3/8/4r3/8/8/8/3p4/4K3 w - - 0 1", {1, 4, 80, 320}},
@@ -343,7 +343,7 @@ TEST_SUITE("Perft") {
     }
 
     TEST_CASE("Perft - Pins") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         const std::array<pair_type, 6> positions = {{
           {"4k3/8/8/8/1b5b/8/3Q4/4K3 w - - 0 1", {1, 3, 54, 1256}},
@@ -374,7 +374,7 @@ TEST_SUITE("Perft") {
 TEST_SUITE("Perft Full") {
 
     TEST_CASE("Perft - Full - Standard") {
-        TranspositionTable tt;
+        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
         std::filesystem::path filepath = std::filesystem::current_path() / "data" / "standard.epd";
         filepath                       = std::filesystem::canonical(filepath);

@@ -6,19 +6,19 @@ namespace sagittar {
 
     namespace core {
 
-        uint64_t perft(Position* const           pos,
-                       const int                 depth,
-                       TranspositionTable* const tt,
-                       PositionHistory*          history) {
+        uint64_t perft(Position* const                                                pos,
+                       const int                                                      depth,
+                       TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
+                       PositionHistory*                                               history) {
             if (depth == 0)
             {
                 return 1ULL;
             }
 
-            TTEntry entry;
-            if (tt->probe(&entry, pos->hash) && entry.depth == depth)
+            TTData<uint32_t> ttdata;
+            if (tt->probe(&ttdata, pos->hash, 0) && ttdata.depth == depth)
             {
-                return entry.value;
+                return ttdata.value;
             }
 
             uint64_t nodes      = 0ULL;
@@ -34,15 +34,15 @@ namespace sagittar {
                 pos_dup.undo_move(history);
             }
 
-            tt->store(pos->hash, depth, nodes);
+            tt->store(pos->hash, depth, 0, TT_FLAG_EXACT, nodes, NULL_MOVE);
 
             return nodes;
         }
 
-        uint64_t divide(Position* const           pos,
-                        const int                 depth,
-                        TranspositionTable* const tt,
-                        PositionHistory*          history) {
+        uint64_t divide(Position* const                                                pos,
+                        const int                                                      depth,
+                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
+                        PositionHistory*                                               history) {
             if (depth == 0)
             {
                 return 1ULL;

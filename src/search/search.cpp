@@ -10,17 +10,17 @@ namespace sagittar {
 
     namespace search {
 
-        static constexpr int INF        = 32000;
-        static constexpr int MATE_SCORE = 30000;
-
         Searcher::Searcher() { reset(); }
 
         void Searcher::reset() {
             stopped.store(false, std::memory_order_relaxed);
+            tt.clear();
             pv_move = NULL_MOVE;
         }
 
         void Searcher::reset_for_search() {}
+
+        void Searcher::set_tt_size(const size_t mb) { tt.resize(mb); }
 
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
@@ -107,14 +107,20 @@ namespace sagittar {
                 return search_quiescence(pos, alpha, beta, 0, history, info, result);
             }
 
-            Score best_score        = -INF;
-            Move  best_move         = NULL_MOVE;
-            int   legal_moves_count = 0;
+            TTData<Score> ttdata{};
+            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
+
+            Score  best_score        = -INF;
+            Move   best_move         = NULL_MOVE;
+            TTFlag flag              = TT_FLAG_UPPERBOUND;
+            int    legal_moves_count = 0;
 
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, pv_move);
+            const Move tt_move = tthit * ttdata.move;
+
+            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
 
             while (move_picker.has_next())
             {
@@ -141,20 +147,25 @@ namespace sagittar {
                 {
                     alpha     = best_score;
                     best_move = move;
-                    pv_move   = move;
+                    flag      = TT_FLAG_EXACT;
                     if (best_score >= beta)
                     {
-                        return beta;
+                        flag = TT_FLAG_LOWERBOUND;
+                        break;
                     }
                 }
             }
 
-            pv_move          = best_move;
-            result->bestmove = best_move;
-
             if (legal_moves_count == 0)
             {
                 return is_in_check * (-MATE_SCORE);
+            }
+
+            if (!stopped.load(std::memory_order_relaxed))
+            {
+                pv_move          = best_move;
+                result->bestmove = best_move;
+                tt.store(pos->hash, depth, 0, flag, best_score, best_move);
             }
 
             return best_score;
@@ -197,13 +208,20 @@ namespace sagittar {
                 return search_quiescence(pos, alpha, beta, ply, history, info, result);
             }
 
-            Score best_score        = -INF;
-            int   legal_moves_count = 0;
+            TTData<Score> ttdata{};
+            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
+
+            Score  best_score        = -INF;
+            Move   best_move         = NULL_MOVE;
+            TTFlag flag              = TT_FLAG_UPPERBOUND;
+            int    legal_moves_count = 0;
 
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, pv_move);
+            const Move tt_move = tthit * ttdata.move;
+
+            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
 
             while (move_picker.has_next())
             {
@@ -228,10 +246,13 @@ namespace sagittar {
                 best_score = std::max(best_score, score);
                 if (best_score > alpha)
                 {
-                    alpha = best_score;
+                    alpha     = best_score;
+                    best_move = move;
+                    flag      = TT_FLAG_EXACT;
                     if (best_score >= beta)
                     {
-                        return beta;
+                        flag = TT_FLAG_LOWERBOUND;
+                        break;
                     }
                 }
             }
@@ -239,6 +260,11 @@ namespace sagittar {
             if (legal_moves_count == 0)
             {
                 return is_in_check * (ply - MATE_SCORE);
+            }
+
+            if (!stopped.load(std::memory_order_relaxed))
+            {
+                tt.store(pos->hash, depth, ply, flag, best_score, best_move);
             }
 
             return best_score;
@@ -273,10 +299,15 @@ namespace sagittar {
             }
             alpha = std::max(alpha, stand_pat);
 
+            TTData<Score> ttdata{};
+            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
+
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, pv_move);
+            const Move tt_move = tthit * ttdata.move;
+
+            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
 
             while (move_picker.has_next())
             {
