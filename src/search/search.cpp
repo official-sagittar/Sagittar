@@ -141,6 +141,7 @@ namespace sagittar {
                 {
                     alpha     = best_score;
                     best_move = move;
+                    pv_move   = move;
                     if (best_score >= beta)
                     {
                         return beta;
