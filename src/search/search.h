@@ -2,6 +2,7 @@
 
 #include "core/defs.h"
 #include "core/position.h"
+#include "core/tt.h"
 #include "pch.h"
 #include "search/types.h"
 
@@ -16,6 +17,7 @@ namespace sagittar {
             Searcher();
             void         reset();
             void         reset_for_search();
+            void         set_tt_size(const size_t mb);
             void         stop();
             SearchResult start(Position const*                          pos,
                                PositionHistory* const                   history,
@@ -55,7 +57,9 @@ namespace sagittar {
                                            const SearchInfo&      info,
                                            SearchResult*          result);
 
-            std::atomic_bool stopped;
+            std::atomic_bool                                      stopped;
+            TranspositionTable<TTClient::SEARCH, uint64_t, Score> tt;
+            Move                                                  pv_move;
         };
 
     }

@@ -9,6 +9,10 @@ namespace sagittar {
         using BitBoard = uint64_t;
         using Score    = int16_t;
 
+        constexpr int INF        = 32000;
+        constexpr int MATE_SCORE = 30000;
+        constexpr int DEPTH_MAX  = 64;
+
         enum Color {
             WHITE,
             BLACK

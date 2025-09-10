@@ -22,7 +22,10 @@ namespace sagittar {
         history.reset();
     }
 
-    void Engine::set_tt_size_mb(const size_t tt_size_mb) { this->tt_size_mb = tt_size_mb; }
+    void Engine::set_tt_size_mb(const size_t tt_size_mb) {
+        this->tt_size_mb = tt_size_mb;
+        searcher.set_tt_size(tt_size_mb);
+    }
 
     bool Engine::set_fen(std::string fen) {
         history.reset();
@@ -35,7 +38,7 @@ namespace sagittar {
 
     void Engine::perft(const int depth) {
         history.reset();
-        core::TranspositionTable tt(tt_size_mb);
+        core::TranspositionTable<core::TTClient::PERFT, uint64_t, uint32_t> tt(tt_size_mb);
         using clock = std::chrono::high_resolution_clock;
         auto start  = clock::now();
         auto nodes  = core::divide(&pos, depth, &tt, &history);

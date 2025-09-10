@@ -26,6 +26,15 @@ else ifeq ($(config),test_linux64)
 else ifeq ($(config),test_windows64)
   Sagittar_config = test_windows64
 
+else ifeq ($(config),test_release_macos64)
+  Sagittar_config = test_release_macos64
+
+else ifeq ($(config),test_release_linux64)
+  Sagittar_config = test_release_linux64
+
+else ifeq ($(config),test_release_windows64)
+  Sagittar_config = test_release_windows64
+
 else ifeq ($(config),release_macos64)
   Sagittar_config = release_macos64
 
@@ -64,6 +73,9 @@ help:
 	@echo "  test_macos64"
 	@echo "  test_linux64"
 	@echo "  test_windows64"
+	@echo "  test_release_macos64"
+	@echo "  test_release_linux64"
+	@echo "  test_release_windows64"
 	@echo "  release_macos64"
 	@echo "  release_linux64"
 	@echo "  release_windows64"
