@@ -35,7 +35,7 @@ namespace sagittar {
                 set_hardbound_time<BLACK>(&info);
             else
                 set_hardbound_time<WHITE>(&info);
-            return search(pos, history, info, progress_handler, complete_hander);
+            return search_pos(pos, history, info, progress_handler, complete_hander);
         }
 
         SearchResult
@@ -50,18 +50,20 @@ namespace sagittar {
             }
         }
 
-        SearchResult Searcher::search(Position const*                          pos,
-                                      PositionHistory* const                   history,
-                                      const SearchInfo&                        info,
-                                      std::function<void(const SearchResult&)> progress_handler,
-                                      std::function<void(const SearchResult&)> complete_hander) {
+        SearchResult
+        Searcher::search_pos(Position const*                          pos,
+                             PositionHistory* const                   history,
+                             const SearchInfo&                        info,
+                             std::function<void(const SearchResult&)> progress_handler,
+                             std::function<void(const SearchResult&)> complete_hander) {
             SearchResult best_result{};
 
             for (int currdepth = 1; currdepth <= info.depth; currdepth++)
             {
                 SearchResult result{};
                 const auto   starttime = currtime_ms();
-                const Score  score = search_root(pos, currdepth, -INF, INF, history, info, &result);
+                const Score  score = search<Searcher::NodeType::ROOT>(pos, currdepth, -INF, INF, 0,
+                                                                      history, info, &result);
                 const auto   time  = currtime_ms() - starttime;
 
                 if (stopped.load(std::memory_order_relaxed))
@@ -90,113 +92,36 @@ namespace sagittar {
             return best_result;
         }
 
-        Score Searcher::search_root(Position const*        pos,
-                                    int                    depth,
-                                    Score                  alpha,
-                                    Score                  beta,
-                                    PositionHistory* const history,
-                                    const SearchInfo&      info,
-                                    SearchResult*          result) {
+        template<Searcher::NodeType nodeType>
+        Score Searcher::search(Position const*        pos,
+                               int                    depth,
+                               Score                  alpha,
+                               Score                  beta,
+                               const int              ply,
+                               PositionHistory* const history,
+                               const SearchInfo&      info,
+                               SearchResult*          result) {
 
-            const bool is_in_check = pos->is_in_check();
-
-            depth += is_in_check;
-
-            if (depth <= 0)
+            if constexpr (nodeType != Searcher::NodeType::ROOT)
             {
-                return search_quiescence(pos, alpha, beta, 0, history, info, result);
-            }
-
-            TTData<Score> ttdata{};
-            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
-
-            Score  best_score        = -INF;
-            Move   best_move         = NULL_MOVE;
-            TTFlag flag              = TT_FLAG_UPPERBOUND;
-            int    legal_moves_count = 0;
-
-            MoveList moves_list = {};
-            movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
-
-            const Move tt_move = tthit * ttdata.move;
-
-            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
-
-            while (move_picker.has_next())
-            {
-                const auto [move, move_score] = move_picker.next();
-
-                Position pos_dup = *pos;
-                if (!pos_dup.do_move(move, history))
+                if ((result->nodes & 2047) == 0)
                 {
-                    pos_dup.undo_move(history);
-                    continue;
-                }
-                legal_moves_count++;
-                result->nodes++;
-                const Score score =
-                  -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, 1, history, info, result);
-                pos_dup.undo_move(history);
-                if (stopped.load(std::memory_order_relaxed))
-                {
-                    return 0;
-                }
-                // Fail-soft
-                best_score = std::max(best_score, score);
-                if (best_score > alpha)
-                {
-                    alpha     = best_score;
-                    best_move = move;
-                    flag      = TT_FLAG_EXACT;
-                    if (best_score >= beta)
+                    check_timeup(info);
+                    if (stopped.load(std::memory_order_relaxed))
                     {
-                        flag = TT_FLAG_LOWERBOUND;
-                        break;
+                        return 0;
                     }
                 }
-            }
 
-            if (legal_moves_count == 0)
-            {
-                return is_in_check * (-MATE_SCORE);
-            }
+                if (ply >= DEPTH_MAX - 1) [[unlikely]]
+                {
+                    return eval::hce::eval(pos);
+                }
 
-            if (!stopped.load(std::memory_order_relaxed))
-            {
-                pv_move          = best_move;
-                result->bestmove = best_move;
-                tt.store(pos->hash, depth, 0, flag, best_score, best_move);
-            }
-
-            return best_score;
-        }
-
-        Score Searcher::search_alphabeta(Position const*        pos,
-                                         int                    depth,
-                                         Score                  alpha,
-                                         Score                  beta,
-                                         const int              ply,
-                                         PositionHistory* const history,
-                                         const SearchInfo&      info,
-                                         SearchResult*          result) {
-
-            if ((result->nodes & 2047) == 0)
-            {
-                check_timeup(info);
-                if (stopped.load(std::memory_order_relaxed))
+                if (pos->is_repeated(history) || pos->half_moves >= 100)
                 {
                     return 0;
                 }
-            }
-
-            if (ply >= DEPTH_MAX - 1) [[unlikely]]
-            {
-                return eval::hce::eval(pos);
-            }
-
-            if (pos->is_repeated(history) || pos->half_moves >= 100)
-            {
-                return 0;
             }
 
             const bool is_in_check = pos->is_in_check();
@@ -209,7 +134,7 @@ namespace sagittar {
             }
 
             TTData<Score> ttdata{};
-            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
+            tt.probe(&ttdata, pos->hash, ply);
 
             Score  best_score        = -INF;
             Move   best_move         = NULL_MOVE;
@@ -219,9 +144,7 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            const Move tt_move = tthit * ttdata.move;
-
-            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
+            MovePicker move_picker(&moves_list, pos, pv_move, ttdata.move);
 
             while (move_picker.has_next())
             {
@@ -235,8 +158,8 @@ namespace sagittar {
                 }
                 legal_moves_count++;
                 result->nodes++;
-                const Score score = -search_alphabeta(&pos_dup, depth - 1, -beta, -alpha, ply + 1,
-                                                      history, info, result);
+                const Score score = -search<Searcher::NodeType::NON_ROOT>(
+                  &pos_dup, depth - 1, -beta, -alpha, ply + 1, history, info, result);
                 pos_dup.undo_move(history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
@@ -246,14 +169,14 @@ namespace sagittar {
                 best_score = std::max(best_score, score);
                 if (best_score > alpha)
                 {
-                    alpha     = best_score;
                     best_move = move;
-                    flag      = TT_FLAG_EXACT;
                     if (best_score >= beta)
                     {
                         flag = TT_FLAG_LOWERBOUND;
                         break;
                     }
+                    alpha = best_score;
+                    flag  = TT_FLAG_EXACT;
                 }
             }
 
@@ -264,6 +187,11 @@ namespace sagittar {
 
             if (!stopped.load(std::memory_order_relaxed))
             {
+                if constexpr (nodeType == Searcher::NodeType::ROOT)
+                {
+                    pv_move          = best_move;
+                    result->bestmove = best_move;
+                }
                 tt.store(pos->hash, depth, ply, flag, best_score, best_move);
             }
 
@@ -300,14 +228,12 @@ namespace sagittar {
             alpha = std::max(alpha, stand_pat);
 
             TTData<Score> ttdata{};
-            const bool    tthit = tt.probe(&ttdata, pos->hash, 0);
+            tt.probe(&ttdata, pos->hash, ply);
 
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
-            const Move tt_move = tthit * ttdata.move;
-
-            MovePicker move_picker(&moves_list, pos, pv_move, tt_move);
+            MovePicker move_picker(&moves_list, pos, pv_move, ttdata.move);
 
             while (move_picker.has_next())
             {

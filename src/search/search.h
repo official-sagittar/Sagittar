@@ -28,34 +28,33 @@ namespace sagittar {
             start(Position const* pos, PositionHistory* const history, SearchInfo info);
 
            private:
+            enum class NodeType {
+                ROOT,
+                NON_ROOT
+            };
+
             void         check_timeup(const SearchInfo& info);
-            SearchResult search(Position const*                          pos,
-                                PositionHistory* const                   history,
-                                const SearchInfo&                        info,
-                                std::function<void(const SearchResult&)> progress_handler,
-                                std::function<void(const SearchResult&)> complete_hander);
-            Score        search_root(Position const*        pos,
-                                     int                    depth,
-                                     Score                  alpha,
-                                     Score                  beta,
-                                     PositionHistory* const history,
-                                     const SearchInfo&      info,
-                                     SearchResult*          result);
-            Score        search_alphabeta(Position const*        pos,
-                                          int                    depth,
-                                          Score                  alpha,
-                                          Score                  beta,
-                                          const int              ply,
-                                          PositionHistory* const history,
-                                          const SearchInfo&      info,
-                                          SearchResult*          result);
-            Score        search_quiescence(Position const*        pos,
-                                           Score                  alpha,
-                                           Score                  beta,
-                                           const int              ply,
-                                           PositionHistory* const history,
-                                           const SearchInfo&      info,
-                                           SearchResult*          result);
+            SearchResult search_pos(Position const*                          pos,
+                                    PositionHistory* const                   history,
+                                    const SearchInfo&                        info,
+                                    std::function<void(const SearchResult&)> progress_handler,
+                                    std::function<void(const SearchResult&)> complete_hander);
+            template<Searcher::NodeType nodeType>
+            Score search(Position const*        pos,
+                         int                    depth,
+                         Score                  alpha,
+                         Score                  beta,
+                         const int              ply,
+                         PositionHistory* const history,
+                         const SearchInfo&      info,
+                         SearchResult*          result);
+            Score search_quiescence(Position const*        pos,
+                                    Score                  alpha,
+                                    Score                  beta,
+                                    const int              ply,
+                                    PositionHistory* const history,
+                                    const SearchInfo&      info,
+                                    SearchResult*          result);
 
             std::atomic_bool                                      stopped;
             TranspositionTable<TTClient::SEARCH, uint64_t, Score> tt;
