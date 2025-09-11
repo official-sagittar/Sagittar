@@ -60,4 +60,9 @@ dkms.conf
 # Output folders
 bin/
 obj/
+build/
+pgo-data/
 leaks.txt
+
+# Binaries
+Sagittar*

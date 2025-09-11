@@ -1,0 +1,12 @@
+# Force Clang toolchain (works on macOS, Linux, Windows MinGW/Clang)
+set(CMAKE_C_COMPILER clang CACHE STRING "C compiler" FORCE)
+set(CMAKE_CXX_COMPILER clang++ CACHE STRING "C++ compiler" FORCE)
+
+# Use LLVM lld linker if available (faster than default ld)
+find_program(LLD_LINKER NAMES ld.lld lld)
+if (LLD_LINKER)
+    message(STATUS "Using LLD linker: ${LLD_LINKER}")
+    set(CMAKE_LINKER "${LLD_LINKER}" CACHE FILEPATH "Linker" FORCE)
+else()
+    message(STATUS "LLD linker not found, falling back to system default")
+endif()
