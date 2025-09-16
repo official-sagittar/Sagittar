@@ -102,7 +102,9 @@ namespace sagittar {
                                const SearchInfo&      info,
                                SearchResult*          result) {
 
-            if constexpr (nodeType != Searcher::NodeType::ROOT)
+            constexpr bool is_root_node = (nodeType == Searcher::NodeType::ROOT);
+
+            if constexpr (!is_root_node)
             {
                 if ((result->nodes & 2047) == 0)
                 {
@@ -134,7 +136,20 @@ namespace sagittar {
             }
 
             TTData<Score> ttdata{};
-            tt.probe(&ttdata, pos->hash, ply);
+            const bool    tthit = tt.probe(&ttdata, pos->hash, ply);
+
+            if constexpr (!is_root_node)
+            {
+                if (tthit && ttdata.depth >= depth)
+                {
+                    if (ttdata.flag == TT_FLAG_EXACT
+                        || (ttdata.flag == TT_FLAG_LOWERBOUND && ttdata.value >= beta)
+                        || (ttdata.flag == TT_FLAG_UPPERBOUND && ttdata.value <= alpha))
+                    {
+                        return ttdata.value;
+                    }
+                }
+            }
 
             Score  best_score        = -INF;
             Move   best_move         = NULL_MOVE;
@@ -187,7 +202,7 @@ namespace sagittar {
 
             if (!stopped.load(std::memory_order_relaxed))
             {
-                if constexpr (nodeType == Searcher::NodeType::ROOT)
+                if constexpr (is_root_node)
                 {
                     pv_move          = best_move;
                     result->bestmove = best_move;
