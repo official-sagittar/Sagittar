@@ -39,22 +39,15 @@ namespace sagittar {
             return static_cast<size_t>((attacker - 1) * 6) + (victim - 1);
         }
 
-        static constexpr Score PV_MOVE_SCORE = 20000;
-        static constexpr Score TT_MOVE_SCORE = 15000;
+        static constexpr Score TT_MOVE_SCORE = 20000;
 
-        static void score_moves(MoveList* const       moves_list,
-                                const Position* const pos,
-                                const Move            pv_move,
-                                const Move            tt_move) {
+        static void
+        score_moves(MoveList* const moves_list, const Position* const pos, const Move tt_move) {
             for (size_t i = 0; i < moves_list->size; i++)
             {
                 const Move move = moves_list->moves.at(i);
 
-                if ((move == pv_move) && pv_move)
-                {
-                    moves_list->scores.at(i) = PV_MOVE_SCORE;
-                }
-                else if ((move == tt_move) && tt_move)
+                if ((move == tt_move) && tt_move)
                 {
                     moves_list->scores.at(i) = TT_MOVE_SCORE;
                 }
@@ -73,11 +66,10 @@ namespace sagittar {
 
         MovePicker::MovePicker(MoveList* const       moves_list,
                                const Position* const pos,
-                               const Move            pv_move,
                                const Move            tt_move) :
             index(0),
             list(moves_list) {
-            score_moves(moves_list, pos, pv_move, tt_move);
+            score_moves(moves_list, pos, tt_move);
         }
 
         bool MovePicker::has_next() const { return (index < list->size); }
