@@ -159,7 +159,17 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, pv_move, ttdata.move);
+            Move tt_move;
+            if constexpr (nodeType == Searcher::NodeType::ROOT)
+            {
+                tt_move = pv_move;
+            }
+            else
+            {
+                tt_move = ttdata.move;
+            }
+
+            MovePicker move_picker(&moves_list, pos, tt_move);
 
             while (move_picker.has_next())
             {
@@ -248,7 +258,7 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, pv_move, ttdata.move);
+            MovePicker move_picker(&moves_list, pos, ttdata.move);
 
             while (move_picker.has_next())
             {
