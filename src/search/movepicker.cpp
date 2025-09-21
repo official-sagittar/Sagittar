@@ -25,7 +25,7 @@ namespace sagittar {
                 100, 200, 300, 400, 500, 600
             };
 
-            const Score offset = 5000;
+            const Score offset = 15000;
 
             for (auto& s : table) {
                 s += offset;
@@ -39,10 +39,13 @@ namespace sagittar {
             return static_cast<size_t>((attacker - 1) * 6) + (victim - 1);
         }
 
-        static constexpr Score TT_MOVE_SCORE = 20000;
+        static constexpr Score TT_MOVE_SCORE          = 20000;
+        static constexpr int   HISTORY_MOVE_SCORE_MAX = 5000;
 
-        static void
-        score_moves(MoveList* const moves_list, const Position* const pos, const Move tt_move) {
+        static void score_moves(MoveList* const       moves_list,
+                                const Position* const pos,
+                                const Move            tt_move,
+                                const History* const  hist_table) {
             for (size_t i = 0; i < moves_list->size; i++)
             {
                 const Move move = moves_list->moves.at(i);
@@ -61,15 +64,22 @@ namespace sagittar {
                     assert(victim != PIECE_TYPE_INVALID);
                     moves_list->scores.at(i) = MVV_LVA_SCORE.at(MVV_LVA_IDX(attacker, victim));
                 }
+                else
+                {
+                    const Piece p            = pos->board.pieces[MOVE_FROM(move)];
+                    moves_list->scores.at(i) = static_cast<Score>(
+                      std::min(hist_table->at(p).at(MOVE_TO(move)), HISTORY_MOVE_SCORE_MAX));
+                }
             }
         }
 
         MovePicker::MovePicker(MoveList* const       moves_list,
                                const Position* const pos,
-                               const Move            tt_move) :
+                               const Move            tt_move,
+                               const History* const  hist_table) :
             index(0),
             list(moves_list) {
-            score_moves(moves_list, pos, tt_move);
+            score_moves(moves_list, pos, tt_move, hist_table);
         }
 
         bool MovePicker::has_next() const { return (index < list->size); }
@@ -90,7 +100,6 @@ namespace sagittar {
 
             return val;
         }
-
     }
 
 }
