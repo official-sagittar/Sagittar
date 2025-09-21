@@ -25,22 +25,24 @@ namespace sagittar {
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
         SearchResult Searcher::start(Position const*                          pos,
-                                     PositionHistory* const                   history,
+                                     PositionHistory* const                   pos_history,
                                      SearchInfo                               info,
                                      std::function<void(const SearchResult&)> progress_handler,
                                      std::function<void(const SearchResult&)> complete_hander) {
             stopped.store(false, std::memory_order_relaxed);
-            pv_move = NULL_MOVE;
+            pv_move            = NULL_MOVE;
+            History hist_table = {};
             if (pos->black_to_play)
                 set_hardbound_time<BLACK>(&info);
             else
                 set_hardbound_time<WHITE>(&info);
-            return search_pos(pos, history, info, progress_handler, complete_hander);
+            return search_pos(pos, pos_history, &hist_table, info, progress_handler,
+                              complete_hander);
         }
 
         SearchResult
-        Searcher::start(Position const* pos, PositionHistory* const history, SearchInfo info) {
-            return start(pos, history, info, [](auto&) {}, [](auto&) {});
+        Searcher::start(Position const* pos, PositionHistory* const pos_history, SearchInfo info) {
+            return start(pos, pos_history, info, [](auto&) {}, [](auto&) {});
         }
 
         void Searcher::check_timeup(const SearchInfo& info) {
@@ -52,7 +54,8 @@ namespace sagittar {
 
         SearchResult
         Searcher::search_pos(Position const*                          pos,
-                             PositionHistory* const                   history,
+                             PositionHistory* const                   pos_history,
+                             History* const                           hist_table,
                              const SearchInfo&                        info,
                              std::function<void(const SearchResult&)> progress_handler,
                              std::function<void(const SearchResult&)> complete_hander) {
@@ -62,9 +65,9 @@ namespace sagittar {
             {
                 SearchResult result{};
                 const auto   starttime = currtime_ms();
-                const Score  score = search<Searcher::NodeType::ROOT>(pos, currdepth, -INF, INF, 0,
-                                                                      history, info, &result);
-                const auto   time  = currtime_ms() - starttime;
+                const Score  score     = search<Searcher::NodeType::ROOT>(
+                  pos, currdepth, -INF, INF, 0, pos_history, hist_table, info, &result);
+                const auto time = currtime_ms() - starttime;
 
                 if (stopped.load(std::memory_order_relaxed))
                 {
@@ -98,7 +101,8 @@ namespace sagittar {
                                Score                  alpha,
                                Score                  beta,
                                const int              ply,
-                               PositionHistory* const history,
+                               PositionHistory* const pos_history,
+                               History* const         hist_table,
                                const SearchInfo&      info,
                                SearchResult*          result) {
 
@@ -120,7 +124,7 @@ namespace sagittar {
                     return eval::hce::eval(pos);
                 }
 
-                if (pos->is_repeated(history) || pos->half_moves >= 100)
+                if (pos->is_repeated(pos_history) || pos->half_moves >= 100)
                 {
                     return 0;
                 }
@@ -132,7 +136,8 @@ namespace sagittar {
 
             if (depth <= 0)
             {
-                return search_quiescence(pos, alpha, beta, ply, history, info, result);
+                return search_quiescence(pos, alpha, beta, ply, pos_history, hist_table, info,
+                                         result);
             }
 
             TTData<Score> ttdata{};
@@ -169,23 +174,24 @@ namespace sagittar {
                 tt_move = ttdata.move;
             }
 
-            MovePicker move_picker(&moves_list, pos, tt_move);
+            MovePicker move_picker(&moves_list, pos, tt_move, hist_table);
 
             while (move_picker.has_next())
             {
                 const auto [move, move_score] = move_picker.next();
 
                 Position pos_dup = *pos;
-                if (!pos_dup.do_move(move, history))
+                if (!pos_dup.do_move(move, pos_history))
                 {
-                    pos_dup.undo_move(history);
+                    pos_dup.undo_move(pos_history);
                     continue;
                 }
                 legal_moves_count++;
                 result->nodes++;
-                const Score score = -search<Searcher::NodeType::NON_ROOT>(
-                  &pos_dup, depth - 1, -beta, -alpha, ply + 1, history, info, result);
-                pos_dup.undo_move(history);
+                const Score score =
+                  -search<Searcher::NodeType::NON_ROOT>(&pos_dup, depth - 1, -beta, -alpha, ply + 1,
+                                                        pos_history, hist_table, info, result);
+                pos_dup.undo_move(pos_history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
@@ -197,6 +203,12 @@ namespace sagittar {
                     best_move = move;
                     if (best_score >= beta)
                     {
+                        if (!MOVE_IS_CAPTURE(move))
+                        {
+                            const Piece p = pos->board.pieces[MOVE_FROM(move)];
+                            hist_table->at(p).at(MOVE_TO(move)) += (depth * depth);
+                        }
+
                         flag = TT_FLAG_LOWERBOUND;
                         break;
                     }
@@ -227,7 +239,8 @@ namespace sagittar {
                                           Score                  alpha,
                                           Score                  beta,
                                           const int              ply,
-                                          PositionHistory* const history,
+                                          PositionHistory* const pos_history,
+                                          History* const         hist_table,
                                           const SearchInfo&      info,
                                           SearchResult*          result) {
 
@@ -258,22 +271,22 @@ namespace sagittar {
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
-            MovePicker move_picker(&moves_list, pos, ttdata.move);
+            MovePicker move_picker(&moves_list, pos, ttdata.move, hist_table);
 
             while (move_picker.has_next())
             {
                 const auto [move, move_score] = move_picker.next();
 
                 Position pos_dup = *pos;
-                if (!pos_dup.do_move(move, history))
+                if (!pos_dup.do_move(move, pos_history))
                 {
-                    pos_dup.undo_move(history);
+                    pos_dup.undo_move(pos_history);
                     continue;
                 }
                 result->nodes++;
-                const Score score =
-                  -search_quiescence(&pos_dup, -beta, -alpha, ply + 1, history, info, result);
-                pos_dup.undo_move(history);
+                const Score score = -search_quiescence(&pos_dup, -beta, -alpha, ply + 1,
+                                                       pos_history, hist_table, info, result);
+                pos_dup.undo_move(pos_history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;

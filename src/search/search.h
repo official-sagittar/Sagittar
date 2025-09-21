@@ -20,12 +20,12 @@ namespace sagittar {
             void         set_tt_size(const size_t mb);
             void         stop();
             SearchResult start(Position const*                          pos,
-                               PositionHistory* const                   history,
+                               PositionHistory* const                   pos_history,
                                SearchInfo                               info,
                                std::function<void(const SearchResult&)> progress_handler,
                                std::function<void(const SearchResult&)> complete_hander);
             SearchResult
-            start(Position const* pos, PositionHistory* const history, SearchInfo info);
+            start(Position const* pos, PositionHistory* const pos_history, SearchInfo info);
 
            private:
             enum class NodeType {
@@ -35,7 +35,8 @@ namespace sagittar {
 
             void         check_timeup(const SearchInfo& info);
             SearchResult search_pos(Position const*                          pos,
-                                    PositionHistory* const                   history,
+                                    PositionHistory* const                   pos_history,
+                                    History* const                           hist_table,
                                     const SearchInfo&                        info,
                                     std::function<void(const SearchResult&)> progress_handler,
                                     std::function<void(const SearchResult&)> complete_hander);
@@ -45,14 +46,16 @@ namespace sagittar {
                          Score                  alpha,
                          Score                  beta,
                          const int              ply,
-                         PositionHistory* const history,
+                         PositionHistory* const pos_history,
+                         History* const         hist_table,
                          const SearchInfo&      info,
                          SearchResult*          result);
             Score search_quiescence(Position const*        pos,
                                     Score                  alpha,
                                     Score                  beta,
                                     const int              ply,
-                                    PositionHistory* const history,
+                                    PositionHistory* const pos_history,
+                                    History* const         hist_table,
                                     const SearchInfo&      info,
                                     SearchResult*          result);
 

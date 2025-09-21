@@ -4,6 +4,7 @@
 #include "core/move.h"
 #include "core/position.h"
 #include "pch.h"
+#include "search/types.h"
 
 namespace sagittar {
 
@@ -13,7 +14,10 @@ namespace sagittar {
 
         class MovePicker {
            public:
-            MovePicker(MoveList* const moves_list, const Position* const pos, const Move tt_move);
+            MovePicker(MoveList* const       moves_list,
+                       const Position* const pos,
+                       const Move            tt_move,
+                       const History* const  hist_table);
             bool                   has_next() const;
             std::pair<Move, Score> next();
 
