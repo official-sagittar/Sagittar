@@ -445,8 +445,8 @@ namespace sagittar {
         }
 
         template<Color US, MovegenType T>
-        static void movegen_generate_pseudolegal_moves_pawn(const Position* const pos,
-                                                            MoveList* const       move_list) {
+        static void movegen_generate_pseudolegal_moves_pawn(const Position& pos,
+                                                            MoveList* const move_list) {
             constexpr BitBoard mask_movegen_all = MASK64(T == MovegenType::MOVEGEN_ALL);
             constexpr Color    them             = COLOR_FLIP(US);
             constexpr BitBoard promo_dest =
@@ -456,9 +456,9 @@ namespace sagittar {
             constexpr BitBoard ep_target_rank =
               (US == WHITE) ? BITBOARD_MASK_RANK_6 : BITBOARD_MASK_RANK_3;
 
-            const BitBoard pawns   = pos->board.bb_pieces[PAWN] & pos->board.bb_colors[US];
-            const BitBoard enemies = pos->board.bb_colors[them];
-            const BitBoard empty   = ~(pos->board.bb_colors[WHITE] | pos->board.bb_colors[BLACK]);
+            const BitBoard pawns   = pos.board.bb_pieces[PAWN] & pos.board.bb_colors[US];
+            const BitBoard enemies = pos.board.bb_colors[them];
+            const BitBoard empty   = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
 
             BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
             if constexpr (US == WHITE)
@@ -481,7 +481,7 @@ namespace sagittar {
             const BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
             const BitBoard capture_l                     = fwd_l & enemies_not_on_promotion_dest;
             const BitBoard capture_r                     = fwd_r & enemies_not_on_promotion_dest;
-            const BitBoard ep_target_bb                  = BB(pos->ep_target) & ep_target_rank;
+            const BitBoard ep_target_bb                  = BB(pos.ep_target) & ep_target_rank;
             const BitBoard capture_ep_l                  = fwd_l & ep_target_bb;
             const BitBoard capture_ep_r                  = fwd_r & ep_target_bb;
             const BitBoard quite_promo                   = pawns_fwd & promo_dest & empty;
@@ -581,18 +581,18 @@ namespace sagittar {
         }
 
         template<PieceType PT, Color US, MovegenType T>
-        static void movegen_generate_pseudolegal_moves_piece(const Position* const pos,
-                                                             MoveList* const       move_list) {
+        static void movegen_generate_pseudolegal_moves_piece(const Position& pos,
+                                                             MoveList* const move_list) {
             constexpr BitBoard mask_movegen_all = MASK64(T == MovegenType::MOVEGEN_ALL);
             constexpr Color    them             = COLOR_FLIP(US);
-            const BitBoard     enemies          = pos->board.bb_colors[them];
-            const BitBoard     empty = ~(pos->board.bb_colors[WHITE] | pos->board.bb_colors[BLACK]);
+            const BitBoard     enemies          = pos.board.bb_colors[them];
+            const BitBoard     empty = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
             BitBoard           occupancy;
             if constexpr ((PT == KNIGHT) || (PT == KING))
                 occupancy = (enemies | empty);
             else
                 occupancy = ~empty;
-            BitBoard bb = pos->board.bb_pieces[PT] & pos->board.bb_colors[US];
+            BitBoard bb = pos.board.bb_pieces[PT] & pos.board.bb_colors[US];
             while (bb)
             {
                 const Square from = static_cast<Square>(bitscan_forward(&bb));
@@ -637,12 +637,12 @@ namespace sagittar {
         }
 
         template<Color US>
-        static void movegen_generate_pseudolegal_moves_castles(const Position* const pos,
-                                                               MoveList* const       move_list) {
+        static void movegen_generate_pseudolegal_moves_castles(const Position& pos,
+                                                               MoveList* const move_list) {
             constexpr CastlingRights rights_k = (US == WHITE) ? WKCA : BKCA;
             constexpr CastlingRights rights_q = (US == WHITE) ? WQCA : BQCA;
 
-            if (!(pos->ca_rights & (rights_k | rights_q)))
+            if (!(pos.ca_rights & (rights_k | rights_q)))
                 return;
 
             constexpr Color  them   = COLOR_FLIP(US);
@@ -651,7 +651,7 @@ namespace sagittar {
             constexpr Square k_sq_r = static_cast<Square>(k_sq + 1);
             constexpr Square k_sq_l = static_cast<Square>(k_sq - 1);
 
-            const BitBoard occ = (pos->board.bb_colors[WHITE] | pos->board.bb_colors[BLACK]);
+            const BitBoard occ         = (pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
             const BitBoard k_attackers = movegen_get_square_attackers(pos, k_sq, them);
             BitBoard       attackers;
 
@@ -669,11 +669,11 @@ namespace sagittar {
             attackers = k_attackers | movegen_get_square_attackers(pos, k_sq_l, them);
             const BitBoard safe_q_ok = MASK64(attackers == 0);
 
-            const BitBoard rights_k_ok = MASK64(pos->ca_rights & rights_k);
-            const BitBoard rights_q_ok = MASK64(pos->ca_rights & rights_q);
+            const BitBoard rights_k_ok = MASK64(pos.ca_rights & rights_k);
+            const BitBoard rights_q_ok = MASK64(pos.ca_rights & rights_q);
 
-            const BitBoard rook_bb   = pos->board.bb_pieces[ROOK] & pos->board.bb_colors[US];
-            const BitBoard king_bb   = pos->board.bb_pieces[KING] & pos->board.bb_colors[US];
+            const BitBoard rook_bb   = pos.board.bb_pieces[ROOK] & pos.board.bb_colors[US];
+            const BitBoard king_bb   = pos.board.bb_pieces[KING] & pos.board.bb_colors[US];
             const BitBoard rook_k_ok = MASK64(rook_bb & BB(RF_TO_SQ(rank, FILE_H)));
             const BitBoard rook_q_ok = MASK64(rook_bb & BB(RF_TO_SQ(rank, FILE_A)));
             const BitBoard king_ok   = MASK64(king_bb & BB(RF_TO_SQ(rank, FILE_E)));
@@ -706,18 +706,18 @@ namespace sagittar {
             movegen_init_attack_table_king();
         }
 
-        BitBoard movegen_get_square_attackers(const Position* const pos,
-                                              const Square          sq,
-                                              const Color           attacked_by) {
-            const BitBoard occupied = (pos->board.bb_colors[WHITE] | pos->board.bb_colors[BLACK]);
+        BitBoard movegen_get_square_attackers(const Position& pos,
+                                              const Square    sq,
+                                              const Color     attacked_by) {
+            const BitBoard occupied = (pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
             BitBoard       op_pieces, op_pawns, op_knights, op_rq, op_bq, op_king;
-            op_pieces  = pos->board.bb_colors[attacked_by];
-            op_pawns   = pos->board.bb_pieces[PAWN] & op_pieces;
-            op_knights = pos->board.bb_pieces[KNIGHT] & op_pieces;
-            op_rq = op_bq = pos->board.bb_pieces[QUEEN] & op_pieces;
-            op_rq |= pos->board.bb_pieces[ROOK] & op_pieces;
-            op_bq |= pos->board.bb_pieces[BISHOP] & op_pieces;
-            op_king = pos->board.bb_pieces[KING] & op_pieces;
+            op_pieces  = pos.board.bb_colors[attacked_by];
+            op_pawns   = pos.board.bb_pieces[PAWN] & op_pieces;
+            op_knights = pos.board.bb_pieces[KNIGHT] & op_pieces;
+            op_rq = op_bq = pos.board.bb_pieces[QUEEN] & op_pieces;
+            op_rq |= pos.board.bb_pieces[ROOK] & op_pieces;
+            op_bq |= pos.board.bb_pieces[BISHOP] & op_pieces;
+            op_king = pos.board.bb_pieces[KING] & op_pieces;
             // clang-format off
             return (movegen_get_bishop_attacks(sq, occupied) & op_bq)
                     | (movegen_get_rook_attacks(sq, occupied) & op_rq)
@@ -728,7 +728,7 @@ namespace sagittar {
         }
 
         template<Color US, MovegenType T>
-        static void movegen_generate_pseudolegal_moves_color(const Position* pos,
+        static void movegen_generate_pseudolegal_moves_color(const Position& pos,
                                                              MoveList*       move_list) {
             movegen_generate_pseudolegal_moves_pawn<US, T>(pos, move_list);
             movegen_generate_pseudolegal_moves_piece<KNIGHT, US, T>(pos, move_list);
@@ -741,19 +741,18 @@ namespace sagittar {
         }
 
         template<MovegenType T>
-        void movegen_generate_pseudolegal_moves(const Position* const pos,
-                                                MoveList* const       move_list) {
-            if (pos->black_to_play)
+        void movegen_generate_pseudolegal_moves(const Position& pos, MoveList* const move_list) {
+            if (pos.black_to_play)
                 movegen_generate_pseudolegal_moves_color<BLACK, T>(pos, move_list);
             else
                 movegen_generate_pseudolegal_moves_color<WHITE, T>(pos, move_list);
         }
 
-        template void movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(const Position*,
+        template void movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(const Position&,
                                                                                    MoveList*);
 
         template void
-        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(const Position*,
+        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(const Position&,
                                                                           MoveList*);
     }
 

@@ -41,7 +41,7 @@ namespace sagittar {
         core::TranspositionTable<core::TTClient::PERFT, uint64_t, uint32_t> tt(tt_size_mb);
         using clock = std::chrono::high_resolution_clock;
         auto start  = clock::now();
-        auto nodes  = core::divide(&pos, depth, &tt, &history);
+        auto nodes  = core::divide(pos, depth, &tt, &history);
         auto end    = clock::now();
         auto elapsed_ms =
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -55,11 +55,11 @@ namespace sagittar {
     Engine::search(search::SearchInfo                               info,
                    std::function<void(const search::SearchResult&)> progress_handler,
                    std::function<void(const search::SearchResult&)> complete_hander) {
-        return searcher.start(&pos, &history, info, progress_handler, complete_hander);
+        return searcher.start(pos, &history, info, progress_handler, complete_hander);
     }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
-        return searcher.start(&pos, &history, info);
+        return searcher.start(pos, &history, info);
     }
 
     void Engine::stop_search() { searcher.stop(); }

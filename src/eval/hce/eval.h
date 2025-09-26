@@ -12,7 +12,7 @@ namespace sagittar {
 
         namespace hce {
             void        eval_init();
-            core::Score eval(const Position* const pos);
+            core::Score eval(const Position& pos);
         }
 
     }

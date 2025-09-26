@@ -20,7 +20,7 @@ TEST_SUITE("Perft") {
 
         TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
-        auto nodes = perft(&pos, 6, &tt, &history);
+        auto nodes = perft(pos, 6, &tt, &history);
         CHECK(nodes == 119060324);
     }
 
@@ -34,7 +34,7 @@ TEST_SUITE("Perft") {
 
         TranspositionTable<TTClient::PERFT, uint64_t, uint32_t> tt;
 
-        auto nodes = perft(&pos, 5, &tt, &history);
+        auto nodes = perft(pos, 5, &tt, &history);
         CHECK(nodes == 193690690);
     }
 
@@ -59,7 +59,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -93,7 +93,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -119,7 +119,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -143,7 +143,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -170,7 +170,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -194,7 +194,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -230,7 +230,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -264,7 +264,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -311,7 +311,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i + 1, &tt, &history);
+                const auto result = perft(pos, i + 1, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -335,7 +335,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -363,7 +363,7 @@ TEST_SUITE("Perft") {
             CHECK(is_valid);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const auto result = perft(&pos, i, &tt, &history);
+                const auto result = perft(pos, i, &tt, &history);
                 REQUIRE(result == nodes[i]);
             }
             tt.clear();
@@ -406,7 +406,7 @@ TEST_SUITE("Perft Full") {
                 const int      depth       = std::stoi(match[1].str());
                 const uint64_t perft_value = std::stoull(match[2].str());
 
-                const auto result = perft(&pos, depth, &tt, &history);
+                const auto result = perft(pos, depth, &tt, &history);
                 REQUIRE(result == perft_value);
 
                 depth_perft_part = match.suffix().str();

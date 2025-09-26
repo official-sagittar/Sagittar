@@ -14,10 +14,10 @@ namespace sagittar {
 
         class MovePicker {
            public:
-            MovePicker(MoveList* const       moves_list,
-                       const Position* const pos,
-                       const Move            tt_move,
-                       const History* const  hist_table);
+            MovePicker(MoveList* const      moves_list,
+                       const Position&      pos,
+                       const Move           tt_move,
+                       const History* const hist_table);
             bool                   has_next() const;
             std::pair<Move, Score> next();
 

@@ -111,9 +111,9 @@ namespace sagittar {
 
             void eval_init() {}
 
-            Score eval(const Position* const pos) {
+            Score eval(const Position& pos) {
 
-                auto board_ptr = &pos->board;
+                auto board_ptr = &pos.board;
 
                 const auto w_p = board_ptr->bb_colors[WHITE];
                 const auto b_p = board_ptr->bb_colors[BLACK];
@@ -139,7 +139,7 @@ namespace sagittar {
                     }
                 }
 
-                const int stm = 1 - (2 * pos->black_to_play);
+                const int stm = 1 - (2 * pos.black_to_play);
 
                 score *= stm;
 
