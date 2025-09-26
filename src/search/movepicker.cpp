@@ -42,10 +42,10 @@ namespace sagittar {
         static constexpr Score TT_MOVE_SCORE          = 20000;
         static constexpr int   HISTORY_MOVE_SCORE_MAX = 5000;
 
-        static void score_moves(MoveList* const       moves_list,
-                                const Position* const pos,
-                                const Move            tt_move,
-                                const History* const  hist_table) {
+        static void score_moves(MoveList* const      moves_list,
+                                const Position&      pos,
+                                const Move           tt_move,
+                                const History* const hist_table) {
             for (size_t i = 0; i < moves_list->size; i++)
             {
                 const Move move = moves_list->moves.at(i);
@@ -56,27 +56,27 @@ namespace sagittar {
                 }
                 else if (MOVE_IS_CAPTURE(move))
                 {
-                    const PieceType attacker = PIECE_TYPE_OF(pos->board.pieces[MOVE_FROM(move)]);
+                    const PieceType attacker = PIECE_TYPE_OF(pos.board.pieces[MOVE_FROM(move)]);
                     const PieceType victim   = (MOVE_FLAG(move) == MOVE_CAPTURE_EP)
                                                ? PAWN
-                                               : PIECE_TYPE_OF(pos->board.pieces[MOVE_TO(move)]);
+                                               : PIECE_TYPE_OF(pos.board.pieces[MOVE_TO(move)]);
                     assert(attacker != PIECE_TYPE_INVALID);
                     assert(victim != PIECE_TYPE_INVALID);
                     moves_list->scores.at(i) = MVV_LVA_SCORE.at(MVV_LVA_IDX(attacker, victim));
                 }
                 else
                 {
-                    const Piece p            = pos->board.pieces[MOVE_FROM(move)];
+                    const Piece p            = pos.board.pieces[MOVE_FROM(move)];
                     moves_list->scores.at(i) = static_cast<Score>(
                       std::min(hist_table->at(p).at(MOVE_TO(move)), HISTORY_MOVE_SCORE_MAX));
                 }
             }
         }
 
-        MovePicker::MovePicker(MoveList* const       moves_list,
-                               const Position* const pos,
-                               const Move            tt_move,
-                               const History* const  hist_table) :
+        MovePicker::MovePicker(MoveList* const      moves_list,
+                               const Position&      pos,
+                               const Move           tt_move,
+                               const History* const hist_table) :
             index(0),
             list(moves_list) {
             score_moves(moves_list, pos, tt_move, hist_table);

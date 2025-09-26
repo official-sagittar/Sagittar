@@ -19,13 +19,13 @@ namespace sagittar {
             void         reset_for_search();
             void         set_tt_size(const size_t mb);
             void         stop();
-            SearchResult start(Position const*                          pos,
+            SearchResult start(const Position&                          pos,
                                PositionHistory* const                   pos_history,
                                SearchInfo                               info,
                                std::function<void(const SearchResult&)> progress_handler,
                                std::function<void(const SearchResult&)> complete_hander);
             SearchResult
-            start(Position const* pos, PositionHistory* const pos_history, SearchInfo info);
+            start(const Position& pos, PositionHistory* const pos_history, SearchInfo info);
 
            private:
             enum class NodeType {
@@ -34,14 +34,14 @@ namespace sagittar {
             };
 
             void         check_timeup(const SearchInfo& info);
-            SearchResult search_pos(Position const*                          pos,
+            SearchResult search_pos(const Position&                          pos,
                                     PositionHistory* const                   pos_history,
                                     History* const                           hist_table,
                                     const SearchInfo&                        info,
                                     std::function<void(const SearchResult&)> progress_handler,
                                     std::function<void(const SearchResult&)> complete_hander);
             template<Searcher::NodeType nodeType>
-            Score search(Position const*        pos,
+            Score search(const Position&        pos,
                          int                    depth,
                          Score                  alpha,
                          Score                  beta,
@@ -50,7 +50,7 @@ namespace sagittar {
                          History* const         hist_table,
                          const SearchInfo&      info,
                          SearchResult*          result);
-            Score search_quiescence(Position const*        pos,
+            Score search_quiescence(const Position&        pos,
                                     Score                  alpha,
                                     Score                  beta,
                                     const int              ply,

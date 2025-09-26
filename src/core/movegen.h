@@ -14,13 +14,13 @@ namespace sagittar {
             MOVEGEN_CAPTURES
         };
 
-        void     movegen_init();
-        BitBoard movegen_get_square_attackers(const Position* const pos,
-                                              const Square          sq,
-                                              const Color           attacked_by);
+        void movegen_init();
+
+        BitBoard
+        movegen_get_square_attackers(const Position& pos, const Square sq, const Color attacked_by);
+
         template<MovegenType T>
-        void movegen_generate_pseudolegal_moves(const Position* const pos,
-                                                MoveList* const       move_list);
+        void movegen_generate_pseudolegal_moves(const Position& pos, MoveList* const move_list);
     }
 
 }

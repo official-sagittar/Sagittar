@@ -190,7 +190,7 @@ namespace sagittar {
             king_sq                = static_cast<Square>(__builtin_ctzll(king_bb));
 
             // Checkers
-            checkers = movegen_get_square_attackers(this, king_sq, them);
+            checkers = movegen_get_square_attackers(*this, king_sq, them);
 
             return board.is_valid();
         }
@@ -320,13 +320,13 @@ namespace sagittar {
 
             const BitBoard king_bb_us  = k_bb & board_ptr->bb_colors[US];
             const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
-            const BitBoard checkers_us = movegen_get_square_attackers(pos, king_sq_us, them);
+            const BitBoard checkers_us = movegen_get_square_attackers(*pos, king_sq_us, them);
 
             const bool is_valid_move = (checkers_us == 0ULL) && board_ptr->is_valid();
 
             const BitBoard king_bb_them = k_bb & board_ptr->bb_colors[them];
             pos->king_sq                = static_cast<Square>(__builtin_ctzll(king_bb_them));
-            pos->checkers               = movegen_get_square_attackers(pos, pos->king_sq, US);
+            pos->checkers               = movegen_get_square_attackers(*pos, pos->king_sq, US);
 
             pos->black_to_play = !pos->black_to_play;
             hash_local ^= ZOBRIST_SIDE;

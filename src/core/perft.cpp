@@ -6,7 +6,7 @@ namespace sagittar {
 
     namespace core {
 
-        uint64_t perft(Position* const                                                pos,
+        uint64_t perft(const Position&                                                pos,
                        const int                                                      depth,
                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
                        PositionHistory*                                               history) {
@@ -16,7 +16,7 @@ namespace sagittar {
             }
 
             TTData<uint32_t> ttdata;
-            if (tt->probe(&ttdata, pos->hash, 0) && ttdata.depth == depth)
+            if (tt->probe(&ttdata, pos.hash, 0) && ttdata.depth == depth)
             {
                 return ttdata.value;
             }
@@ -26,20 +26,20 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position pos_dup = *pos;
+                Position pos_dup = pos;
                 if (pos_dup.do_move(move, history))
                 {
-                    nodes += perft(&pos_dup, depth - 1, tt, history);
+                    nodes += perft(pos_dup, depth - 1, tt, history);
                 }
                 pos_dup.undo_move(history);
             }
 
-            tt->store(pos->hash, depth, 0, TT_FLAG_EXACT, nodes, NULL_MOVE);
+            tt->store(pos.hash, depth, 0, TT_FLAG_EXACT, nodes, NULL_MOVE);
 
             return nodes;
         }
 
-        uint64_t divide(Position* const                                                pos,
+        uint64_t divide(const Position&                                                pos,
                         const int                                                      depth,
                         TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
                         PositionHistory*                                               history) {
@@ -52,10 +52,10 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position pos_dup = *pos;
+                Position pos_dup = pos;
                 if (pos_dup.do_move(move, history))
                 {
-                    uint64_t nodes = perft(&pos_dup, depth - 1, tt, history);
+                    uint64_t nodes = perft(pos_dup, depth - 1, tt, history);
                     total_nodes += nodes;
                     std::cout << move_tostring(move) << " " << (uint64_t) nodes << std::endl;
                 }

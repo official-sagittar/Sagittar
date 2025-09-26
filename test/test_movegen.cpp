@@ -15,7 +15,7 @@ TEST_SUITE("Movegen") {
         CHECK(is_valid);
 
         MoveList moves_list = {};
-        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(&pos, &moves_list);
+        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
 
         size_t captures = 0;
         for (auto [move, score] : moves_list)
@@ -24,7 +24,7 @@ TEST_SUITE("Movegen") {
         }
 
         moves_list = {};
-        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(&pos, &moves_list);
+        movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
 
         CHECK(moves_list.size == captures);
     }

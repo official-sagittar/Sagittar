@@ -24,7 +24,7 @@ namespace sagittar {
 
         void Searcher::stop() { stopped.store(true, std::memory_order_relaxed); }
 
-        SearchResult Searcher::start(Position const*                          pos,
+        SearchResult Searcher::start(const Position&                          pos,
                                      PositionHistory* const                   pos_history,
                                      SearchInfo                               info,
                                      std::function<void(const SearchResult&)> progress_handler,
@@ -32,7 +32,7 @@ namespace sagittar {
             stopped.store(false, std::memory_order_relaxed);
             pv_move            = NULL_MOVE;
             History hist_table = {};
-            if (pos->black_to_play)
+            if (pos.black_to_play)
                 set_hardbound_time<BLACK>(&info);
             else
                 set_hardbound_time<WHITE>(&info);
@@ -41,7 +41,7 @@ namespace sagittar {
         }
 
         SearchResult
-        Searcher::start(Position const* pos, PositionHistory* const pos_history, SearchInfo info) {
+        Searcher::start(const Position& pos, PositionHistory* const pos_history, SearchInfo info) {
             return start(pos, pos_history, info, [](auto&) {}, [](auto&) {});
         }
 
@@ -53,7 +53,7 @@ namespace sagittar {
         }
 
         SearchResult
-        Searcher::search_pos(Position const*                          pos,
+        Searcher::search_pos(const Position&                          pos,
                              PositionHistory* const                   pos_history,
                              History* const                           hist_table,
                              const SearchInfo&                        info,
@@ -96,7 +96,7 @@ namespace sagittar {
         }
 
         template<Searcher::NodeType nodeType>
-        Score Searcher::search(Position const*        pos,
+        Score Searcher::search(const Position&        pos,
                                int                    depth,
                                Score                  alpha,
                                Score                  beta,
@@ -124,13 +124,13 @@ namespace sagittar {
                     return eval::hce::eval(pos);
                 }
 
-                if (pos->is_repeated(pos_history) || pos->half_moves >= 100)
+                if (pos.is_repeated(pos_history) || pos.half_moves >= 100)
                 {
                     return 0;
                 }
             }
 
-            const bool is_in_check = pos->is_in_check();
+            const bool is_in_check = pos.is_in_check();
 
             depth += is_in_check;
 
@@ -141,7 +141,7 @@ namespace sagittar {
             }
 
             TTData<Score> ttdata{};
-            const bool    tthit = tt.probe(&ttdata, pos->hash, ply);
+            const bool    tthit = tt.probe(&ttdata, pos.hash, ply);
 
             if constexpr (!is_root_node)
             {
@@ -180,7 +180,7 @@ namespace sagittar {
             {
                 const auto [move, move_score] = move_picker.next();
 
-                Position pos_dup = *pos;
+                Position pos_dup = pos;
                 if (!pos_dup.do_move(move, pos_history))
                 {
                     pos_dup.undo_move(pos_history);
@@ -189,7 +189,7 @@ namespace sagittar {
                 legal_moves_count++;
                 result->nodes++;
                 const Score score =
-                  -search<Searcher::NodeType::NON_ROOT>(&pos_dup, depth - 1, -beta, -alpha, ply + 1,
+                  -search<Searcher::NodeType::NON_ROOT>(pos_dup, depth - 1, -beta, -alpha, ply + 1,
                                                         pos_history, hist_table, info, result);
                 pos_dup.undo_move(pos_history);
                 if (stopped.load(std::memory_order_relaxed))
@@ -205,7 +205,7 @@ namespace sagittar {
                     {
                         if (!MOVE_IS_CAPTURE(move))
                         {
-                            const Piece p = pos->board.pieces[MOVE_FROM(move)];
+                            const Piece p = pos.board.pieces[MOVE_FROM(move)];
                             hist_table->at(p).at(MOVE_TO(move)) += (depth * depth);
                         }
 
@@ -229,13 +229,13 @@ namespace sagittar {
                     pv_move          = best_move;
                     result->bestmove = best_move;
                 }
-                tt.store(pos->hash, depth, ply, flag, best_score, best_move);
+                tt.store(pos.hash, depth, ply, flag, best_score, best_move);
             }
 
             return best_score;
         }
 
-        Score Searcher::search_quiescence(Position const*        pos,
+        Score Searcher::search_quiescence(const Position&        pos,
                                           Score                  alpha,
                                           Score                  beta,
                                           const int              ply,
@@ -266,7 +266,7 @@ namespace sagittar {
             alpha = std::max(alpha, stand_pat);
 
             TTData<Score> ttdata{};
-            tt.probe(&ttdata, pos->hash, ply);
+            tt.probe(&ttdata, pos.hash, ply);
 
             MoveList moves_list = {};
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(pos, &moves_list);
@@ -277,15 +277,15 @@ namespace sagittar {
             {
                 const auto [move, move_score] = move_picker.next();
 
-                Position pos_dup = *pos;
+                Position pos_dup = pos;
                 if (!pos_dup.do_move(move, pos_history))
                 {
                     pos_dup.undo_move(pos_history);
                     continue;
                 }
                 result->nodes++;
-                const Score score = -search_quiescence(&pos_dup, -beta, -alpha, ply + 1,
-                                                       pos_history, hist_table, info, result);
+                const Score score = -search_quiescence(pos_dup, -beta, -alpha, ply + 1, pos_history,
+                                                       hist_table, info, result);
                 pos_dup.undo_move(pos_history);
                 if (stopped.load(std::memory_order_relaxed))
                 {
