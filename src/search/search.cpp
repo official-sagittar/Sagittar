@@ -205,6 +205,7 @@ namespace sagittar {
                 result->nodes++;
                 const Score score = -search<Searcher::NodeType::NON_ROOT>(
                   new_pos, depth - 1, -beta, -alpha, ply + 1, hist_table, thread, info, result);
+                thread.undo_move();
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
@@ -299,6 +300,7 @@ namespace sagittar {
                 result->nodes++;
                 const Score score = -search_quiescence(new_pos, -beta, -alpha, ply + 1, hist_table,
                                                        thread, info, result);
+                thread.undo_move();
                 if (stopped.load(std::memory_order_relaxed))
                 {
                     return 0;
