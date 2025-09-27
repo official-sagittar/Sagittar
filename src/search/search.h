@@ -20,12 +20,12 @@ namespace sagittar {
             void         set_tt_size(const size_t mb);
             void         stop();
             SearchResult start(const Position&                          pos,
-                               PositionHistory* const                   pos_history,
+                               std::span<uint64_t>                      hash_history,
                                SearchInfo                               info,
                                std::function<void(const SearchResult&)> progress_handler,
                                std::function<void(const SearchResult&)> complete_hander);
             SearchResult
-            start(const Position& pos, PositionHistory* const pos_history, SearchInfo info);
+            start(const Position& pos, std::span<uint64_t> hash_history, SearchInfo info);
 
            private:
             enum class NodeType {
@@ -33,31 +33,39 @@ namespace sagittar {
                 NON_ROOT
             };
 
+            struct ThreadData {
+                std::vector<uint64_t> hash_history;
+
+                ThreadData();
+                std::pair<bool, Position> do_move(const Position& pos, const Move move);
+                void                      undo_move();
+            };
+
             void         check_timeup(const SearchInfo& info);
             SearchResult search_pos(const Position&                          pos,
-                                    PositionHistory* const                   pos_history,
                                     History* const                           hist_table,
+                                    ThreadData&                              thread,
                                     const SearchInfo&                        info,
                                     std::function<void(const SearchResult&)> progress_handler,
                                     std::function<void(const SearchResult&)> complete_hander);
             template<Searcher::NodeType nodeType>
-            Score search(const Position&        pos,
-                         int                    depth,
-                         Score                  alpha,
-                         Score                  beta,
-                         const int              ply,
-                         PositionHistory* const pos_history,
-                         History* const         hist_table,
-                         const SearchInfo&      info,
-                         SearchResult*          result);
-            Score search_quiescence(const Position&        pos,
-                                    Score                  alpha,
-                                    Score                  beta,
-                                    const int              ply,
-                                    PositionHistory* const pos_history,
-                                    History* const         hist_table,
-                                    const SearchInfo&      info,
-                                    SearchResult*          result);
+            Score search(const Position&   pos,
+                         int               depth,
+                         Score             alpha,
+                         Score             beta,
+                         const int         ply,
+                         History* const    hist_table,
+                         ThreadData&       thread,
+                         const SearchInfo& info,
+                         SearchResult*     result);
+            Score search_quiescence(const Position&   pos,
+                                    Score             alpha,
+                                    Score             beta,
+                                    const int         ply,
+                                    History* const    hist_table,
+                                    ThreadData&       thread,
+                                    const SearchInfo& info,
+                                    SearchResult*     result);
 
             std::atomic_bool                                      stopped;
             TranspositionTable<TTClient::SEARCH, uint64_t, Score> tt;

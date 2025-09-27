@@ -8,8 +8,7 @@ namespace sagittar {
 
         uint64_t perft(const Position&                                                pos,
                        const int                                                      depth,
-                       TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
-                       PositionHistory*                                               history) {
+                       TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt) {
             if (depth == 0)
             {
                 return 1ULL;
@@ -26,12 +25,11 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position pos_dup = pos;
-                if (pos_dup.do_move(move, history))
+                Position new_pos = pos;
+                if (pos.do_move(move, &new_pos))
                 {
-                    nodes += perft(pos_dup, depth - 1, tt, history);
+                    nodes += perft(new_pos, depth - 1, tt);
                 }
-                pos_dup.undo_move(history);
             }
 
             tt->store(pos.hash, depth, 0, TT_FLAG_EXACT, nodes, NULL_MOVE);
@@ -41,8 +39,7 @@ namespace sagittar {
 
         uint64_t divide(const Position&                                                pos,
                         const int                                                      depth,
-                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
-                        PositionHistory*                                               history) {
+                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt) {
             if (depth == 0)
             {
                 return 1ULL;
@@ -52,14 +49,13 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position pos_dup = pos;
-                if (pos_dup.do_move(move, history))
+                Position new_pos = pos;
+                if (pos.do_move(move, &new_pos))
                 {
-                    uint64_t nodes = perft(pos_dup, depth - 1, tt, history);
+                    uint64_t nodes = perft(new_pos, depth - 1, tt);
                     total_nodes += nodes;
                     std::cout << move_tostring(move) << " " << (uint64_t) nodes << std::endl;
                 }
-                pos_dup.undo_move(history);
             }
             std::cout << "\nNodes = " << (uint64_t) total_nodes << std::endl;
             return total_nodes;

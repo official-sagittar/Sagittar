@@ -92,6 +92,7 @@ namespace sagittar {
                         if (!is_valid) [[unlikely]]
                         {
                             std::cerr << "Invalid Move!" << std::endl;
+                            break;
                         }
                     }
                 }
