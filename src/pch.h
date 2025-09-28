@@ -1,6 +1,7 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cassert>
@@ -10,6 +11,7 @@
 #include <future>
 #include <iostream>
 #include <random>
+#include <span>
 #include <sstream>
 #include <string>
 #include <type_traits>

@@ -11,12 +11,10 @@ namespace sagittar {
 
         uint64_t perft(const Position&                                                pos,
                        const int                                                      depth,
-                       TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
-                       PositionHistory*                                               history);
+                       TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt);
         uint64_t divide(const Position&                                                pos,
                         const int                                                      depth,
-                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt,
-                        PositionHistory*                                               history);
+                        TranspositionTable<TTClient::PERFT, uint64_t, uint32_t>* const tt);
 
     }
 }

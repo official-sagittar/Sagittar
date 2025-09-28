@@ -30,7 +30,7 @@ namespace sagittar {
 
        private:
         core::Position        pos;
-        core::PositionHistory history;
+        std::vector<uint64_t> hash_history;
         search::Searcher      searcher;
         size_t                tt_size_mb;
     };

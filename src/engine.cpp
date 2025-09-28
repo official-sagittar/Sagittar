@@ -13,13 +13,14 @@ namespace sagittar {
         core::movegen_init();
         eval::hce::eval_init();
         pos.reset();
-        history.reset();
+        hash_history.reserve(1024);
+        hash_history.clear();
     }
 
     void Engine::reset() {
         pos.reset();
         searcher.reset();
-        history.reset();
+        hash_history.clear();
     }
 
     void Engine::set_tt_size_mb(const size_t tt_size_mb) {
@@ -28,20 +29,38 @@ namespace sagittar {
     }
 
     bool Engine::set_fen(std::string fen) {
-        history.reset();
+        hash_history.clear();
         return pos.set_fen(fen);
     }
 
-    bool Engine::do_move(const core::Move move) { return pos.do_move(move, &history); }
+    bool Engine::do_move(const core::Move move) {
+        core::Position new_pos  = pos;
+        const bool     is_valid = pos.do_move(move, new_pos);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            pos = new_pos;
+        }
+        return is_valid;
+    }
 
-    bool Engine::do_move(const std::string& move_str) { return pos.do_move(move_str, &history); }
+    bool Engine::do_move(const std::string& move_str) {
+        core::Position new_pos  = pos;
+        const bool     is_valid = pos.do_move(move_str, new_pos);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            pos = new_pos;
+        }
+        return is_valid;
+    }
 
     void Engine::perft(const int depth) {
-        history.reset();
+        hash_history.clear();
         core::TranspositionTable<core::TTClient::PERFT, uint64_t, uint32_t> tt(tt_size_mb);
         using clock = std::chrono::high_resolution_clock;
         auto start  = clock::now();
-        auto nodes  = core::divide(pos, depth, &tt, &history);
+        auto nodes  = core::divide(pos, depth, &tt);
         auto end    = clock::now();
         auto elapsed_ms =
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -55,11 +74,11 @@ namespace sagittar {
     Engine::search(search::SearchInfo                               info,
                    std::function<void(const search::SearchResult&)> progress_handler,
                    std::function<void(const search::SearchResult&)> complete_hander) {
-        return searcher.start(pos, &history, info, progress_handler, complete_hander);
+        return searcher.start(pos, hash_history, info, progress_handler, complete_hander);
     }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
-        return searcher.start(pos, &history, info);
+        return searcher.start(pos, hash_history, info);
     }
 
     void Engine::stop_search() { searcher.stop(); }
@@ -122,7 +141,6 @@ namespace sagittar {
         const auto starttime = core::currtime_ms();
         for (const auto& fen : positions)
         {
-            history.reset();
             set_fen(fen);
 
             search::SearchInfo info{};

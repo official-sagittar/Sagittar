@@ -7,35 +7,84 @@ using namespace sagittar::core;
 TEST_SUITE("Position") {
 
     TEST_CASE("Position::is_repeated") {
-        Position        pos;
-        PositionHistory history;
+        Position              pos;
+        std::vector<uint64_t> hash_history;
 
-        const bool is_valid =
-          pos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        bool is_valid = pos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         CHECK(is_valid);
 
-        CHECK(pos.do_move("g1f3", &history));
-        REQUIRE_FALSE(pos.is_repeated(&history));
+        Position new_pos = pos;
 
-        CHECK(pos.do_move("g8f6", &history));
-        REQUIRE_FALSE(pos.is_repeated(&history));
+        is_valid = pos.do_move("g1f3", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE_FALSE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("f3g1", &history));
-        REQUIRE_FALSE(pos.is_repeated(&history));
+        is_valid = pos.do_move("g8f6", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE_FALSE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("f6g8", &history));
-        REQUIRE(pos.is_repeated(&history));
+        is_valid = pos.do_move("f3g1", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE_FALSE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("g1f3", &history));
-        REQUIRE(pos.is_repeated(&history));
+        is_valid = pos.do_move("f6g8", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("g8f6", &history));
-        REQUIRE(pos.is_repeated(&history));
+        is_valid = pos.do_move("g1f3", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("f3g1", &history));
-        REQUIRE(pos.is_repeated(&history));
+        is_valid = pos.do_move("g8f6", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
 
-        CHECK(pos.do_move("f6g8", &history));
-        REQUIRE(pos.is_repeated(&history));
+        is_valid = pos.do_move("f3g1", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
+
+        is_valid = pos.do_move("f6g8", new_pos);
+        CHECK(is_valid);
+        if (is_valid)
+        {
+            hash_history.push_back(pos.hash);
+            REQUIRE(new_pos.is_repeated(hash_history));
+            pos = new_pos;
+        }
     }
 }
