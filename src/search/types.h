@@ -23,9 +23,18 @@ namespace sagittar {
             bool        is_mate;
             int         mate_in;
             int         depth;
-            uint64_t    nodes;
+            size_t      nodes;
             uint64_t    time;
             core::Move  bestmove;
+
+            SearchResult() :
+                score(0),
+                is_mate(false),
+                mate_in(0),
+                depth(0),
+                nodes(0),
+                time(0ULL),
+                bestmove(0) {}
         };
 
     }

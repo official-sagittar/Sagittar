@@ -37,6 +37,8 @@ namespace sagittar {
             struct ThreadData {
                 std::vector<uint64_t> hash_history;
                 PieceToHistory        history = {};
+                size_t                nodes;
+                Move                  pv_move;
 
                 ThreadData();
                 inline bool do_move(const Position& pos, const Move move, Position& new_pos);
@@ -57,19 +59,16 @@ namespace sagittar {
                          Score             beta,
                          const int         ply,
                          ThreadData&       thread,
-                         const SearchInfo& info,
-                         SearchResult*     result);
+                         const SearchInfo& info);
             Score search_quiescence(const Position&   pos,
                                     Score             alpha,
                                     Score             beta,
                                     const int         ply,
                                     ThreadData&       thread,
-                                    const SearchInfo& info,
-                                    SearchResult*     result);
+                                    const SearchInfo& info);
 
             std::atomic_bool                                      stopped;
             TranspositionTable<TTClient::SEARCH, uint64_t, Score> tt;
-            Move                                                  pv_move;
         };
 
     }

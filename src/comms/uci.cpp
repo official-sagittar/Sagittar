@@ -194,6 +194,7 @@ namespace sagittar {
                             ss << " nodes " << (int) result.nodes;
                             ss << " time " << (int) result.time;
                             ss << " nps " << (int) (result.nodes * 1000 / (result.time + 1));
+                            ss << " pv " << core::move_tostring(result.bestmove);
                             std::cout << ss.str() << std::endl;
                         };
 
