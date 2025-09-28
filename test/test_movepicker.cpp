@@ -3,8 +3,8 @@
 #include "core/position.h"
 #include "doctest/doctest.h"
 #include "pch.h"
+#include "search/history.h"
 #include "search/movepicker.h"
-#include "search/types.h"
 
 using namespace sagittar::core;
 using namespace sagittar::search;
@@ -24,9 +24,9 @@ TEST_SUITE("Search::MovePicker") {
         size_t size       = 0;
         Score  prev_score = -1;
 
-        History history{};
+        PieceToHistory history{};
 
-        MovePicker move_picker(&moves_list, pos, pv_move, &history);
+        MovePicker move_picker(&moves_list, pos, pv_move, history);
         while (move_picker.has_next())
         {
             const auto [move, move_score] = move_picker.next();

@@ -42,10 +42,10 @@ namespace sagittar {
         static constexpr Score TT_MOVE_SCORE          = 20000;
         static constexpr int   HISTORY_MOVE_SCORE_MAX = 5000;
 
-        static void score_moves(MoveList* const      moves_list,
-                                const Position&      pos,
-                                const Move           tt_move,
-                                const History* const hist_table) {
+        static void score_moves(MoveList* const       moves_list,
+                                const Position&       pos,
+                                const Move            tt_move,
+                                const PieceToHistory& history) {
             for (size_t i = 0; i < moves_list->size; i++)
             {
                 const Move move = moves_list->moves.at(i);
@@ -68,18 +68,18 @@ namespace sagittar {
                 {
                     const Piece p            = pos.board.pieces[MOVE_FROM(move)];
                     moves_list->scores.at(i) = static_cast<Score>(
-                      std::min(hist_table->at(p).at(MOVE_TO(move)), HISTORY_MOVE_SCORE_MAX));
+                      std::min(history.at(p).at(MOVE_TO(move)), HISTORY_MOVE_SCORE_MAX));
                 }
             }
         }
 
-        MovePicker::MovePicker(MoveList* const      moves_list,
-                               const Position&      pos,
-                               const Move           tt_move,
-                               const History* const hist_table) :
+        MovePicker::MovePicker(MoveList* const       moves_list,
+                               const Position&       pos,
+                               const Move            tt_move,
+                               const PieceToHistory& history) :
             index(0),
             list(moves_list) {
-            score_moves(moves_list, pos, tt_move, hist_table);
+            score_moves(moves_list, pos, tt_move, history);
         }
 
         bool MovePicker::has_next() const { return (index < list->size); }
