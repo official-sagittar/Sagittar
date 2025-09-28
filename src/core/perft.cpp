@@ -26,7 +26,7 @@ namespace sagittar {
             for (auto [move, score] : moves_list)
             {
                 Position new_pos = pos;
-                if (pos.do_move(move, &new_pos))
+                if (pos.do_move(move, new_pos))
                 {
                     nodes += perft(new_pos, depth - 1, tt);
                 }
@@ -50,7 +50,7 @@ namespace sagittar {
             for (auto [move, score] : moves_list)
             {
                 Position new_pos = pos;
-                if (pos.do_move(move, &new_pos))
+                if (pos.do_move(move, new_pos))
                 {
                     uint64_t nodes = perft(new_pos, depth - 1, tt);
                     total_nodes += nodes;

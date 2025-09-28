@@ -30,29 +30,27 @@ namespace sagittar {
 
     bool Engine::set_fen(std::string fen) {
         hash_history.clear();
-        const bool is_valid = pos.set_fen(fen);
-        hash_history.push_back(pos.hash);
-        return is_valid;
+        return pos.set_fen(fen);
     }
 
     bool Engine::do_move(const core::Move move) {
         core::Position new_pos  = pos;
-        const bool     is_valid = pos.do_move(move, &new_pos);
+        const bool     is_valid = pos.do_move(move, new_pos);
         if (is_valid)
         {
+            hash_history.push_back(pos.hash);
             pos = new_pos;
-            hash_history.push_back(new_pos.hash);
         }
         return is_valid;
     }
 
     bool Engine::do_move(const std::string& move_str) {
         core::Position new_pos  = pos;
-        const bool     is_valid = pos.do_move(move_str, &new_pos);
+        const bool     is_valid = pos.do_move(move_str, new_pos);
         if (is_valid)
         {
+            hash_history.push_back(pos.hash);
             pos = new_pos;
-            hash_history.push_back(new_pos.hash);
         }
         return is_valid;
     }

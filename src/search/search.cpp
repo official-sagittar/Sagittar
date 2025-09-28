@@ -15,12 +15,10 @@ namespace sagittar {
             hash_history.clear();
         }
 
-        std::pair<bool, Position> Searcher::ThreadData::do_move(const Position& pos,
-                                                                const Move      move) {
-            Position   new_pos  = pos;
-            const bool is_valid = pos.do_move(move, &new_pos);
-            hash_history.push_back(new_pos.hash);
-            return std::make_pair(is_valid, new_pos);
+        bool
+        Searcher::ThreadData::do_move(const Position& pos, const Move move, Position& new_pos) {
+            hash_history.push_back(pos.hash);
+            return pos.do_move(move, new_pos);
         }
 
         void Searcher::ThreadData::undo_move() { hash_history.pop_back(); }
@@ -195,8 +193,8 @@ namespace sagittar {
             {
                 const auto [move, move_score] = move_picker.next();
 
-                const auto [is_valid, new_pos] = thread.do_move(pos, move);
-                if (!is_valid)
+                Position new_pos = pos;
+                if (!thread.do_move(pos, move, new_pos))
                 {
                     thread.undo_move();
                     continue;
@@ -291,8 +289,8 @@ namespace sagittar {
             {
                 const auto [move, move_score] = move_picker.next();
 
-                const auto [is_valid, new_pos] = thread.do_move(pos, move);
-                if (!is_valid)
+                Position new_pos = pos;
+                if (!thread.do_move(pos, move, new_pos))
                 {
                     thread.undo_move();
                     continue;

@@ -37,8 +37,8 @@ namespace sagittar {
                 std::vector<uint64_t> hash_history;
 
                 ThreadData();
-                std::pair<bool, Position> do_move(const Position& pos, const Move move);
-                void                      undo_move();
+                bool do_move(const Position& pos, const Move move, Position& new_pos);
+                void undo_move();
             };
 
             void         check_timeup(const SearchInfo& info);

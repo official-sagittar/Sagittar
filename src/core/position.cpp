@@ -184,6 +184,7 @@ namespace sagittar {
         bool Position::is_valid() const { return board.is_valid(); }
 
         bool Position::is_repeated(std::span<uint64_t> hash_history) const {
+            assert(hash_history.size() == ply_count);
             for (size_t i = std::max(ply_count - half_moves, static_cast<uint32_t>(0));
                  i < ply_count - 1; ++i)
             {
@@ -198,25 +199,25 @@ namespace sagittar {
         bool Position::is_in_check() const { return (checkers != 0ULL); }
 
         template<Color US, MoveFlag F>
-        static bool _do_move(Position* const pos, const Move move) {
+        static bool _do_move(Position& pos, const Move move) {
             constexpr bool  is_capture   = MOVE_IS_CAPTURE(F);
             constexpr bool  is_promotion = MOVE_IS_PROMOTION(F);
             constexpr Color them         = COLOR_FLIP(US);
 
-            uint64_t hash_local = pos->hash;
+            uint64_t hash_local = pos.hash;
 
-            hash_local ^= SEL(pos->ep_target != 0ULL, static_cast<uint64_t>(0),
-                              ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos->ep_target]);
+            hash_local ^= SEL(pos.ep_target != 0ULL, static_cast<uint64_t>(0),
+                              ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos.ep_target]);
 
-            pos->ep_target = static_cast<Square>(0);
-            pos->half_moves++;
-            pos->full_moves += pos->black_to_play;
-            pos->ply_count++;
+            pos.ep_target = static_cast<Square>(0);
+            pos.half_moves++;
+            pos.full_moves += pos.black_to_play;
+            pos.ply_count++;
 
             const Square from = MOVE_FROM(move);
             const Square to   = MOVE_TO(move);
 
-            auto board_ptr = &pos->board;
+            auto board_ptr = &pos.board;
 
             const Piece     move_p  = board_ptr->pieces[from];
             const PieceType move_pt = PIECE_TYPE_OF(move_p);
@@ -253,8 +254,8 @@ namespace sagittar {
             else if constexpr (F == MOVE_QUIET_PAWN_DBL_PUSH)
             {
                 assert(move_pt == PAWN);
-                pos->ep_target = static_cast<Square>(from + EP_DIR<US>);
-                hash_local ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos->ep_target];
+                pos.ep_target = static_cast<Square>(from + EP_DIR<US>);
+                hash_local ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][pos.ep_target];
             }
             else
             {
@@ -298,41 +299,41 @@ namespace sagittar {
 
             assert(board_ptr->bb_pieces[PIECE_TYPE_INVALID] == 0ULL);
 
-            pos->half_moves *= !((move_pt == PAWN) || is_capture);
+            pos.half_moves *= !((move_pt == PAWN) || is_capture);
 
-            hash_local ^= ZOBRIST_CA[pos->ca_rights];
-            pos->ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-            hash_local ^= ZOBRIST_CA[pos->ca_rights];
+            hash_local ^= ZOBRIST_CA[pos.ca_rights];
+            pos.ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
+            hash_local ^= ZOBRIST_CA[pos.ca_rights];
 
             const BitBoard k_bb = board_ptr->bb_pieces[KING];
 
             const BitBoard king_bb_us  = k_bb & board_ptr->bb_colors[US];
             const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
-            const BitBoard checkers_us = movegen_get_square_attackers(*pos, king_sq_us, them);
+            const BitBoard checkers_us = movegen_get_square_attackers(pos, king_sq_us, them);
 
             const bool is_valid_move = (checkers_us == 0ULL) && board_ptr->is_valid();
 
             const BitBoard king_bb_them = k_bb & board_ptr->bb_colors[them];
-            pos->king_sq                = static_cast<Square>(__builtin_ctzll(king_bb_them));
-            pos->checkers               = movegen_get_square_attackers(*pos, pos->king_sq, US);
+            pos.king_sq                 = static_cast<Square>(__builtin_ctzll(king_bb_them));
+            pos.checkers                = movegen_get_square_attackers(pos, pos.king_sq, US);
 
-            pos->black_to_play = !pos->black_to_play;
+            pos.black_to_play = !pos.black_to_play;
             hash_local ^= ZOBRIST_SIDE;
 
-            pos->hash = hash_local;
+            pos.hash = hash_local;
 
 #ifdef DEBUG
             board_ptr->assert_valid();
-            const uint64_t currhash = pos->hash;
-            pos->reset_hash();
-            assert(currhash == pos->hash);
+            const uint64_t currhash = pos.hash;
+            pos.reset_hash();
+            assert(currhash == pos.hash);
 #endif
 
             return is_valid_move;
         }
 
         template<Color US>
-        using DoMoveFn = bool (*)(Position*, Move);
+        using DoMoveFn = bool (*)(Position&, Move);
 
         template<Color US>
         constexpr std::array<DoMoveFn<US>, 16> do_move_dispatch_table = [] {
@@ -356,13 +357,13 @@ namespace sagittar {
             return table;
         }();
 
-        static bool _do_move_wrapper(Position* pos, const Move move) {
+        static bool _do_move_wrapper(Position& pos, const Move move) {
             const MoveFlag flag = MOVE_FLAG(move);
-            return pos->black_to_play ? do_move_dispatch_table<BLACK>[flag](pos, move)
-                                      : do_move_dispatch_table<WHITE>[flag](pos, move);
+            return pos.black_to_play ? do_move_dispatch_table<BLACK>[flag](pos, move)
+                                     : do_move_dispatch_table<WHITE>[flag](pos, move);
         }
 
-        bool Position::do_move(const Move move, Position* const out) const {
+        bool Position::do_move(const Move move, Position& out) const {
             const Color  us               = static_cast<Color>(black_to_play);
             const Square from             = MOVE_FROM(move);
             const Color  move_piece_color = PIECE_COLOR_OF(board.pieces[from]);
@@ -370,7 +371,7 @@ namespace sagittar {
             return valid && _do_move_wrapper(out, move);
         }
 
-        bool Position::do_move(const std::string& move_str, Position* const out) const {
+        bool Position::do_move(const std::string& move_str, Position& out) const {
             const std::size_t len = move_str.length();
             if (len < 4 || len > 5) [[unlikely]]
                 return false;
