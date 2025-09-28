@@ -8,8 +8,6 @@ namespace sagittar {
 
     namespace search {
 
-        using History = std::array<std::array<int, 64>, 15>;  // [piece][to]
-
         struct SearchInfo {
             // Inputs
             bool infinite;

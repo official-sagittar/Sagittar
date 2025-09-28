@@ -4,6 +4,7 @@
 #include "core/position.h"
 #include "core/tt.h"
 #include "pch.h"
+#include "search/history.h"
 #include "search/types.h"
 
 namespace sagittar {
@@ -35,6 +36,7 @@ namespace sagittar {
 
             struct ThreadData {
                 std::vector<uint64_t> hash_history;
+                PieceToHistory        history = {};
 
                 ThreadData();
                 bool do_move(const Position& pos, const Move move, Position& new_pos);
@@ -43,7 +45,6 @@ namespace sagittar {
 
             void         check_timeup(const SearchInfo& info);
             SearchResult search_pos(const Position&                          pos,
-                                    History* const                           hist_table,
                                     ThreadData&                              thread,
                                     const SearchInfo&                        info,
                                     std::function<void(const SearchResult&)> progress_handler,
@@ -54,7 +55,6 @@ namespace sagittar {
                          Score             alpha,
                          Score             beta,
                          const int         ply,
-                         History* const    hist_table,
                          ThreadData&       thread,
                          const SearchInfo& info,
                          SearchResult*     result);
@@ -62,7 +62,6 @@ namespace sagittar {
                                     Score             alpha,
                                     Score             beta,
                                     const int         ply,
-                                    History* const    hist_table,
                                     ThreadData&       thread,
                                     const SearchInfo& info,
                                     SearchResult*     result);
