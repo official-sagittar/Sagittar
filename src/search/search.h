@@ -39,8 +39,9 @@ namespace sagittar {
                 PieceToHistory        history = {};
 
                 ThreadData();
-                bool do_move(const Position& pos, const Move move, Position& new_pos);
-                void undo_move();
+                inline bool do_move(const Position& pos, const Move move, Position& new_pos);
+                inline void undo_move();
+                inline void update_history(const Piece piece, const Square to, const int depth);
             };
 
             void         check_timeup(const SearchInfo& info);

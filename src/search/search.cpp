@@ -23,6 +23,11 @@ namespace sagittar {
 
         void Searcher::ThreadData::undo_move() { hash_history.pop_back(); }
 
+        void
+        Searcher::ThreadData::update_history(const Piece piece, const Square to, const int depth) {
+            history[piece][to] += (depth * depth);
+        }
+
         Searcher::Searcher() { reset(); }
 
         void Searcher::reset() {
@@ -218,7 +223,7 @@ namespace sagittar {
                         if (!MOVE_IS_CAPTURE(move))
                         {
                             const Piece p = pos.board.pieces[MOVE_FROM(move)];
-                            thread.history.at(p).at(MOVE_TO(move)) += (depth * depth);
+                            thread.update_history(p, MOVE_TO(move), depth);
                         }
 
                         flag = TT_FLAG_LOWERBOUND;
