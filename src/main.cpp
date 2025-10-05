@@ -14,9 +14,7 @@ int main(int argc, char* argv[]) {
     {
         std::string cmd = std::string(argv[1]);
         if (cmd == "bench")
-        {
-            e.bench();
-        }
+        {}
     }
 
     return 0;
