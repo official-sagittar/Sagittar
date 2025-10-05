@@ -69,6 +69,62 @@ namespace sagittar {
         static BitBoard ATTACK_TABLE_ROOK[64][4096];
         static BitBoard ATTACK_TABLE_KING[64];
 
+        static BitBoard LINE_BB[64][64];
+        static BitBoard RAY_BB[64][64];
+
+        static void movegen_init_line_and_ray_bb() {
+            for (int sq1 = 0; sq1 < 64; ++sq1)
+            {
+                int r1 = sq1 / 8, f1 = sq1 % 8;
+
+                for (int sq2 = 0; sq2 < 64; ++sq2)
+                {
+                    int r2 = sq2 / 8, f2 = sq2 % 8;
+
+                    BitBoard line_mask = 0ULL;
+                    BitBoard ray_mask  = 0ULL;
+
+                    // skip identical square case
+                    if (sq1 == sq2)
+                    {
+                        LINE_BB[sq1][sq2] = 0ULL;
+                        RAY_BB[sq1][sq2]  = 0ULL;
+                        continue;
+                    }
+
+                    // check alignment
+                    bool same_rank  = (r1 == r2);
+                    bool same_file  = (f1 == f2);
+                    bool same_diag  = (r1 - f1 == r2 - f2);
+                    bool same_antid = (r1 + f1 == r2 + f2);
+
+                    if (same_rank || same_file || same_diag || same_antid)
+                    {
+                        int dr = (r2 > r1) - (r2 < r1);  // -1, 0, +1
+                        int df = (f2 > f1) - (f2 < f1);
+
+                        int r = r1, f = f1;
+                        ray_mask |= 1ULL << (r * 8 + f);  // start sq1
+
+                        // walk along direction until we reach sq2
+                        while (r != r2 || f != f2)
+                        {
+                            r += dr;
+                            f += df;
+                            int sq = r * 8 + f;
+                            ray_mask |= 1ULL << sq;
+
+                            if (r != r2 || f != f2)
+                                line_mask |= 1ULL << sq;  // add intermediate squares
+                        }
+                    }
+
+                    LINE_BB[sq1][sq2] = line_mask;
+                    RAY_BB[sq1][sq2]  = ray_mask;
+                }
+            }
+        }
+
         static BitBoard movegen_bishop_mask(const Square sq) {
             int r, f;
 
@@ -696,6 +752,8 @@ namespace sagittar {
         }
 
         void movegen_init() {
+            movegen_init_line_and_ray_bb();
+
             movegen_init_magic_table_bishop();
             movegen_init_magic_table_rook();
 
@@ -725,6 +783,38 @@ namespace sagittar {
                     | (ATTACK_TABLE_PAWN[COLOR_FLIP(attacked_by)][sq] & op_pawns)
                     | (ATTACK_TABLE_KING[sq] & op_king);
             // clang-format on
+        }
+
+        BitBoard movegen_get_pinned_pieces(const Position& pos) {
+            BitBoard pinned = 0ULL;
+
+            const Color us = static_cast<Color>(pos.black_to_play);
+
+            const BitBoard our_pieces = pos.board.bb_colors[us];
+            const BitBoard op_pieces  = pos.board.bb_colors[COLOR_FLIP(us)];
+
+            const BitBoard op_rq =
+              (pos.board.bb_pieces[ROOK] | pos.board.bb_pieces[QUEEN]) & op_pieces;
+            const BitBoard op_bq =
+              (pos.board.bb_pieces[BISHOP] | pos.board.bb_pieces[QUEEN]) & op_pieces;
+
+            BitBoard diag_attackers = movegen_get_bishop_attacks(pos.king_sq, op_pieces) & op_bq;
+            while (diag_attackers)
+            {
+                const Square   from    = static_cast<Square>(bitscan_forward(&diag_attackers));
+                const BitBoard between = LINE_BB[pos.king_sq][from] & our_pieces;
+                pinned |= (between && (between & (between - 1)) == 0) ? between : 0ULL;
+            }
+
+            BitBoard ortho_attackers = movegen_get_rook_attacks(pos.king_sq, op_pieces) & op_rq;
+            while (ortho_attackers)
+            {
+                const Square   from    = static_cast<Square>(bitscan_forward(&ortho_attackers));
+                const BitBoard between = LINE_BB[pos.king_sq][from] & our_pieces;
+                pinned |= (between && (between & (between - 1)) == 0) ? between : 0ULL;
+            }
+
+            return pinned;
         }
 
         template<Color US, MovegenType T>

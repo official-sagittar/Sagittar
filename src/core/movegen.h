@@ -19,6 +19,8 @@ namespace sagittar {
         BitBoard
         movegen_get_square_attackers(const Position& pos, const Square sq, const Color attacked_by);
 
+        BitBoard movegen_get_pinned_pieces(const Position& pos);
+
         template<MovegenType T>
         void movegen_generate_pseudolegal_moves(const Position& pos, MoveList* const move_list);
     }

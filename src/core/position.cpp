@@ -37,7 +37,8 @@ namespace sagittar {
             ply_count(0),
             hash(0ULL),
             king_sq(static_cast<Square>(0)),
-            checkers(0ULL) {}
+            checkers(0ULL),
+            pinned(0ULL) {}
 
         void Position::reset() { *this = Position{}; }
 
@@ -178,6 +179,9 @@ namespace sagittar {
             // Checkers
             checkers = movegen_get_square_attackers(*this, king_sq, them);
 
+            // Pinned
+            pinned = movegen_get_pinned_pieces(*this);
+
             return board.is_valid();
         }
 
@@ -197,6 +201,8 @@ namespace sagittar {
         }
 
         bool Position::is_in_check() const { return (checkers != 0ULL); }
+
+        bool Position::is_legal_move(const Move) const { return true; }
 
         template<Color US, MoveFlag F>
         static bool _do_move(Position& pos, const Move move) {
@@ -321,6 +327,8 @@ namespace sagittar {
             hash_local ^= ZOBRIST_SIDE;
 
             pos.hash = hash_local;
+
+            pos.pinned = movegen_get_pinned_pieces(pos);
 
 #ifdef DEBUG
             board_ptr->assert_valid();
