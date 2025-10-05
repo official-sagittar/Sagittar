@@ -177,7 +177,7 @@ namespace sagittar {
             king_sq                = static_cast<Square>(__builtin_ctzll(king_bb));
 
             // Checkers
-            checkers = movegen_get_square_attackers(*this, king_sq, them);
+            checkers = movegen_get_square_attackers(this->board, king_sq, them);
 
             // Pinned
             pinned = movegen_get_pinned_pieces(*this);
@@ -202,7 +202,92 @@ namespace sagittar {
 
         bool Position::is_in_check() const { return (checkers != 0ULL); }
 
-        bool Position::is_legal_move(const Move) const { return true; }
+        bool Position::is_legal_move(const Move move) const {
+            const Color     us      = static_cast<Color>(black_to_play);
+            const Color     them    = COLOR_FLIP(us);
+            const Square    from    = MOVE_FROM(move);
+            const Square    to      = MOVE_TO(move);
+            const BitBoard  from_bb = BB(from);
+            const BitBoard  to_bb   = BB(to);
+            const Piece     move_p  = board.pieces[from];
+            const PieceType move_pt = PIECE_TYPE_OF(move_p);
+            const Color     move_pc = PIECE_COLOR_OF(move_p);
+
+            if ((move_pc != us)) [[unlikely]]
+            {
+                return false;
+            }
+
+            // 1. Check evasion and blocker move
+            if (checkers)
+            {
+                // Position is in check
+                if (POPCNT(checkers) > 1)
+                {
+                    // Multiple checkers
+                    // Moving piece has to be a King
+                    return (move_pt == KING);
+                }
+
+                // Single checker
+                const Square   checker_sq   = static_cast<Square>(__builtin_ctzll(checkers));
+                const BitBoard blocker_mask = path_between(king_sq, checker_sq);
+                const bool     does_block   = ((blocker_mask & to_bb) != 0ULL);
+                const bool     does_capture_checker = (to == checker_sq);
+
+                // Moving piece, if a King, and should not move along the check ray OR should capture the checker
+                // Moving piece, if not a King, should block the check or capture the checking piece
+                return (move_pt == KING) ? (!does_block || does_capture_checker)
+                                         : (does_block || does_capture_checker);
+            }
+
+            // 2. King quite move
+            // King can not move to a square that will leave it in check
+            if ((move_pt == KING) && movegen_get_square_attackers(this->board, to, them))
+            {
+                return false;
+            }
+
+            // 3. En Passant capture move
+            if (MOVE_FLAG(move) == MOVE_CAPTURE_EP)
+            {
+                // After catpuring the EP Pawn, King should not be in discovered check
+                const Square ep_victim_sq = (us == WHITE) ? static_cast<Square>(to - EP_DIR<WHITE>)
+                                                          : static_cast<Square>(to - EP_DIR<BLACK>);
+
+                BitBoard   occ = (board.bb_colors[WHITE] | board.bb_colors[BLACK]);
+                const bool aligned_and_empty =
+                  ((path_between(king_sq, ep_victim_sq) & (~occ)) != 0ULL);
+                if (!aligned_and_empty)
+                {
+                    return true;
+                }
+
+                occ ^= (from_bb | to_bb | BB(ep_victim_sq));
+
+                const BitBoard rq =
+                  (board.bb_pieces[ROOK] | board.bb_pieces[QUEEN]) & board.bb_colors[them];
+                const BitBoard bq =
+                  (board.bb_pieces[BISHOP] | board.bb_pieces[QUEEN]) & board.bb_colors[them];
+
+                return !(movegen_get_rook_attacks(king_sq, occ) & rq)
+                    && !(movegen_get_bishop_attacks(king_sq, occ) & bq);
+            }
+
+            // 4. Pinned piece move
+            if (from_bb & pinned)
+            {
+                // Moving piece is pinned; it can only move along the direction of the pin
+                const BitBoard ray_k_to_pinned  = ray(king_sq, from);
+                const BitBoard ray_king_to_dest = ray(king_sq, to);
+                if ((ray_k_to_pinned & ray_king_to_dest) != ray_k_to_pinned)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         template<Color US, MoveFlag F>
         static bool _do_move(Position& pos, const Move move) {
@@ -315,13 +400,13 @@ namespace sagittar {
 
             const BitBoard king_bb_us  = k_bb & board_ptr->bb_colors[US];
             const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
-            const BitBoard checkers_us = movegen_get_square_attackers(pos, king_sq_us, them);
+            const BitBoard checkers_us = movegen_get_square_attackers(pos.board, king_sq_us, them);
 
             const bool is_valid_move = (checkers_us == 0ULL) && board_ptr->is_valid();
 
             const BitBoard king_bb_them = k_bb & board_ptr->bb_colors[them];
             pos.king_sq                 = static_cast<Square>(__builtin_ctzll(king_bb_them));
-            pos.checkers                = movegen_get_square_attackers(pos, pos.king_sq, US);
+            pos.checkers                = movegen_get_square_attackers(pos.board, pos.king_sq, US);
 
             pos.black_to_play = !pos.black_to_play;
             hash_local ^= ZOBRIST_SIDE;

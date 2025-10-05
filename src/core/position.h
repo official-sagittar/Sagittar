@@ -19,7 +19,7 @@ namespace sagittar {
             bool      is_valid() const;
             bool      is_repeated(std::span<uint64_t> hash_history) const;
             bool      is_in_check() const;
-            bool      is_legal_move(const Move) const;
+            bool      is_legal_move(const Move move) const;
             bool      do_move(const Move move, Position& out) const;
             bool      do_move(const std::string& move_str, Position& out) const;
             void      display() const;

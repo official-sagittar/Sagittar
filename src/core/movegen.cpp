@@ -486,14 +486,14 @@ namespace sagittar {
             }
         }
 
-        static BitBoard movegen_get_bishop_attacks(const Square sq, BitBoard occupancy) {
+        BitBoard movegen_get_bishop_attacks(const Square sq, BitBoard occupancy) {
             occupancy            = occupancy & MAGICTABLE_BISHOP[sq].mask;
             const uint32_t index = movegen_transform_magic_to_index(
               occupancy, MAGICTABLE_BISHOP[sq].magic, MAGICTABLE_BISHOP[sq].shift);
             return ATTACK_TABLE_BISHOP[sq][index];
         }
 
-        static BitBoard movegen_get_rook_attacks(const Square sq, BitBoard occupancy) {
+        BitBoard movegen_get_rook_attacks(const Square sq, BitBoard occupancy) {
             occupancy            = occupancy & MAGICTABLE_ROOK[sq].mask;
             const uint32_t index = movegen_transform_magic_to_index(
               occupancy, MAGICTABLE_ROOK[sq].magic, MAGICTABLE_ROOK[sq].shift);
@@ -720,7 +720,7 @@ namespace sagittar {
             constexpr Square k_sq_l = static_cast<Square>(k_sq - 1);
 
             const BitBoard occ         = (pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
-            const BitBoard k_attackers = movegen_get_square_attackers(pos, k_sq, them);
+            const BitBoard k_attackers = movegen_get_square_attackers(pos.board, k_sq, them);
             BitBoard       attackers;
 
             constexpr BitBoard mask_path_k =
@@ -731,10 +731,10 @@ namespace sagittar {
               (US == WHITE) ? BITBOARD_MASK_WQCA_PATH : BITBOARD_MASK_BQCA_PATH;
             const BitBoard path_q_empty = MASK64((occ & mask_path_q) == 0);
 
-            attackers = k_attackers | movegen_get_square_attackers(pos, k_sq_r, them);
+            attackers = k_attackers | movegen_get_square_attackers(pos.board, k_sq_r, them);
             const BitBoard safe_k_ok = MASK64(attackers == 0);
 
-            attackers = k_attackers | movegen_get_square_attackers(pos, k_sq_l, them);
+            attackers = k_attackers | movegen_get_square_attackers(pos.board, k_sq_l, them);
             const BitBoard safe_q_ok = MASK64(attackers == 0);
 
             const BitBoard rights_k_ok = MASK64(pos.ca_rights & rights_k);
@@ -776,18 +776,17 @@ namespace sagittar {
             movegen_init_attack_table_king();
         }
 
-        BitBoard movegen_get_square_attackers(const Position& pos,
-                                              const Square    sq,
-                                              const Color     attacked_by) {
-            const BitBoard occupied = (pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
+        BitBoard
+        movegen_get_square_attackers(const Board& board, const Square sq, const Color attacked_by) {
+            const BitBoard occupied = (board.bb_colors[WHITE] | board.bb_colors[BLACK]);
             BitBoard       op_pieces, op_pawns, op_knights, op_rq, op_bq, op_king;
-            op_pieces  = pos.board.bb_colors[attacked_by];
-            op_pawns   = pos.board.bb_pieces[PAWN] & op_pieces;
-            op_knights = pos.board.bb_pieces[KNIGHT] & op_pieces;
-            op_rq = op_bq = pos.board.bb_pieces[QUEEN] & op_pieces;
-            op_rq |= pos.board.bb_pieces[ROOK] & op_pieces;
-            op_bq |= pos.board.bb_pieces[BISHOP] & op_pieces;
-            op_king = pos.board.bb_pieces[KING] & op_pieces;
+            op_pieces  = board.bb_colors[attacked_by];
+            op_pawns   = board.bb_pieces[PAWN] & op_pieces;
+            op_knights = board.bb_pieces[KNIGHT] & op_pieces;
+            op_rq = op_bq = board.bb_pieces[QUEEN] & op_pieces;
+            op_rq |= board.bb_pieces[ROOK] & op_pieces;
+            op_bq |= board.bb_pieces[BISHOP] & op_pieces;
+            op_king = board.bb_pieces[KING] & op_pieces;
             // clang-format off
             return (movegen_get_bishop_attacks(sq, occupied) & op_bq)
                     | (movegen_get_rook_attacks(sq, occupied) & op_rq)
@@ -856,6 +855,10 @@ namespace sagittar {
         template void
         movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(const Position&,
                                                                           MoveList*);
+
+        BitBoard ray(const Square sq1, const Square sq2) { return RAY_BB[sq1][sq2]; }
+
+        BitBoard path_between(const Square sq1, const Square sq2) { return LINE_BB[sq1][sq2]; }
     }
 
 }
