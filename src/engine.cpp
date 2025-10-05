@@ -20,13 +20,12 @@ namespace sagittar {
     bool Engine::set_fen(std::string fen) { return pos.set_fen(fen); }
 
     bool Engine::do_move(const std::string& move_str) {
-        core::Position new_pos  = pos;
-        const bool     is_valid = pos.do_move(move_str, new_pos);
-        if (is_valid)
+        const auto [is_legal_move, new_pos] = pos.do_move(move_str);
+        if (is_legal_move)
         {
             pos = new_pos;
         }
-        return is_valid;
+        return is_legal_move;
     }
 
     void Engine::perft(const int depth) {}
