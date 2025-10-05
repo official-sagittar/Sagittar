@@ -503,8 +503,7 @@ namespace sagittar {
         template<Color US, MovegenType T>
         static void movegen_generate_pseudolegal_moves_pawn(const Position& pos,
                                                             MoveList* const move_list) {
-            constexpr BitBoard mask_movegen_all = MASK64(T == MovegenType::MOVEGEN_ALL);
-            constexpr Color    them             = COLOR_FLIP(US);
+            constexpr Color    them = COLOR_FLIP(US);
             constexpr BitBoard promo_dest =
               (US == WHITE) ? BITBOARD_MASK_RANK_8 : BITBOARD_MASK_RANK_1;
             constexpr BitBoard not_promo_dest =
@@ -512,9 +511,10 @@ namespace sagittar {
             constexpr BitBoard ep_target_rank =
               (US == WHITE) ? BITBOARD_MASK_RANK_6 : BITBOARD_MASK_RANK_3;
 
-            const BitBoard pawns   = pos.board.bb_pieces[PAWN] & pos.board.bb_colors[US];
-            const BitBoard enemies = pos.board.bb_colors[them];
-            const BitBoard empty   = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
+            const BitBoard pawns = pos.board.bb_pieces[PAWN] & pos.board.bb_colors[US];
+            const BitBoard enemies =
+              pos.board.bb_colors[them] ^ (pos.board.bb_pieces[KING] & pos.board.bb_colors[them]);
+            const BitBoard empty = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
 
             BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
             if constexpr (US == WHITE)
@@ -545,22 +545,28 @@ namespace sagittar {
             const BitBoard capture_promo_l               = fwd_l & enemies_on_promotion_dest;
             const BitBoard capture_promo_r               = fwd_r & enemies_on_promotion_dest;
 
-            BitBoard bb  = sgl_push & mask_movegen_all;
-            int      dir = BITBOARD_FWD_DIR<US>;
-            while (bb)
-            {
-                const Square to   = static_cast<Square>(bitscan_forward(&bb));
-                const Square from = static_cast<Square>(to - dir);
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET));
-            }
+            BitBoard bb;
+            int      dir;
 
-            bb  = dbl_push & mask_movegen_all;
-            dir = BITBOARD_FWD_DBL_DIR<US>;
-            while (bb)
+            if constexpr (T == MovegenType::MOVEGEN_ALL)
             {
-                const Square to   = static_cast<Square>(bitscan_forward(&bb));
-                const Square from = static_cast<Square>(to - dir);
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET_PAWN_DBL_PUSH));
+                bb  = sgl_push;
+                dir = BITBOARD_FWD_DIR<US>;
+                while (bb)
+                {
+                    const Square to   = static_cast<Square>(bitscan_forward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET));
+                }
+
+                bb  = dbl_push;
+                dir = BITBOARD_FWD_DBL_DIR<US>;
+                while (bb)
+                {
+                    const Square to   = static_cast<Square>(bitscan_forward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET_PAWN_DBL_PUSH));
+                }
             }
 
             bb  = capture_l;
@@ -599,16 +605,19 @@ namespace sagittar {
                 move_list->add_move(MOVE_CREATE(from, to, MOVE_CAPTURE_EP));
             }
 
-            bb  = quite_promo & mask_movegen_all;
-            dir = BITBOARD_FWD_DIR<US>;
-            while (bb)
+            if constexpr (T == MovegenType::MOVEGEN_ALL)
             {
-                const Square to   = static_cast<Square>(bitscan_forward(&bb));
-                const Square from = static_cast<Square>(to - dir);
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_QUEEN));
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_ROOK));
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_KNIGHT));
-                move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_BISHOP));
+                bb  = quite_promo;
+                dir = BITBOARD_FWD_DIR<US>;
+                while (bb)
+                {
+                    const Square to   = static_cast<Square>(bitscan_forward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_QUEEN));
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_ROOK));
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_KNIGHT));
+                    move_list->add_move(MOVE_CREATE(from, to, MOVE_PROMOTION_BISHOP));
+                }
             }
 
             bb  = capture_promo_l;
@@ -639,11 +648,11 @@ namespace sagittar {
         template<PieceType PT, Color US, MovegenType T>
         static void movegen_generate_pseudolegal_moves_piece(const Position& pos,
                                                              MoveList* const move_list) {
-            constexpr BitBoard mask_movegen_all = MASK64(T == MovegenType::MOVEGEN_ALL);
-            constexpr Color    them             = COLOR_FLIP(US);
-            const BitBoard     enemies          = pos.board.bb_colors[them];
-            const BitBoard     empty = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
-            BitBoard           occupancy;
+            constexpr Color them = COLOR_FLIP(US);
+            const BitBoard  enemies =
+              pos.board.bb_colors[them] ^ (pos.board.bb_pieces[KING] & pos.board.bb_colors[them]);
+            const BitBoard empty = ~(pos.board.bb_colors[WHITE] | pos.board.bb_colors[BLACK]);
+            BitBoard       occupancy;
             if constexpr ((PT == KNIGHT) || (PT == KING))
                 occupancy = (enemies | empty);
             else
@@ -683,11 +692,14 @@ namespace sagittar {
                     const Square to = static_cast<Square>(bitscan_forward(&captures));
                     move_list->add_move(MOVE_CREATE(from, to, MOVE_CAPTURE));
                 }
-                BitBoard quiets = attacks & empty & mask_movegen_all;
-                while (quiets)
+                if constexpr (T == MovegenType::MOVEGEN_ALL)
                 {
-                    const Square to = static_cast<Square>(bitscan_forward(&quiets));
-                    move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET));
+                    BitBoard quiets = attacks & empty;
+                    while (quiets)
+                    {
+                        const Square to = static_cast<Square>(bitscan_forward(&quiets));
+                        move_list->add_move(MOVE_CREATE(from, to, MOVE_QUIET));
+                    }
                 }
             }
         }
