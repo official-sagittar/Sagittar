@@ -25,11 +25,12 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position new_pos = pos;
-                if (pos.do_move(move, new_pos))
+                if (!pos.is_legal_move(move))
                 {
-                    nodes += perft(new_pos, depth - 1, tt);
+                    continue;
                 }
+                const Position new_pos = pos.do_move(move);
+                nodes += perft(new_pos, depth - 1, tt);
             }
 
             tt->store(pos.hash, depth, 0, TT_FLAG_EXACT, nodes, NULL_MOVE);
@@ -49,13 +50,14 @@ namespace sagittar {
             movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_ALL>(pos, &moves_list);
             for (auto [move, score] : moves_list)
             {
-                Position new_pos = pos;
-                if (pos.do_move(move, new_pos))
+                if (!pos.is_legal_move(move))
                 {
-                    uint64_t nodes = perft(new_pos, depth - 1, tt);
-                    total_nodes += nodes;
-                    std::cout << move_tostring(move) << " " << (uint64_t) nodes << std::endl;
+                    continue;
                 }
+                const Position new_pos = pos.do_move(move);
+                const uint64_t nodes   = perft(new_pos, depth - 1, tt);
+                total_nodes += nodes;
+                std::cout << move_tostring(move) << " " << (uint64_t) nodes << std::endl;
             }
             std::cout << "\nNodes = " << (uint64_t) total_nodes << std::endl;
             return total_nodes;

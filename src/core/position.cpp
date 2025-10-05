@@ -290,7 +290,7 @@ namespace sagittar {
         }
 
         template<Color US, MoveFlag F>
-        static bool _do_move(Position& pos, const Move move) {
+        static void _do_move(Position& pos, const Move move) {
             constexpr bool  is_capture   = MOVE_IS_CAPTURE(F);
             constexpr bool  is_promotion = MOVE_IS_PROMOTION(F);
             constexpr Color them         = COLOR_FLIP(US);
@@ -396,24 +396,16 @@ namespace sagittar {
             pos.ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
             hash_local ^= ZOBRIST_CA[pos.ca_rights];
 
-            const BitBoard k_bb = board_ptr->bb_pieces[KING];
+            hash_local ^= ZOBRIST_SIDE;
 
-            const BitBoard king_bb_us  = k_bb & board_ptr->bb_colors[US];
-            const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
-            const BitBoard checkers_us = movegen_get_square_attackers(pos.board, king_sq_us, them);
+            pos.black_to_play = !pos.black_to_play;
+            pos.hash          = hash_local;
 
-            const bool is_valid_move = (checkers_us == 0ULL) && board_ptr->is_valid();
-
+            const BitBoard k_bb         = board_ptr->bb_pieces[KING];
             const BitBoard king_bb_them = k_bb & board_ptr->bb_colors[them];
             pos.king_sq                 = static_cast<Square>(__builtin_ctzll(king_bb_them));
             pos.checkers                = movegen_get_square_attackers(pos.board, pos.king_sq, US);
-
-            pos.black_to_play = !pos.black_to_play;
-            hash_local ^= ZOBRIST_SIDE;
-
-            pos.hash = hash_local;
-
-            pos.pinned = movegen_get_pinned_pieces(pos);
+            pos.pinned                  = movegen_get_pinned_pieces(pos);
 
 #ifdef DEBUG
             board_ptr->assert_valid();
@@ -421,12 +413,10 @@ namespace sagittar {
             pos.reset_hash();
             assert(currhash == pos.hash);
 #endif
-
-            return is_valid_move;
         }
 
         template<Color US>
-        using DoMoveFn = bool (*)(Position&, Move);
+        using DoMoveFn = void (*)(Position&, Move);
 
         template<Color US>
         constexpr std::array<DoMoveFn<US>, 16> do_move_dispatch_table = [] {
@@ -450,24 +440,25 @@ namespace sagittar {
             return table;
         }();
 
-        static bool _do_move_wrapper(Position& pos, const Move move) {
-            const MoveFlag flag = MOVE_FLAG(move);
-            return pos.black_to_play ? do_move_dispatch_table<BLACK>[flag](pos, move)
-                                     : do_move_dispatch_table<WHITE>[flag](pos, move);
+        Position Position::do_move(const Move move) const {
+            Position new_pos = *this;
+            if (new_pos.black_to_play)
+            {
+                do_move_dispatch_table<BLACK>[MOVE_FLAG(move)](new_pos, move);
+            }
+            else
+            {
+                do_move_dispatch_table<WHITE>[MOVE_FLAG(move)](new_pos, move);
+            }
+            return new_pos;
         }
 
-        bool Position::do_move(const Move move, Position& out) const {
-            const Color  us               = static_cast<Color>(black_to_play);
-            const Square from             = MOVE_FROM(move);
-            const Color  move_piece_color = PIECE_COLOR_OF(board.pieces[from]);
-            const bool   valid            = (move_piece_color == us);
-            return valid && _do_move_wrapper(out, move);
-        }
-
-        bool Position::do_move(const std::string& move_str, Position& out) const {
+        std::pair<bool, Position> Position::do_move(const std::string& move_str) const {
             const std::size_t len = move_str.length();
             if (len < 4 || len > 5) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             const int from_file = move_str[0] - 'a';
             const int from_rank = (move_str[1] - '0') - 1;
@@ -475,28 +466,40 @@ namespace sagittar {
             const int to_rank   = (move_str[3] - '0') - 1;
 
             if (from_file < FILE_A || from_file > FILE_H) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             if (to_file < FILE_A || to_file > FILE_H) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             if (from_rank < RANK_1 || from_rank > RANK_8) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             if (to_rank < RANK_1 || to_rank > RANK_8) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             const Square from = RF_TO_SQ(from_rank, from_file);
             const Square to   = RF_TO_SQ(to_rank, to_file);
 
             const Piece move_p = board.pieces[from];
             if (move_p == NO_PIECE) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             const Color us = static_cast<Color>(black_to_play);
 
             if (PIECE_COLOR_OF(move_p) != us) [[unlikely]]
-                return false;
+            {
+                return std::make_pair(false, *this);
+            }
 
             const PieceType move_pt = PIECE_TYPE_OF(move_p);
 
@@ -505,23 +508,31 @@ namespace sagittar {
             if (is_promotion)
             {
                 if (move_pt != PAWN) [[unlikely]]
-                    return false;
+                {
+                    return std::make_pair(false, *this);
+                }
 
                 if (black_to_play)
                 {
                     if (from_rank != RANK_2 || to_rank != RANK_1) [[unlikely]]
-                        return false;
+                    {
+                        return std::make_pair(false, *this);
+                    }
                 }
                 else
                 {
                     if (from_rank != RANK_7 || to_rank != RANK_8) [[unlikely]]
-                        return false;
+                    {
+                        return std::make_pair(false, *this);
+                    }
                 }
 
                 const bool is_valid_promo_pt = (move_str[4] == 'q') || (move_str[4] == 'r')
                                             || (move_str[4] == 'n') || (move_str[4] == 'b');
                 if (!is_valid_promo_pt) [[unlikely]]
-                    return false;
+                {
+                    return std::make_pair(false, *this);
+                }
             }
 
             const Piece captured_p = board.pieces[to];
@@ -531,7 +542,9 @@ namespace sagittar {
             {
                 if ((PIECE_COLOR_OF(captured_p) == us) || (PIECE_TYPE_OF(captured_p) == KING))
                   [[unlikely]]
-                    return false;
+                {
+                    return std::make_pair(false, *this);
+                }
             }
 
             MoveFlag flag;
@@ -543,16 +556,26 @@ namespace sagittar {
                     if (!is_capture)
                     {
                         if (us == WHITE && from_rank == RANK_2 && to_rank == RANK_4)
+                        {
                             flag = MOVE_QUIET_PAWN_DBL_PUSH;
+                        }
                         else if (us == BLACK && from_rank == RANK_7 && to_rank == RANK_5)
+                        {
                             flag = MOVE_QUIET_PAWN_DBL_PUSH;
+                        }
                         else if (to == ep_target)
+                        {
                             flag = MOVE_CAPTURE_EP;
+                        }
                         else
+                        {
                             flag = MOVE_QUIET;
+                        }
                     }
                     else
+                    {
                         flag = MOVE_CAPTURE;
+                    }
                 }
                 else
                 {
@@ -563,7 +586,9 @@ namespace sagittar {
                                            : (promoted_ch == 'b') ? MOVE_PROMOTION_BISHOP
                                                                   : MOVE_PROMOTION_QUEEN;
                     if (is_capture)
+                    {
                         promo_flag |= MOVE_CAPTURE;
+                    }
                     flag = static_cast<MoveFlag>(promo_flag);
                 }
             }
@@ -574,34 +599,46 @@ namespace sagittar {
                     if (from == E1 && to == G1)
                     {
                         if ((ca_rights & WKCA) == 0) [[unlikely]]
-                            return false;
+                        {
+                            return std::make_pair(false, *this);
+                        }
                         flag = MOVE_CASTLE_KING_SIDE;
                     }
                     else if (from == E1 && to == C1)
                     {
                         if ((ca_rights & WQCA) == 0) [[unlikely]]
-                            return false;
+                        {
+                            return std::make_pair(false, *this);
+                        }
                         flag = MOVE_CASTLE_QUEEN_SIDE;
                     }
                     else
+                    {
                         flag = is_capture ? MOVE_CAPTURE : MOVE_QUIET;
+                    }
                 }
                 else
                 {
                     if (from == E8 && to == G8)
                     {
                         if ((ca_rights & BKCA) == 0) [[unlikely]]
-                            return false;
+                        {
+                            return std::make_pair(false, *this);
+                        }
                         flag = MOVE_CASTLE_KING_SIDE;
                     }
                     else if (from == E8 && to == C8)
                     {
                         if ((ca_rights & BQCA) == 0) [[unlikely]]
-                            return false;
+                        {
+                            return std::make_pair(false, *this);
+                        }
                         flag = MOVE_CASTLE_QUEEN_SIDE;
                     }
                     else
+                    {
                         flag = is_capture ? MOVE_CAPTURE : MOVE_QUIET;
+                    }
                 }
             }
             else
@@ -611,7 +648,9 @@ namespace sagittar {
 
             const Move move = MOVE_CREATE(from, to, flag);
 
-            return do_move(move, out);
+            const bool is_legal = is_legal_move(move);
+
+            return is_legal ? std::make_pair(true, do_move(move)) : std::make_pair(false, *this);
         }
 
         void Position::display() const {
