@@ -44,6 +44,8 @@ namespace sagittar {
 
 #ifdef DEBUG
         void Board::assert_valid() const {
+            assert(is_valid());
+
             const BitBoard empty = ~(bb_colors[WHITE] | bb_colors[BLACK]);
             for (int sq = A1; sq <= H8; sq++)
             {
