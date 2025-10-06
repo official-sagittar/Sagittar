@@ -778,15 +778,13 @@ namespace sagittar {
 
         BitBoard
         movegen_get_square_attackers(const Board& board, const Square sq, const Color attacked_by) {
-            const BitBoard occupied = (board.bb_colors[WHITE] | board.bb_colors[BLACK]);
-            BitBoard       op_pieces, op_pawns, op_knights, op_rq, op_bq, op_king;
-            op_pieces  = board.bb_colors[attacked_by];
-            op_pawns   = board.bb_pieces[PAWN] & op_pieces;
-            op_knights = board.bb_pieces[KNIGHT] & op_pieces;
-            op_rq = op_bq = board.bb_pieces[QUEEN] & op_pieces;
-            op_rq |= board.bb_pieces[ROOK] & op_pieces;
-            op_bq |= board.bb_pieces[BISHOP] & op_pieces;
-            op_king = board.bb_pieces[KING] & op_pieces;
+            const BitBoard occupied   = (board.bb_colors[WHITE] | board.bb_colors[BLACK]);
+            const BitBoard op_pieces  = board.bb_colors[attacked_by];
+            const BitBoard op_pawns   = board.bb_pieces[PAWN] & op_pieces;
+            const BitBoard op_knights = board.bb_pieces[KNIGHT] & op_pieces;
+            const BitBoard op_bq   = (board.bb_pieces[BISHOP] | board.bb_pieces[QUEEN]) & op_pieces;
+            const BitBoard op_rq   = (board.bb_pieces[ROOK] | board.bb_pieces[QUEEN]) & op_pieces;
+            const BitBoard op_king = board.bb_pieces[KING] & op_pieces;
             // clang-format off
             return (movegen_get_bishop_attacks(sq, occupied) & op_bq)
                     | (movegen_get_rook_attacks(sq, occupied) & op_rq)
@@ -856,9 +854,11 @@ namespace sagittar {
         movegen_generate_pseudolegal_moves<MovegenType::MOVEGEN_CAPTURES>(const Position&,
                                                                           MoveList*);
 
-        BitBoard ray(const Square sq1, const Square sq2) { return RAY_BB[sq1][sq2]; }
+        inline BitBoard ray(const Square sq1, const Square sq2) { return RAY_BB[sq1][sq2]; }
 
-        BitBoard path_between(const Square sq1, const Square sq2) { return LINE_BB[sq1][sq2]; }
+        inline BitBoard path_between(const Square sq1, const Square sq2) {
+            return LINE_BB[sq1][sq2];
+        }
     }
 
 }

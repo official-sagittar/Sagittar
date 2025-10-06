@@ -29,9 +29,9 @@ namespace sagittar {
         template<MovegenType T>
         void movegen_generate_pseudolegal_moves(const Position& pos, MoveList* const move_list);
 
-        BitBoard ray(const Square sq1, const Square sq2);
+        inline BitBoard ray(const Square sq1, const Square sq2);
 
-        BitBoard path_between(const Square sq1, const Square sq2);
+        inline BitBoard path_between(const Square sq1, const Square sq2);
     }
 
 }

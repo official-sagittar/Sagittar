@@ -28,7 +28,17 @@ namespace sagittar {
         return is_legal_move;
     }
 
-    void Engine::perft(const int depth) {}
+    void Engine::perft(const int depth) {
+        core::TranspositionTable<core::TTClient::PERFT, uint64_t, uint32_t> tt(tt_size_mb);
+        using clock = std::chrono::high_resolution_clock;
+        auto start  = clock::now();
+        auto nodes  = core::divide(pos, depth, tt);
+        auto end    = clock::now();
+        auto elapsed_ms =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        std::cout << "Elapsed = " << elapsed_ms
+                  << " ms\nNPS = " << (double) (nodes / (elapsed_ms / 1000.0f)) << std::endl;
+    }
 
     void Engine::display_position() const { pos.display(); }
 
