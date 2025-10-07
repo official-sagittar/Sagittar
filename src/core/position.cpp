@@ -1,4 +1,5 @@
 #include "position.h"
+#include "core/board.h"
 #include "core/utils.h"
 
 namespace sagittar {
@@ -43,9 +44,9 @@ namespace sagittar {
         };
         // clang-format on
 
-        void Position::reset() { *this = Position{}; }
+        inline void Position::reset() { *this = Position{}; }
 
-        void Position::reset_key() {
+        inline void Position::reset_key() {
             m_key = 0ULL;
 
             m_key ^= ZOBRIST_SIDE & (-static_cast<uint64_t>(m_black_to_play));
@@ -214,6 +215,20 @@ namespace sagittar {
         inline bool Position::is_drawn(std::span<uint64_t> key_history) const { return false; }
 
         inline bool Position::is_in_check() const { return (m_checkers != 0ULL); }
+
+        bool Position::is_legal_move(const Move move) const { return false; }
+
+        static void apply_move(Position& pos, const Move move) {}
+
+        Position Position::do_move(const Move move) const {
+            Position new_pos = *this;
+            apply_move(new_pos, move);
+            return new_pos;
+        }
+
+        std::pair<bool, Position> Position::do_move(const std::string& move_str) const {
+            return std::make_pair(false, *this);
+        }
 
         void Position::display() const {
             std::cout << "\n   |---|---|---|---|---|---|---|---|\n";

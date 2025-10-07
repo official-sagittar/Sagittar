@@ -286,10 +286,20 @@ endif
 GENERATED :=
 OBJECTS :=
 
+GENERATED += $(OBJDIR)/attacks.o
+GENERATED += $(OBJDIR)/board.o
+GENERATED += $(OBJDIR)/move.o
+GENERATED += $(OBJDIR)/movegen.o
 GENERATED += $(OBJDIR)/pch.o
+GENERATED += $(OBJDIR)/perft.o
 GENERATED += $(OBJDIR)/position.o
 GENERATED += $(OBJDIR)/utils.o
+OBJECTS += $(OBJDIR)/attacks.o
+OBJECTS += $(OBJDIR)/board.o
+OBJECTS += $(OBJDIR)/move.o
+OBJECTS += $(OBJDIR)/movegen.o
 OBJECTS += $(OBJDIR)/pch.o
+OBJECTS += $(OBJDIR)/perft.o
 OBJECTS += $(OBJDIR)/position.o
 OBJECTS += $(OBJDIR)/utils.o
 
@@ -307,63 +317,27 @@ OBJECTS += $(OBJDIR)/main.o
 
 else ifeq ($(config),test_macos64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_linux64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_windows64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_release_macos64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_release_linux64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),test_release_windows64)
 GENERATED += $(OBJDIR)/test_main.o
-GENERATED += $(OBJDIR)/test_movegen.o
-GENERATED += $(OBJDIR)/test_perft.o
-GENERATED += $(OBJDIR)/test_position.o
 OBJECTS += $(OBJDIR)/test_main.o
-OBJECTS += $(OBJDIR)/test_movegen.o
-OBJECTS += $(OBJDIR)/test_perft.o
-OBJECTS += $(OBJDIR)/test_position.o
 
 else ifeq ($(config),release_macos64)
 GENERATED += $(OBJDIR)/main.o
@@ -441,6 +415,21 @@ endif
 # File Rules
 # #############################################
 
+$(OBJDIR)/attacks.o: src/core/attacks.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/board.o: src/core/board.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/move.o: src/core/move.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/movegen.o: src/core/movegen.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/perft.o: src/core/perft.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/position.o: src/core/position.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -470,27 +459,9 @@ else ifeq ($(config),test_macos64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 else ifeq ($(config),test_linux64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
@@ -498,27 +469,9 @@ else ifeq ($(config),test_windows64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 else ifeq ($(config),test_release_macos64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
@@ -526,27 +479,9 @@ else ifeq ($(config),test_release_linux64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
 else ifeq ($(config),test_release_windows64)
 $(OBJDIR)/test_main.o: test/test_main.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_movegen.o: test/test_movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_perft.o: test/test_perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/test_position.o: test/test_position.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

@@ -11,6 +11,7 @@ namespace sagittar {
         constexpr T SEL(const bool cond, const T f, const T t) {
             return static_cast<T>((f) ^ (((f) ^ (t)) & -(cond)));
         }
+
         constexpr BitBoard MASK64(const bool x) { return -static_cast<BitBoard>(x); }
 
         uint64_t prng();

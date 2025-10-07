@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/defs.h"
+#include "core/move.h"
 #include "pch.h"
 
 namespace sagittar {
@@ -36,6 +37,10 @@ namespace sagittar {
             bool is_valid() const;
             bool is_drawn(std::span<uint64_t> key_history) const;
             bool is_in_check() const;
+
+            bool                      is_legal_move(const Move move) const;
+            Position                  do_move(const Move move) const;
+            std::pair<bool, Position> do_move(const std::string& move_str) const;
 
             void display() const;
 

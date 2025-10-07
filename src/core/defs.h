@@ -89,8 +89,6 @@ namespace sagittar {
             BQCA = 0x8
         };
 
-        constexpr BitBoard BITBOARD_MASK_RANK_1_AND_8 = 0xFF000000000000FF;
-
         inline constexpr Color COLOR_FLIP(const Color c) { return static_cast<Color>(c ^ 1); }
 
         inline constexpr Piece PIECE_CREATE(const PieceType pt, const Color c) {
