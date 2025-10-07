@@ -1,21 +1,11 @@
-#include "comms/uci.h"
-#include "engine.h"
+#include "core/position.h"
 #include "pch.h"
 
-int main(int argc, char* argv[]) {
-    sagittar::Engine e;
+int main() {
 
-    if (argc == 1)
-    {
-        sagittar::comms::uci::UCIHandler ucihandler(e);
-        ucihandler.start();
-    }
-    else if (argc == 2)
-    {
-        std::string cmd = std::string(argv[1]);
-        if (cmd == "bench")
-        {}
-    }
+    sagittar::core::Position pos;
+    pos.set_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    pos.display();
 
     return 0;
 }

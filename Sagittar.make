@@ -286,25 +286,11 @@ endif
 GENERATED :=
 OBJECTS :=
 
-GENERATED += $(OBJDIR)/board.o
-GENERATED += $(OBJDIR)/engine.o
-GENERATED += $(OBJDIR)/move.o
-GENERATED += $(OBJDIR)/movegen.o
 GENERATED += $(OBJDIR)/pch.o
-GENERATED += $(OBJDIR)/perft.o
 GENERATED += $(OBJDIR)/position.o
-GENERATED += $(OBJDIR)/tt.o
-GENERATED += $(OBJDIR)/uci.o
 GENERATED += $(OBJDIR)/utils.o
-OBJECTS += $(OBJDIR)/board.o
-OBJECTS += $(OBJDIR)/engine.o
-OBJECTS += $(OBJDIR)/move.o
-OBJECTS += $(OBJDIR)/movegen.o
 OBJECTS += $(OBJDIR)/pch.o
-OBJECTS += $(OBJDIR)/perft.o
 OBJECTS += $(OBJDIR)/position.o
-OBJECTS += $(OBJDIR)/tt.o
-OBJECTS += $(OBJDIR)/uci.o
 OBJECTS += $(OBJDIR)/utils.o
 
 ifeq ($(config),debug_macos64)
@@ -455,31 +441,10 @@ endif
 # File Rules
 # #############################################
 
-$(OBJDIR)/uci.o: src/comms/uci.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/board.o: src/core/board.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/move.o: src/core/move.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/movegen.o: src/core/movegen.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/perft.o: src/core/perft.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/position.o: src/core/position.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/tt.o: src/core/tt.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/utils.o: src/core/utils.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/engine.o: src/engine.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) -include $(PCH_PLACEHOLDER) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/pch.o: src/pch.cpp

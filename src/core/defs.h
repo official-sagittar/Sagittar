@@ -7,6 +7,7 @@ namespace sagittar {
     namespace core {
 
         using BitBoard = uint64_t;
+        using Key      = uint64_t;
         using Score    = int16_t;
 
         constexpr int INF        = 32000;
@@ -87,6 +88,8 @@ namespace sagittar {
             BKCA = 0x4,
             BQCA = 0x8
         };
+
+        constexpr BitBoard BITBOARD_MASK_RANK_1_AND_8 = 0xFF000000000000FF;
 
         inline constexpr Color COLOR_FLIP(const Color c) { return static_cast<Color>(c ^ 1); }
 
