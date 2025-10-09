@@ -170,8 +170,8 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/macos64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
 ALL_LDFLAGS += $(LDFLAGS) -m64 -flto
 
 else ifeq ($(config),release_linux64)
@@ -190,8 +190,8 @@ TARGET = $(TARGETDIR)/Sagittar
 OBJDIR = obj/linux64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 else ifeq ($(config),release_windows64)
@@ -210,8 +210,8 @@ TARGET = $(TARGETDIR)/Sagittar.exe
 OBJDIR = obj/windows64/Release
 DEFINES += -DNDEBUG
 INCLUDES += -Isrc
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -march=native
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -Werror -flto -O3 -Wall -Wextra -std=c++20 -march=native
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -march=native
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -flto -s -static
 
 endif

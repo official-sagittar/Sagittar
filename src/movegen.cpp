@@ -25,6 +25,15 @@ namespace sagittar {
         static std::vector<std::function<board::BitBoard(const Square, board::BitBoard)>>
           attackFunctions;
 
+        template<Color US>
+        static constexpr int BITBOARD_FWD_DIR = (US == WHITE) ? 8 : -8;
+        template<Color US>
+        static constexpr int BITBOARD_FWD_DBL_DIR = (US == WHITE) ? 16 : -16;
+        template<Color US>
+        static constexpr int BITBOARD_CAPTURE_LEFT_DIR = (US == WHITE) ? 7 : -7;
+        template<Color US>
+        static constexpr int BITBOARD_CAPTURE_RIGHT_DIR = (US == WHITE) ? 9 : -9;
+
         static board::BitBoard bishopMask(const Square sq) {
             i8 r, f;
 
@@ -420,83 +429,145 @@ namespace sagittar {
             return ATTACK_TABLE_KING[sq] & occupancy;
         }
 
+        template<Color US, MovegenType T>
         static void generatePseudolegalMovesPawn(containers::ArrayList<move::Move>* moves,
-                                                 const board::Board&                board,
-                                                 const MovegenType                  type) {
-            const Color     active_color   = board.getActiveColor();
-            const Square    ep_target      = board.getEnpassantTarget();
-            const Rank      promotion_rank = promotionRankDestOf(active_color);
-            const Piece     pawn           = pieceCreate(PieceType::PAWN, active_color);
-            board::BitBoard bb             = board.getBitboard(pawn);
+                                                 const board::Board&                board) {
+            constexpr Color           them = colorFlip(US);
+            constexpr board::BitBoard promo_dest =
+              (US == Color::WHITE) ? board::MASK_RANK_8 : board::MASK_RANK_1;
+            constexpr board::BitBoard not_promo_dest = ~promo_dest;
+            constexpr board::BitBoard ep_target_rank =
+              (US == Color::WHITE) ? board::MASK_RANK_6 : board::MASK_RANK_3;
+
+            const board::BitBoard pawns   = board.getBitboard(PieceType::PAWN, US);
+            const board::BitBoard enemies = board.getBitboard(board::bitboardColorSlot(them));
+            const board::BitBoard empty   = board.getBitboard(Piece::NO_PIECE);
+
+            board::BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
+
+            if constexpr (US == Color::WHITE)
+            {
+                pawns_fwd = board::north(pawns);
+                sgl_push  = pawns_fwd & empty & not_promo_dest;
+                dbl_push  = board::north(sgl_push) & board::MASK_RANK_4 & empty;
+                fwd_l     = board::northWest(pawns);
+                fwd_r     = board::northEast(pawns);
+            }
+            else
+            {
+                pawns_fwd = board::south(pawns);
+                sgl_push  = pawns_fwd & empty & not_promo_dest;
+                dbl_push  = board::south(sgl_push) & board::MASK_RANK_5 & empty;
+                fwd_l     = board::southEast(pawns);
+                fwd_r     = board::southWest(pawns);
+            }
+
+            const board::BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
+            const board::BitBoard capture_l = fwd_l & enemies_not_on_promotion_dest;
+            const board::BitBoard capture_r = fwd_r & enemies_not_on_promotion_dest;
+            const board::BitBoard ep_target_bb =
+              (board.getEnpassantTarget() != Square::NO_SQ)
+                ? ((1ULL << board.getEnpassantTarget()) & ep_target_rank)
+                : 0ULL;
+            const board::BitBoard capture_ep_l              = fwd_l & ep_target_bb;
+            const board::BitBoard capture_ep_r              = fwd_r & ep_target_bb;
+            const board::BitBoard quite_promo               = pawns_fwd & promo_dest & empty;
+            const board::BitBoard enemies_on_promotion_dest = enemies & promo_dest;
+            const board::BitBoard capture_promo_l           = fwd_l & enemies_on_promotion_dest;
+            const board::BitBoard capture_promo_r           = fwd_r & enemies_on_promotion_dest;
+
+            board::BitBoard bb;
+            int             dir;
+
+            bb  = capture_promo_l;
+            dir = BITBOARD_CAPTURE_LEFT_DIR<US>;
             while (bb)
             {
-                const Square    from = static_cast<Square>(utils::bitScanForward(&bb));
-                board::BitBoard occupancy =
-                  board.getBitboard(board::bitboardColorSlot(colorFlip(active_color)));
-                if (ep_target != Square::NO_SQ)
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT);
+            }
+
+            bb  = capture_promo_r;
+            dir = BITBOARD_CAPTURE_RIGHT_DIR<US>;
+            while (bb)
+            {
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT);
+            }
+
+            dir = BITBOARD_CAPTURE_LEFT_DIR<US>;
+
+            bb = capture_l;
+            while (bb)
+            {
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE);
+            }
+
+            bb = capture_ep_l;
+            while (bb)
+            {
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_EP);
+            }
+
+            dir = BITBOARD_CAPTURE_RIGHT_DIR<US>;
+
+            bb = capture_r;
+            while (bb)
+            {
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE);
+            }
+
+            bb = capture_ep_r;
+            while (bb)
+            {
+                const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                const Square from = static_cast<Square>(to - dir);
+                moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_EP);
+            }
+
+            if constexpr (T == MovegenType::ALL)
+            {
+                dir = BITBOARD_FWD_DIR<US>;
+
+                bb = quite_promo;
+                while (bb)
                 {
-                    occupancy |= (1ULL << ep_target);
-                }
-                board::BitBoard attacks = getPawnAttacks(from, active_color, occupancy);
-                while (attacks)
-                {
-                    const Square to = static_cast<Square>(utils::bitScanForward(&attacks));
-                    if (sq2rank(to) == promotion_rank)
-                    {
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
-                        moves->emplace_back(from, to,
-                                            move::MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
-                        moves->emplace_back(from, to,
-                                            move::MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT);
-                    }
-                    else if (to == ep_target)
-                    {
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE_EP);
-                    }
-                    else
-                    {
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_CAPTURE);
-                    }
+                    const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
+                    moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_QUEEN);
+                    moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_ROOK);
+                    moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_BISHOP);
+                    moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_KNIGHT);
                 }
 
-                if (type == MovegenType::CAPTURES)
+                bb = sgl_push;
+                while (bb)
                 {
-                    continue;
+                    const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
+                    moves->emplace_back(from, to, move::MoveFlag::MOVE_QUIET);
                 }
-                attacks   = (active_color == Color::WHITE) ? board::north((1ULL << from))
-                                                           : board::south((1ULL << from));
-                occupancy = board.getBitboard(Piece::NO_PIECE);
-                attacks &= occupancy;
-                if (attacks)
+
+                bb  = dbl_push;
+                dir = BITBOARD_FWD_DBL_DIR<US>;
+                while (bb)
                 {
-                    const Square to = static_cast<Square>(utils::bitScanForward(&attacks));
-                    if (sq2rank(to) == promotion_rank)
-                    {
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_QUEEN);
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_ROOK);
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_BISHOP);
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_PROMOTION_KNIGHT);
-                    }
-                    else
-                    {
-                        moves->emplace_back(from, to, move::MoveFlag::MOVE_QUIET);
-                    }
-                }
-                // Pawn Double push
-                if (active_color == WHITE)
-                {
-                    attacks = board::north((1ULL << from)) & occupancy;
-                    attacks = board::north(attacks) & occupancy & board::MASK_RANK_4;
-                }
-                else
-                {
-                    attacks = board::south((1ULL << from)) & occupancy;
-                    attacks = board::south(attacks) & occupancy & board::MASK_RANK_5;
-                }
-                if (attacks)
-                {
-                    const Square to = static_cast<Square>(utils::bitScanForward(&attacks));
+                    const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
+                    const Square from = static_cast<Square>(to - dir);
                     moves->emplace_back(from, to, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
                 }
             }
@@ -660,20 +731,34 @@ namespace sagittar {
             // clang-format on
         }
 
+        template<MovegenType T>
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
-                                      const board::Board&                board,
-                                      const MovegenType                  type) {
-            generatePseudolegalMovesPawn(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::KNIGHT>(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::BISHOP>(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::ROOK>(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::QUEEN>(moves, board, type);
-            generatePseudolegalMovesPiece<PieceType::KING>(moves, board, type);
-            if (type == MovegenType::ALL)
+                                      const board::Board&                board) {
+            if (board.getActiveColor() == Color::WHITE)
+            {
+                generatePseudolegalMovesPawn<WHITE, T>(moves, board);
+            }
+            else
+            {
+                generatePseudolegalMovesPawn<BLACK, T>(moves, board);
+            }
+            generatePseudolegalMovesPiece<PieceType::KNIGHT>(moves, board, T);
+            generatePseudolegalMovesPiece<PieceType::BISHOP>(moves, board, T);
+            generatePseudolegalMovesPiece<PieceType::ROOK>(moves, board, T);
+            generatePseudolegalMovesPiece<PieceType::QUEEN>(moves, board, T);
+            generatePseudolegalMovesPiece<PieceType::KING>(moves, board, T);
+            if constexpr (T == MovegenType::ALL)
             {
                 generatePseudolegalMovesCastle(moves, board);
             }
         }
+
+        template void
+        generatePseudolegalMoves<MovegenType::ALL>(containers::ArrayList<move::Move>* moves,
+                                                   const board::Board&                board);
+        template void
+        generatePseudolegalMoves<MovegenType::CAPTURES>(containers::ArrayList<move::Move>* moves,
+                                                        const board::Board&                board);
 
     }
 

@@ -653,6 +653,10 @@ namespace sagittar {
 
         BitBoard Board::getBitboard(const u8 index) const { return bitboards[index]; }
 
+        BitBoard Board::getBitboard(const PieceType pt, const Color c) const {
+            return bitboards[pieceCreate(pt, c)];
+        }
+
         Piece Board::getPiece(const Square square) const { return pieces[square]; }
 
         u8 Board::getPieceCount(const Piece piece) const {

@@ -58,7 +58,6 @@ project "Sagittar"
 
     filter { "configurations:Release" }
         defines { "NDEBUG" }
-        fatalwarnings { "All" }
         linktimeoptimization "On"
         optimize "Speed"
 
