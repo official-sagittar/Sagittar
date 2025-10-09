@@ -276,14 +276,22 @@ namespace sagittar {
         void Board::setFullmoveNumber(const u8 n) { full_move_number = n; }
 
         DoMoveResult Board::doMoveComplete() {
-            const Piece     king = pieceCreate(PieceType::KING, active_color);
-            board::BitBoard bb   = bitboards[king];
-            const Square    sq   = static_cast<Square>(utils::bitScanForward(&bb));
-            const Color     them = colorFlip(active_color);
-            checkers             = movegen::getSquareAttackers(*this, sq, them);
+            const Color them = colorFlip(active_color);
 
-            const bool is_valid_move = (checkers == 0ULL) && isValid();
+            // Check if move does not leave our King in check and board is valid
+            Piece           king          = pieceCreate(PieceType::KING, active_color);
+            board::BitBoard bb            = bitboards[king];
+            Square          sq            = static_cast<Square>(utils::bitScanForward(&bb));
+            const BitBoard  checkers_us   = movegen::getSquareAttackers(*this, sq, them);
+            const bool      is_valid_move = (checkers_us == 0ULL) && isValid();
 
+            // Set checkers
+            king     = pieceCreate(PieceType::KING, them);
+            bb       = bitboards[king];
+            sq       = static_cast<Square>(utils::bitScanForward(&bb));
+            checkers = movegen::getSquareAttackers(*this, sq, active_color);
+
+            // Switch sides
             active_color = them;
             hash ^= ZOBRIST_SIDE;
 #ifdef DEBUG
