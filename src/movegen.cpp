@@ -558,7 +558,7 @@ namespace sagittar {
         static void generatePseudolegalMovesCastle(containers::ArrayList<move::Move>* moves,
                                                    const board::Board&                board) {
 
-            if (isInCheck(board))
+            if (board.isInCheck())
             {
                 return;
             }
@@ -574,7 +574,7 @@ namespace sagittar {
                         && board.getPiece(Square::F1) == Piece::NO_PIECE
                         && board.getPiece(Square::G1) == Piece::NO_PIECE
                         && board.getPiece(Square::H1) == Piece::WHITE_ROOK
-                        && !isSquareAttacked(board, Square::F1, Color::BLACK))
+                        && !getSquareAttackers(board, Square::F1, Color::BLACK))
                     {
                         moves->emplace_back(Square::E1, Square::G1,
                                             move::MoveFlag::MOVE_CASTLE_KING_SIDE);
@@ -587,7 +587,7 @@ namespace sagittar {
                         && board.getPiece(Square::C1) == Piece::NO_PIECE
                         && board.getPiece(Square::B1) == Piece::NO_PIECE
                         && board.getPiece(Square::A1) == Piece::WHITE_ROOK
-                        && !isSquareAttacked(board, Square::D1, Color::BLACK))
+                        && !getSquareAttackers(board, Square::D1, Color::BLACK))
                     {
                         moves->emplace_back(Square::E1, Square::C1,
                                             move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
@@ -602,7 +602,7 @@ namespace sagittar {
                         && board.getPiece(Square::F8) == Piece::NO_PIECE
                         && board.getPiece(Square::G8) == Piece::NO_PIECE
                         && board.getPiece(Square::H8) == Piece::BLACK_ROOK
-                        && !isSquareAttacked(board, Square::F8, Color::WHITE))
+                        && !getSquareAttackers(board, Square::F8, Color::WHITE))
                     {
                         moves->emplace_back(Square::E8, Square::G8,
                                             move::MoveFlag::MOVE_CASTLE_KING_SIDE);
@@ -615,7 +615,7 @@ namespace sagittar {
                         && board.getPiece(Square::C8) == Piece::NO_PIECE
                         && board.getPiece(Square::B8) == Piece::NO_PIECE
                         && board.getPiece(Square::A8) == Piece::BLACK_ROOK
-                        && !isSquareAttacked(board, Square::D8, Color::WHITE))
+                        && !getSquareAttackers(board, Square::D8, Color::WHITE))
                     {
                         moves->emplace_back(Square::E8, Square::C8,
                                             move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
@@ -641,7 +641,8 @@ namespace sagittar {
             attackFunctions.push_back(getKingAttacks);
         }
 
-        bool isSquareAttacked(const board::Board& board, const Square sq, const Color attacked_by) {
+        board::BitBoard
+        getSquareAttackers(const board::Board& board, const Square sq, const Color attacked_by) {
             const board::BitBoard occupied = ~(board.getBitboard(Piece::NO_PIECE));
             board::BitBoard       opPawns, opKnights, opRQ, opBQ, opKing;
             opPawns   = board.getBitboard(pieceCreate(PieceType::PAWN, attacked_by));
@@ -658,15 +659,6 @@ namespace sagittar {
                  | (ATTACK_TABLE_KING[sq] & opKing);
             // clang-format on
         }
-
-        bool isInCheck(const board::Board& board) {
-            const Piece     king        = pieceCreate(PieceType::KING, board.getActiveColor());
-            board::BitBoard bb          = board.getBitboard(king);
-            const Square    sq          = static_cast<Square>(utils::bitScanForward(&bb));
-            const Color     attacked_by = colorFlip(board.getActiveColor());
-            return isSquareAttacked(board, sq, attacked_by);
-        }
-
 
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
                                       const board::Board&                board,

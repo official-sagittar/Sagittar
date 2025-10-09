@@ -17,8 +17,8 @@ TEST_SUITE("Movegen") {
         std::string fen = "4k3/8/8/4p3/8/8/8/4K3 w - - 0 1";
         fen::parseFEN(&board, fen);
 
-        REQUIRE(movegen::isSquareAttacked(board, Square::D4, Color::BLACK));
-        REQUIRE(movegen::isSquareAttacked(board, Square::F4, Color::BLACK));
+        REQUIRE(movegen::getSquareAttackers(board, Square::D4, Color::BLACK));
+        REQUIRE(movegen::getSquareAttackers(board, Square::F4, Color::BLACK));
     }
 
     TEST_CASE("isInCheck") {

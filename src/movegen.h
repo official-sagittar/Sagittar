@@ -17,9 +17,8 @@ namespace sagittar {
 
         void initialize();
 
-        bool isSquareAttacked(const board::Board& board, const Square sq, const Color attacked_by);
-
-        bool isInCheck(const board::Board& board);
+        board::BitBoard
+        getSquareAttackers(const board::Board& board, const Square sq, const Color attacked_by);
 
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
                                       const board::Board&                board,

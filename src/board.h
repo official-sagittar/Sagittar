@@ -54,6 +54,7 @@ namespace sagittar {
             u8         half_move_clock;
             u8         full_move_number;
             u64        hash;
+            BitBoard   checkers;
 
             MoveHistoryEntry() :
                 move(move::Move()),
@@ -62,7 +63,8 @@ namespace sagittar {
                 enpassant_target(Square::NO_SQ),
                 half_move_clock(0),
                 full_move_number(0),
-                hash(0ULL) {}
+                hash(0ULL),
+                checkers(0ULL) {}
 
             MoveHistoryEntry(const move::Move move,
                              const Piece      captured,
@@ -70,20 +72,23 @@ namespace sagittar {
                              const Square     enpassant_target,
                              const u8         half_move_clock,
                              const u8         full_move_number,
-                             const u64        hash) :
+                             const u64        hash,
+                             const BitBoard   checkers) :
                 move(move),
                 captured(captured),
                 casteling_rights(casteling_rights),
                 enpassant_target(enpassant_target),
                 half_move_clock(half_move_clock),
                 full_move_number(full_move_number),
-                hash(hash) {}
+                hash(hash),
+                checkers(checkers) {}
         };
 
         class Board {
            private:
             BitBoard                                       bitboards[15];
             Piece                                          pieces[64];
+            BitBoard                                       checkers;
             Color                                          active_color;
             u8                                             casteling_rights;
             Square                                         enpassant_target;
@@ -117,6 +122,7 @@ namespace sagittar {
                                                      const Piece  captured     = Piece::NO_PIECE,
                                                      const bool   is_promotion = false,
                                                      const Piece  promoted     = Piece::NO_PIECE);
+            void                       setCheckers(const BitBoard bb);
             void                       setActiveColor(const Color);
             void                       addCastelingRights(const CastleFlag);
             void                       setEnpassantTarget(const Square);
@@ -137,6 +143,7 @@ namespace sagittar {
             u8                         getFullmoveNumber() const;
             u64                        getHash() const;
             bool                       isValid() const;
+            bool                       isInCheck() const;
             bool                       hasPositionRepeated() const;
             bool                       operator==(Board const& rhs) const;
             void                       display() const;
