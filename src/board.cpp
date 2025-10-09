@@ -62,6 +62,8 @@ namespace sagittar {
 
             bitboards[Piece::NO_PIECE] = 0xFFFFFFFFFFFFFFFF;
 
+            checkers = 0ULL;
+
             active_color     = Color::WHITE;
             casteling_rights = CastleFlag::NOCA;
             enpassant_target = Square::NO_SQ;
@@ -193,7 +195,6 @@ namespace sagittar {
 #ifdef DEBUG
                 assert(captured != Piece::NO_PIECE);
                 assert(pieceColorOf(piece) == colorFlip(pieceColorOf(captured)));
-                assert(pieceTypeOf(captured) != PieceType::KING);
 #endif
                 clearPiece(captured, to);
             }
@@ -252,7 +253,6 @@ namespace sagittar {
 #ifdef DEBUG
                 assert(captured != Piece::NO_PIECE);
                 assert(pieceColorOf(piece) == colorFlip(pieceColorOf(captured)));
-                assert(pieceTypeOf(captured) != PieceType::KING);
 #endif
                 setPiece(captured, to);
             }
@@ -262,6 +262,8 @@ namespace sagittar {
 #endif
             setPiece(piece, from);
         }
+
+        void Board::setCheckers(const BitBoard bb) { checkers = bb; }
 
         void Board::setActiveColor(const Color c) { active_color = c; }
 
@@ -274,8 +276,23 @@ namespace sagittar {
         void Board::setFullmoveNumber(const u8 n) { full_move_number = n; }
 
         DoMoveResult Board::doMoveComplete() {
-            const bool is_valid_move = !movegen::isInCheck(*this) && isValid();
-            active_color             = colorFlip(active_color);
+            const Color them = colorFlip(active_color);
+
+            // Check if move does not leave our King in check and board is valid
+            Piece           king          = pieceCreate(PieceType::KING, active_color);
+            board::BitBoard bb            = bitboards[king];
+            Square          sq            = static_cast<Square>(utils::bitScanForward(&bb));
+            const BitBoard  checkers_us   = movegen::getSquareAttackers(*this, sq, them);
+            const bool      is_valid_move = (checkers_us == 0ULL) && isValid();
+
+            // Set checkers
+            king     = pieceCreate(PieceType::KING, them);
+            bb       = bitboards[king];
+            sq       = static_cast<Square>(utils::bitScanForward(&bb));
+            checkers = movegen::getSquareAttackers(*this, sq, active_color);
+
+            // Switch sides
+            active_color = them;
             hash ^= ZOBRIST_SIDE;
 #ifdef DEBUG
             const u64 currhash = hash;
@@ -298,7 +315,7 @@ namespace sagittar {
             }
 
             history.emplace_back(move, captured, casteling_rights, enpassant_target,
-                                 half_move_clock, full_move_number, hash);
+                                 half_move_clock, full_move_number, hash, checkers);
 
             enpassant_target = Square::NO_SQ;
             half_move_clock++;
@@ -543,8 +560,9 @@ namespace sagittar {
             const move::Move nullmove;
 
             history.emplace_back(nullmove, Piece::NO_PIECE, casteling_rights, enpassant_target,
-                                 half_move_clock, full_move_number, hash);
+                                 half_move_clock, full_move_number, hash, checkers);
 
+            checkers         = 0ULL;
             enpassant_target = Square::NO_SQ;
             active_color     = colorFlip(active_color);
             hash ^= ZOBRIST_SIDE;
@@ -600,6 +618,7 @@ namespace sagittar {
             assert(colorFlip(active_color) == prev_active_color);
 #endif
 
+            checkers         = history_entry.checkers;
             active_color     = prev_active_color;
             casteling_rights = history_entry.casteling_rights;
             enpassant_target = history_entry.enpassant_target;
@@ -622,6 +641,7 @@ namespace sagittar {
             assert(colorFlip(active_color) == prev_active_color);
 #endif
 
+            checkers         = history_entry.checkers;
             active_color     = prev_active_color;
             casteling_rights = history_entry.casteling_rights;
             enpassant_target = history_entry.enpassant_target;
@@ -660,6 +680,8 @@ namespace sagittar {
                             && (!(bitboards[Piece::BLACK_PAWN] & MASK_RANK_8));
             return check;
         }
+
+        bool Board::isInCheck() const { return (checkers != 0ULL); }
 
         bool Board::hasPositionRepeated() const {
             for (u8 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)

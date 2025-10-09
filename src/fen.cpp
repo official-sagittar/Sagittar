@@ -1,5 +1,7 @@
 #include "fen.h"
+#include "movegen.h"
 #include "types.h"
+#include "utils.h"
 
 namespace sagittar {
 
@@ -133,6 +135,13 @@ namespace sagittar {
             {
                 board->setFullmoveNumber(std::stoi(segment));
             }
+
+            // Set checkers
+            const Piece     king = pieceCreate(PieceType::KING, board->getActiveColor());
+            board::BitBoard bb   = board->getBitboard(king);
+            const Square    sq   = static_cast<Square>(utils::bitScanForward(&bb));
+            const Color     them = colorFlip(board->getActiveColor());
+            board->setCheckers(movegen::getSquareAttackers(*board, sq, them));
 
             // Reset Hash
             board->resetHash();

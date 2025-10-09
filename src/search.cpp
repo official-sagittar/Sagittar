@@ -170,7 +170,7 @@ namespace sagittar {
                 return 0;
             }
 
-            const bool is_in_check = movegen::isInCheck(board);
+            const bool is_in_check = board.isInCheck();
 
             if (is_in_check)
             {
@@ -295,7 +295,7 @@ namespace sagittar {
 
                 const bool move_is_quite =
                   !(move::isCapture(move.getFlag()) || move::isPromotion(move.getFlag()));
-                const bool move_gives_check = movegen::isInCheck(board);
+                const bool move_gives_check = board.isInCheck();
 
                 // Move Loop Pruning
                 if (moves_searched > 0 && !is_critical_node && move_is_quite && !move_gives_check)
