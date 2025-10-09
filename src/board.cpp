@@ -195,7 +195,6 @@ namespace sagittar {
 #ifdef DEBUG
                 assert(captured != Piece::NO_PIECE);
                 assert(pieceColorOf(piece) == colorFlip(pieceColorOf(captured)));
-                assert(pieceTypeOf(captured) != PieceType::KING);
 #endif
                 clearPiece(captured, to);
             }
@@ -254,7 +253,6 @@ namespace sagittar {
 #ifdef DEBUG
                 assert(captured != Piece::NO_PIECE);
                 assert(pieceColorOf(piece) == colorFlip(pieceColorOf(captured)));
-                assert(pieceTypeOf(captured) != PieceType::KING);
 #endif
                 setPiece(captured, to);
             }

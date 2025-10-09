@@ -27,7 +27,7 @@ TEST_SUITE("Movegen") {
         std::string fen = "4k3/8/8/8/8/8/3p4/4K3 w - - 0 1";
         fen::parseFEN(&board, fen);
 
-        REQUIRE(movegen::isInCheck(board));
+        REQUIRE(board.isInCheck());
     }
 
     TEST_CASE("generatePseudolegalMoves") {
