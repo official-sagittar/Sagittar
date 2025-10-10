@@ -11,10 +11,14 @@ namespace sagittar {
 
         using BitBoard = u64;
 
-        constexpr BitBoard MASK_RANK_1      = 0x00000000000000FF;
-        constexpr BitBoard MASK_RANK_4      = 0x00000000FF000000;
-        constexpr BitBoard MASK_RANK_5      = 0x000000FF00000000;
-        constexpr BitBoard MASK_RANK_8      = 0xFF00000000000000;
+        constexpr BitBoard MASK_RANK_1      = 0xFF;
+        constexpr BitBoard MASK_RANK_2      = MASK_RANK_1 << (8 * 1);
+        constexpr BitBoard MASK_RANK_3      = MASK_RANK_1 << (8 * 2);
+        constexpr BitBoard MASK_RANK_4      = MASK_RANK_1 << (8 * 3);
+        constexpr BitBoard MASK_RANK_5      = MASK_RANK_1 << (8 * 4);
+        constexpr BitBoard MASK_RANK_6      = MASK_RANK_1 << (8 * 5);
+        constexpr BitBoard MASK_RANK_7      = MASK_RANK_1 << (8 * 6);
+        constexpr BitBoard MASK_RANK_8      = MASK_RANK_1 << (8 * 7);
         constexpr BitBoard MASK_NOT_A_FILE  = 0xFEFEFEFEFEFEFEFE;
         constexpr BitBoard MASK_NOT_H_FILE  = 0x7F7F7F7F7F7F7F7F;
         constexpr BitBoard MASK_NOT_AB_FILE = 0xFCFCFCFCFCFCFCFC;
@@ -134,6 +138,7 @@ namespace sagittar {
             void                       undoMove();
             void                       undoNullMove();
             BitBoard                   getBitboard(const u8 index) const;
+            BitBoard                   getBitboard(const PieceType, const Color) const;
             Piece                      getPiece(const Square) const;
             u8                         getPieceCount(const Piece) const;
             Color                      getActiveColor() const;

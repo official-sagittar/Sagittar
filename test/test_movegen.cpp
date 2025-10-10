@@ -35,7 +35,7 @@ TEST_SUITE("Movegen") {
         board.setStartpos();
 
         containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
+        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
 
         CHECK(moves.size() == 20);
     }

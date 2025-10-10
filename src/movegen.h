@@ -20,9 +20,9 @@ namespace sagittar {
         board::BitBoard
         getSquareAttackers(const board::Board& board, const Square sq, const Color attacked_by);
 
+        template<MovegenType T>
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
-                                      const board::Board&                board,
-                                      const MovegenType                  type);
+                                      const board::Board&                board);
 
     }
 

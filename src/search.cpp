@@ -272,7 +272,7 @@ namespace sagittar {
 
             // Generate pseudolegal mooves
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::ALL);
+            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
 
             // Score moves
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
@@ -472,7 +472,7 @@ namespace sagittar {
             }
 
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves(&moves, board, movegen::MovegenType::CAPTURES);
+            movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
 
             tt::TTData       ttdata;
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
