@@ -149,7 +149,7 @@ namespace sagittar {
             u64                        getHash() const;
             bool                       isValid() const;
             bool                       isInCheck() const;
-            bool                       hasPositionRepeated() const;
+            bool                       hasPositionRepeated(std::span<u64> key_history) const;
             bool                       operator==(Board const& rhs) const;
             void                       display() const;
         };

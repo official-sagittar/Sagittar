@@ -537,49 +537,59 @@ TEST_SUITE("Board") {
     }
 
     TEST_CASE("Board::hasPositionRepeated") {
+        std::vector<u64> key_history;
+
         board::Board board;
         board.setStartpos();
 
         const u64 startpos_hash = board.getHash();
 
+        key_history.push_back(board.getHash());
         bool is_valid = (board.doMove("g1f3") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == false);
+        CHECK(board.hasPositionRepeated(key_history) == false);
         CHECK(board.getActiveColor() == Color::BLACK);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("g8f6") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == false);
+        CHECK(board.hasPositionRepeated(key_history) == false);
         CHECK(board.getActiveColor() == Color::WHITE);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("f3g1") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == false);
+        CHECK(board.hasPositionRepeated(key_history) == false);
         CHECK(board.getActiveColor() == Color::BLACK);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("f6g8") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == true);
+        CHECK(board.hasPositionRepeated(key_history) == true);
         CHECK(board.getActiveColor() == Color::WHITE);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("g1f3") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == true);
+        CHECK(board.hasPositionRepeated(key_history) == true);
         CHECK(board.getActiveColor() == Color::BLACK);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("g8f6") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == true);
+        CHECK(board.hasPositionRepeated(key_history) == true);
         CHECK(board.getActiveColor() == Color::WHITE);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("f3g1") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == true);
+        CHECK(board.hasPositionRepeated(key_history) == true);
         CHECK(board.getActiveColor() == Color::BLACK);
 
+        key_history.push_back(board.getHash());
         is_valid = (board.doMove("f6g8") == board::DoMoveResult::LEGAL);
         CHECK(is_valid);
-        CHECK(board.hasPositionRepeated() == true);
+        CHECK(board.hasPositionRepeated(key_history) == true);
         CHECK(board.getActiveColor() == Color::WHITE);
 
         CHECK(board.getHash() == startpos_hash);

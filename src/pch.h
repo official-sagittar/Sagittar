@@ -9,6 +9,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <span>
 #include <sstream>
 #include <string>
 #include <vector>

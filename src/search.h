@@ -39,11 +39,22 @@ namespace sagittar {
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
 
+            struct ThreadData {
+                std::vector<u64> key_history;
+
+                ThreadData();
+                board::DoMoveResult doMove(board::Board& board, const move::Move move);
+                void                doNullMove(board::Board& board);
+                void                undoMove(board::Board& board);
+                void                undoNullMove(board::Board& board);
+            };
+
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
             SearchResult
             searchIteratively(board::Board&                            board,
+                              ThreadData&                              thread,
                               const SearchInfo&                        info,
                               std::function<void(const SearchResult&)> searchProgressReportHandler,
                               std::function<void(const SearchResult&)> searchCompleteReportHander);
@@ -54,6 +65,7 @@ namespace sagittar {
                          Score             alpha,
                          Score             beta,
                          const i32         ply,
+                         ThreadData&       thread,
                          const SearchInfo& info,
                          SearchResult*     result,
                          const bool        do_null);
@@ -62,6 +74,7 @@ namespace sagittar {
                                    Score             alpha,
                                    Score             beta,
                                    const i32         ply,
+                                   ThreadData&       thread,
                                    const SearchInfo& info,
                                    SearchResult*     result);
 
@@ -76,11 +89,13 @@ namespace sagittar {
 
             SearchResult
             startSearch(board::Board&                            board,
+                        std::span<u64>                           key_history,
                         SearchInfo                               info,
                         std::function<void(const SearchResult&)> searchProgressReportHandler,
                         std::function<void(const SearchResult&)> searchCompleteReportHander);
 
-            SearchResult startSearch(board::Board& board, SearchInfo info);
+            SearchResult
+            startSearch(board::Board& board, std::span<u64> key_history, SearchInfo info);
 
             void stopSearch();
         };

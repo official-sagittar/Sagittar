@@ -687,10 +687,10 @@ namespace sagittar {
 
         bool Board::isInCheck() const { return (checkers != 0ULL); }
 
-        bool Board::hasPositionRepeated() const {
+        bool Board::hasPositionRepeated(std::span<u64> key_history) const {
             for (u8 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
             {
-                if (hash == history.peek(i).hash)
+                if (hash == key_history[i])
                 {
                     return true;
                 }

@@ -28,6 +28,33 @@ namespace sagittar {
             }
         }
 
+        Searcher::ThreadData::ThreadData() {
+            key_history.reserve(1024);
+            key_history.shrink_to_fit();
+            key_history.clear();
+        }
+
+        board::DoMoveResult Searcher::ThreadData::doMove(board::Board&    board,
+                                                         const move::Move move) {
+            key_history.push_back(board.getHash());
+            return board.doMove(move);
+        }
+
+        void Searcher::ThreadData::doNullMove(board::Board& board) {
+            key_history.push_back(board.getHash());
+            board.doNullMove();
+        }
+
+        void Searcher::ThreadData::undoMove(board::Board& board) {
+            key_history.pop_back();
+            board.undoMove();
+        }
+
+        void Searcher::ThreadData::undoNullMove(board::Board& board) {
+            key_history.pop_back();
+            board.undoNullMove();
+        }
+
         /*
         * Searcher
         */
@@ -47,18 +74,24 @@ namespace sagittar {
 
         SearchResult
         Searcher::startSearch(board::Board&                            board,
+                              std::span<u64>                           key_history,
                               SearchInfo                               info,
                               std::function<void(const SearchResult&)> searchProgressReportHandler,
                               std::function<void(const SearchResult&)> searchCompleteReportHander) {
             pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
             timeman::setSearchHardBoundTime(&info, board);
-            return searchIteratively(board, info, searchProgressReportHandler,
+
+            ThreadData thread{};
+            std::ranges::copy(key_history, std::back_inserter(thread.key_history));
+
+            return searchIteratively(board, thread, info, searchProgressReportHandler,
                                      searchCompleteReportHander);
         }
 
-        SearchResult Searcher::startSearch(board::Board& board, SearchInfo info) {
-            return startSearch(board, info, [](auto&) {}, [](auto&) {});
+        SearchResult
+        Searcher::startSearch(board::Board& board, std::span<u64> key_history, SearchInfo info) {
+            return startSearch(board, key_history, info, [](auto&) {}, [](auto&) {});
         }
 
         void Searcher::stopSearch() { stop.store(true, std::memory_order_relaxed); }
@@ -72,6 +105,7 @@ namespace sagittar {
 
         SearchResult Searcher::searchIteratively(
           board::Board&                            board,
+          ThreadData&                              thread,
           const SearchInfo&                        info,
           std::function<void(const SearchResult&)> searchProgressReportHandler,
           std::function<void(const SearchResult&)> searchCompleteReportHander) {
@@ -85,8 +119,8 @@ namespace sagittar {
                 SearchResult result{};
 
                 const u64 starttime = utils::currtimeInMilliseconds();
-                Score     score =
-                  search<NodeType::PV>(board, currdepth, alpha, beta, 0, info, &result, true);
+                Score score = search<NodeType::PV>(board, currdepth, alpha, beta, 0, thread, info,
+                                                   &result, true);
                 const u64 time = utils::currtimeInMilliseconds() - starttime;
 
                 if (stop.load(std::memory_order_relaxed))
@@ -147,6 +181,7 @@ namespace sagittar {
                                Score             alpha,
                                Score             beta,
                                const i32         ply,
+                               ThreadData&       thread,
                                const SearchInfo& info,
                                SearchResult*     result,
                                const bool        do_null) {
@@ -165,7 +200,8 @@ namespace sagittar {
             }
 
             if (ply > 0
-                && ((do_null && board.hasPositionRepeated()) || (board.getHalfmoveClock() >= 100)))
+                && ((do_null && board.hasPositionRepeated(thread.key_history))
+                    || (board.getHalfmoveClock() >= 100)))
             {
                 return 0;
             }
@@ -179,7 +215,7 @@ namespace sagittar {
 
             if (depth <= 0)
             {
-                return quiescencesearch(board, alpha, beta, ply, info, result);
+                return quiescencesearch(board, alpha, beta, ply, thread, info, result);
             }
 
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
@@ -234,10 +270,10 @@ namespace sagittar {
 #ifdef DEBUG
                     const u64 hash = board.getHash();
 #endif
-                    board.doNullMove();
+                    thread.doNullMove(board);
                     const Score score = -search<NodeType::NON_PV>(
-                      board, depth - r, -beta, -beta + 1, ply, info, result, false);
-                    board.undoNullMove();
+                      board, depth - r, -beta, -beta + 1, ply, thread, info, result, false);
+                    thread.undoNullMove(board);
 #ifdef DEBUG
                     assert(hash == board.getHash());
 #endif
@@ -284,10 +320,10 @@ namespace sagittar {
                 const move::Move move            = moves.at(i);
                 const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
 
-                const board::DoMoveResult do_move_result = board.doMove(move);
+                const board::DoMoveResult do_move_result = thread.doMove(board, move);
                 if (do_move_result == board::DoMoveResult::ILLEGAL)
                 {
-                    board.undoMove();
+                    thread.undoMove(board);
                     continue;
                 }
 
@@ -303,7 +339,7 @@ namespace sagittar {
                     // Futility Pruning
                     if (do_futility_pruning)
                     {
-                        board.undoMove();
+                        thread.undoMove(board);
                         continue;
                     }
 
@@ -314,7 +350,7 @@ namespace sagittar {
                           moves.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
                         if (moves_searched >= LMP_MOVE_CUTOFF)
                         {
-                            board.undoMove();
+                            thread.undoMove(board);
                             continue;
                         }
                     }
@@ -327,8 +363,8 @@ namespace sagittar {
                 // PVS + LMR
                 if (moves_searched == 0)
                 {
-                    score = -search<nodeType>(board, depth - 1, -beta, -alpha, ply + 1, info,
-                                              result, do_null);
+                    score = -search<nodeType>(board, depth - 1, -beta, -alpha, ply + 1, thread,
+                                              info, result, do_null);
                 }
                 else
                 {
@@ -355,7 +391,7 @@ namespace sagittar {
                                                             [(int) depth];
                         }
                         score = -search<NodeType::NON_PV>(board, depth - r, -alpha - 1, -alpha,
-                                                          ply + 1, info, result, do_null);
+                                                          ply + 1, thread, info, result, do_null);
                     }
                     else
                     {
@@ -365,19 +401,19 @@ namespace sagittar {
                     if (score > alpha)
                     {
                         score = -search<NodeType::NON_PV>(board, depth - 1, -alpha - 1, -alpha,
-                                                          ply + 1, info, result, do_null);
+                                                          ply + 1, thread, info, result, do_null);
                         if (score > alpha && score < beta)
                         {
                             // re-search
                             score = -search<NodeType::PV>(board, depth - 1, -beta, -alpha, ply + 1,
-                                                          info, result, do_null);
+                                                          thread, info, result, do_null);
                         }
                     }
                 }
 
                 moves_searched++;
 
-                board.undoMove();
+                thread.undoMove(board);
 
                 if (stop.load(std::memory_order_relaxed))
                 {
@@ -445,6 +481,7 @@ namespace sagittar {
                                          Score             alpha,
                                          Score             beta,
                                          const i32         ply,
+                                         ThreadData&       thread,
                                          const SearchInfo& info,
                                          SearchResult*     result) {
             if ((result->nodes & 2047) == 0)
@@ -485,19 +522,20 @@ namespace sagittar {
                 sortMoves(&moves, i);
                 const move::Move move = moves.at(i);
 
-                const board::DoMoveResult do_move_result = board.doMove(move);
+                const board::DoMoveResult do_move_result = thread.doMove(board, move);
 
                 if (do_move_result == board::DoMoveResult::ILLEGAL)
                 {
-                    board.undoMove();
+                    thread.undoMove(board);
                     continue;
                 }
 
                 result->nodes++;
 
-                const Score score = -quiescencesearch(board, -beta, -alpha, ply + 1, info, result);
+                const Score score =
+                  -quiescencesearch(board, -beta, -alpha, ply + 1, thread, info, result);
 
-                board.undoMove();
+                thread.undoMove(board);
 
                 if (stop.load(std::memory_order_relaxed))
                 {

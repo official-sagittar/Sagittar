@@ -12,6 +12,9 @@ namespace sagittar {
         board::Board::initialize();
         eval::initialize();
         params::init();
+        key_history.reserve(1024);
+        key_history.shrink_to_fit();
+        key_history.clear();
     }
 
     Engine::~Engine() {}
@@ -21,9 +24,17 @@ namespace sagittar {
     void Engine::reset() {
         board.reset();
         searcher.reset();
+        key_history.reserve(1024);
+        key_history.shrink_to_fit();
+        key_history.clear();
     }
 
-    void Engine::resetForSearch() { searcher.resetForSearch(); }
+    void Engine::resetForSearch() {
+        searcher.resetForSearch();
+        key_history.reserve(1024);
+        key_history.shrink_to_fit();
+        key_history.clear();
+    }
 
     void Engine::setTranspositionTableSize(const std::size_t size) {
         searcher.setTranspositionTableSize(size);
@@ -35,19 +46,43 @@ namespace sagittar {
 
     std::string Engine::getPositionAsFEN() { return fen::toFEN(board); }
 
-    board::DoMoveResult Engine::doMove(const std::string& move) { return board.doMove(move); }
+    board::DoMoveResult Engine::doMove(const std::string& move) {
+        const auto curr_key = board.getHash();
+        const auto result   = board.doMove(move);
+        if (result == board::DoMoveResult::LEGAL)
+        {
+            key_history.push_back(curr_key);
+        }
+        else if (result == board::DoMoveResult::ILLEGAL)
+        {
+            board.undoMove();
+        }
+        return result;
+    }
 
-    board::DoMoveResult Engine::doMove(const move::Move& move) { return board.doMove(move); }
+    board::DoMoveResult Engine::doMove(const move::Move& move) {
+        const auto curr_key = board.getHash();
+        const auto result   = board.doMove(move);
+        if (result == board::DoMoveResult::LEGAL)
+        {
+            key_history.push_back(curr_key);
+        }
+        else if (result == board::DoMoveResult::ILLEGAL)
+        {
+            board.undoMove();
+        }
+        return result;
+    }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
-        return searcher.startSearch(board, info);
+        return searcher.startSearch(board, key_history, info);
     }
 
     search::SearchResult
     Engine::search(search::SearchInfo                               info,
                    std::function<void(const search::SearchResult&)> searchProgressReportHandler,
                    std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-        return searcher.startSearch(board, info, searchProgressReportHandler,
+        return searcher.startSearch(board, key_history, info, searchProgressReportHandler,
                                     searchCompleteReportHander);
     }
 
