@@ -98,7 +98,7 @@ namespace sagittar {
             Square                                         enpassant_target;
             u8                                             half_move_clock;
             u8                                             full_move_number;
-            i8                                             ply_count;
+            i32                                            ply_count;
             u64                                            hash;
             containers::ArrayStack<MoveHistoryEntry, 2048> history;
 
