@@ -47,29 +47,25 @@ namespace sagittar {
     std::string Engine::getPositionAsFEN() { return fen::toFEN(board); }
 
     board::DoMoveResult Engine::doMove(const std::string& move) {
-        const auto curr_key = board.getHash();
-        const auto result   = board.doMove(move);
+        const auto   curr_key   = board.getHash();
+        board::Board board_copy = board;
+        const auto   result     = board_copy.doMove(move);
         if (result == board::DoMoveResult::LEGAL)
         {
             key_history.push_back(curr_key);
-        }
-        else if (result == board::DoMoveResult::ILLEGAL)
-        {
-            board.undoMove();
+            board = board_copy;
         }
         return result;
     }
 
     board::DoMoveResult Engine::doMove(const move::Move& move) {
-        const auto curr_key = board.getHash();
-        const auto result   = board.doMove(move);
+        const auto   curr_key   = board.getHash();
+        board::Board board_copy = board;
+        const auto   result     = board_copy.doMove(move);
         if (result == board::DoMoveResult::LEGAL)
         {
             key_history.push_back(curr_key);
-        }
-        else if (result == board::DoMoveResult::ILLEGAL)
-        {
-            board.undoMove();
+            board = board_copy;
         }
         return result;
     }
