@@ -314,7 +314,8 @@ namespace sagittar {
             {
                 sortMoves(&moves, i);
                 const move::Move move            = moves.at(i);
-                const PieceType  move_piece_type = pieceTypeOf(board.getPiece(move.getFrom()));
+                const Piece      move_piece      = board.getPiece(move.getFrom());
+                const PieceType  move_piece_type = pieceTypeOf(move_piece);
 
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
@@ -439,8 +440,7 @@ namespace sagittar {
                                 data.killer_moves[0][ply] = move;
 
                                 // History Heuristic
-                                const Piece piece = board_copy.getPiece(move.getFrom());
-                                data.history[piece][move.getTo()] += depth;
+                                data.history[move_piece][move.getTo()] += depth;
                             }
                             ttflag = tt::TTFlag::LOWERBOUND;
                             break;
