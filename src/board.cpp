@@ -688,7 +688,7 @@ namespace sagittar {
         bool Board::isInCheck() const { return (checkers != 0ULL); }
 
         bool Board::hasPositionRepeated() const {
-            for (u8 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
+            for (i32 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
             {
                 if (hash == history.peek(i).hash)
                 {
