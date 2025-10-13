@@ -253,8 +253,8 @@ namespace sagittar {
                 }
                 else if (input.rfind("position", 0) == 0)
                 {
-                    handlePosition(input);
                     engine.resetForSearch();
+                    handlePosition(input);
                 }
                 else if (input.rfind("go", 0) == 0)
                 {

@@ -50,64 +50,30 @@ namespace sagittar {
             LEGAL     // Move is correct and move is legal
         };
 
-        struct MoveHistoryEntry {
-            move::Move move;
-            Piece      captured;
-            u8         casteling_rights;
-            Square     enpassant_target;
-            u8         half_move_clock;
-            u8         full_move_number;
-            u64        hash;
-            BitBoard   checkers;
-
-            MoveHistoryEntry() :
-                move(move::Move()),
-                captured(Piece::NO_PIECE),
-                casteling_rights(CastleFlag::NOCA),
-                enpassant_target(Square::NO_SQ),
-                half_move_clock(0),
-                full_move_number(0),
-                hash(0ULL),
-                checkers(0ULL) {}
-
-            MoveHistoryEntry(const move::Move move,
-                             const Piece      captured,
-                             const u8         casteling_rights,
-                             const Square     enpassant_target,
-                             const u8         half_move_clock,
-                             const u8         full_move_number,
-                             const u64        hash,
-                             const BitBoard   checkers) :
-                move(move),
-                captured(captured),
-                casteling_rights(casteling_rights),
-                enpassant_target(enpassant_target),
-                half_move_clock(half_move_clock),
-                full_move_number(full_move_number),
-                hash(hash),
-                checkers(checkers) {}
-        };
-
         class Board {
            private:
-            BitBoard                                       bitboards[15];
-            Piece                                          pieces[64];
-            BitBoard                                       checkers;
-            Color                                          active_color;
-            u8                                             casteling_rights;
-            Square                                         enpassant_target;
-            u8                                             half_move_clock;
-            u8                                             full_move_number;
-            i32                                            ply_count;
-            u64                                            hash;
-            containers::ArrayStack<MoveHistoryEntry, 2048> history;
+            std::array<BitBoard, 15> bitboards;
+            std::array<Piece, 64>    pieces;
+            BitBoard                 checkers;
+            Color                    active_color;
+            u8                       casteling_rights;
+            Square                   enpassant_target;
+            u8                       half_move_clock;
+            u8                       full_move_number;
+            i32                      ply_count;
+            u64                      hash;
 
             DoMoveResult doMoveComplete();
 
            public:
             static void initialize();
+
             Board();
             ~Board();
+            Board(const Board&)            = default;
+            Board& operator=(const Board&) = default;
+            bool   operator==(Board const& rhs) const;
+
             void                       reset();
             void                       resetHash();
             void                       setPiece(const Piece, const Square);
@@ -135,8 +101,6 @@ namespace sagittar {
             [[nodiscard]] DoMoveResult doMove(const move::Move) noexcept;
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
             void                       doNullMove();
-            void                       undoMove();
-            void                       undoNullMove();
             BitBoard                   getBitboard(const u8 index) const;
             BitBoard                   getBitboard(const PieceType, const Color) const;
             Piece                      getPiece(const Square) const;
@@ -149,8 +113,7 @@ namespace sagittar {
             u64                        getHash() const;
             bool                       isValid() const;
             bool                       isInCheck() const;
-            bool                       hasPositionRepeated() const;
-            bool                       operator==(Board const& rhs) const;
+            bool                       hasPositionRepeated(std::span<u64> key_history) const;
             void                       display() const;
         };
 

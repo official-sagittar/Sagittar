@@ -39,31 +39,44 @@ namespace sagittar {
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
 
+            struct ThreadData {
+                std::vector<u64> key_history;
+
+                ThreadData();
+                board::DoMoveResult doMove(board::Board& board, const move::Move move);
+                void                doNullMove(board::Board& board);
+                void                undoMove();
+                void                undoNullMove();
+            };
+
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
             SearchResult
-            searchIteratively(board::Board&                            board,
+            searchIteratively(const board::Board&                      board,
+                              ThreadData&                              thread,
                               const SearchInfo&                        info,
                               std::function<void(const SearchResult&)> searchProgressReportHandler,
                               std::function<void(const SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
-            Score search(board::Board&     board,
-                         Depth             depth,
-                         Score             alpha,
-                         Score             beta,
-                         const i32         ply,
-                         const SearchInfo& info,
-                         SearchResult*     result,
-                         const bool        do_null);
+            Score search(const board::Board& board,
+                         Depth               depth,
+                         Score               alpha,
+                         Score               beta,
+                         const i32           ply,
+                         ThreadData&         thread,
+                         const SearchInfo&   info,
+                         SearchResult*       result,
+                         const bool          do_null);
 
-            Score quiescencesearch(board::Board&     board,
-                                   Score             alpha,
-                                   Score             beta,
-                                   const i32         ply,
-                                   const SearchInfo& info,
-                                   SearchResult*     result);
+            Score quiescencesearch(const board::Board& board,
+                                   Score               alpha,
+                                   Score               beta,
+                                   const i32           ply,
+                                   ThreadData&         thread,
+                                   const SearchInfo&   info,
+                                   SearchResult*       result);
 
            public:
             Searcher();
@@ -75,12 +88,14 @@ namespace sagittar {
             void setTranspositionTableSize(const std::size_t);
 
             SearchResult
-            startSearch(board::Board&                            board,
+            startSearch(const board::Board&                      board,
+                        std::span<u64>                           key_history,
                         SearchInfo                               info,
                         std::function<void(const SearchResult&)> searchProgressReportHandler,
                         std::function<void(const SearchResult&)> searchCompleteReportHander);
 
-            SearchResult startSearch(board::Board& board, SearchInfo info);
+            SearchResult
+            startSearch(const board::Board& board, std::span<u64> key_history, SearchInfo info);
 
             void stopSearch();
         };

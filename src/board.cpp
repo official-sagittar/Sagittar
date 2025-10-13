@@ -71,7 +71,6 @@ namespace sagittar {
             full_move_number = 0;
             ply_count        = 0;
             hash             = 0ULL;
-            history          = {};
         }
 
         void Board::resetHash() {
@@ -314,9 +313,6 @@ namespace sagittar {
                 return DoMoveResult::INVALID;
             }
 
-            history.emplace_back(move, captured, casteling_rights, enpassant_target,
-                                 half_move_clock, full_move_number, hash, checkers);
-
             enpassant_target = Square::NO_SQ;
             half_move_clock++;
             if (active_color == Color::BLACK)
@@ -557,98 +553,10 @@ namespace sagittar {
         }
 
         void Board::doNullMove() {
-            const move::Move nullmove;
-
-            history.emplace_back(nullmove, Piece::NO_PIECE, casteling_rights, enpassant_target,
-                                 half_move_clock, full_move_number, hash, checkers);
-
             checkers         = 0ULL;
             enpassant_target = Square::NO_SQ;
             active_color     = colorFlip(active_color);
             hash ^= ZOBRIST_SIDE;
-        }
-
-        void Board::undoMove() {
-            const MoveHistoryEntry& history_entry = history.top();
-
-            const move::Move     move              = history_entry.move;
-            const Square         from              = move.getFrom();
-            const Square         to                = move.getTo();
-            const move::MoveFlag flag              = move.getFlag();
-            Piece                piece             = pieces[to];
-            const Piece          captured          = history_entry.captured;
-            const Color          prev_active_color = colorFlip(active_color);
-
-            if (flag == move::MoveFlag::MOVE_CASTLE_KING_SIDE)
-            {
-                undoMovePiece(piece, from, to);
-                const Piece rook = pieceCreate(PieceType::ROOK, prev_active_color);
-                undoMovePiece(rook, static_cast<Square>(to + 1), static_cast<Square>(to - 1));
-            }
-            else if (flag == move::MoveFlag::MOVE_CASTLE_QUEEN_SIDE)
-            {
-                undoMovePiece(piece, from, to);
-                const Piece rook = pieceCreate(PieceType::ROOK, prev_active_color);
-                undoMovePiece(rook, static_cast<Square>(to - 2), static_cast<Square>(to + 1));
-            }
-            else if (flag == move::MoveFlag::MOVE_CAPTURE_EP)
-            {
-                undoMovePiece(piece, from, to);
-                const i8     stm         = 1 - (2 * active_color);  // WHITE = 1; BLACK = -1
-                const Square captured_sq = static_cast<Square>(to + (8 * stm));
-                const Piece  captured    = pieceCreate(PieceType::PAWN, active_color);
-                setPiece(captured, captured_sq);
-            }
-            else
-            {
-                const Piece promoted = move::isPromotion(flag) ? pieces[to] : Piece::NO_PIECE;
-                piece =
-                  move::isPromotion(flag) ? pieceCreate(PieceType::PAWN, prev_active_color) : piece;
-                undoMovePiece(piece, from, to, move::isCapture(flag), captured,
-                              move::isPromotion(flag), promoted);
-            }
-
-            hash ^= ZOBRIST_CA[casteling_rights];
-            hash ^= ZOBRIST_CA[history_entry.casteling_rights];
-
-            hash ^= ZOBRIST_SIDE;
-
-#ifdef DEBUG
-            assert(hash == history_entry.hash);
-            assert(colorFlip(active_color) == prev_active_color);
-#endif
-
-            checkers         = history_entry.checkers;
-            active_color     = prev_active_color;
-            casteling_rights = history_entry.casteling_rights;
-            enpassant_target = history_entry.enpassant_target;
-            half_move_clock  = history_entry.half_move_clock;
-            full_move_number = history_entry.full_move_number;
-            ply_count--;
-
-            history.pop();
-        }
-
-        void Board::undoNullMove() {
-            const MoveHistoryEntry& history_entry = history.top();
-
-            const Color prev_active_color = colorFlip(active_color);
-
-            hash ^= ZOBRIST_SIDE;
-
-#ifdef DEBUG
-            assert(hash == history_entry.hash);
-            assert(colorFlip(active_color) == prev_active_color);
-#endif
-
-            checkers         = history_entry.checkers;
-            active_color     = prev_active_color;
-            casteling_rights = history_entry.casteling_rights;
-            enpassant_target = history_entry.enpassant_target;
-            half_move_clock  = history_entry.half_move_clock;
-            full_move_number = history_entry.full_move_number;
-
-            history.pop();
         }
 
         BitBoard Board::getBitboard(const u8 index) const { return bitboards[index]; }
@@ -687,10 +595,13 @@ namespace sagittar {
 
         bool Board::isInCheck() const { return (checkers != 0ULL); }
 
-        bool Board::hasPositionRepeated() const {
+        bool Board::hasPositionRepeated(std::span<u64> key_history) const {
+#ifdef DEBUG
+            assert(key_history.size() == static_cast<size_t>(ply_count));
+#endif
             for (i32 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
             {
-                if (hash == history.peek(i).hash)
+                if (hash == key_history[i])
                 {
                     return true;
                 }

@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "search.h"
 #include "searchtypes.h"
+#include "types.h"
 
 namespace sagittar {
 
@@ -14,6 +15,7 @@ namespace sagittar {
         std::string      version;
         board::Board     board;
         search::Searcher searcher;
+        std::vector<u64> key_history;
 
        public:
         Engine();
