@@ -114,8 +114,8 @@ namespace sagittar {
                 SearchResult result{};
 
                 const u64 starttime = utils::currtimeInMilliseconds();
-                Score score = search<NodeType::PV>(board, currdepth, alpha, beta, 0, thread, info,
-                                                   &result, true);
+                Score score = search<NodeType::ROOT>(board, currdepth, alpha, beta, 0, thread, info,
+                                                     &result, true);
                 const u64 time = utils::currtimeInMilliseconds() - starttime;
 
                 if (stop.load(std::memory_order_relaxed))
@@ -361,8 +361,16 @@ namespace sagittar {
                 // PVS + LMR
                 if (moves_searched == 0)
                 {
-                    score = -search<nodeType>(board_copy, depth - 1, -beta, -alpha, ply + 1, thread,
-                                              info, result, do_null);
+                    if constexpr (nodeType == NodeType::ROOT)
+                    {
+                        score = -search<NodeType::PV>(board_copy, depth - 1, -beta, -alpha, ply + 1,
+                                                      thread, info, result, do_null);
+                    }
+                    else
+                    {
+                        score = -search<nodeType>(board_copy, depth - 1, -beta, -alpha, ply + 1,
+                                                  thread, info, result, do_null);
+                    }
                 }
                 else
                 {
