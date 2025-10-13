@@ -599,7 +599,7 @@ namespace sagittar {
 #ifdef DEBUG
             assert(key_history.size() == static_cast<size_t>(ply_count));
 #endif
-            for (u8 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
+            for (i32 i = std::max(ply_count - half_move_clock, 0); i < ply_count - 1; ++i)
             {
                 if (hash == key_history[i])
                 {
