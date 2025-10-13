@@ -21,6 +21,7 @@ namespace sagittar {
 
         enum class NodeType {
             NON_PV,
+            ROOT,
             PV
         };
 
