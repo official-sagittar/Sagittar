@@ -56,7 +56,6 @@ namespace sagittar {
         Searcher::Searcher() { reset(); }
 
         void Searcher::reset() {
-            pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
             tt.clear();
             data.reset();
@@ -72,7 +71,6 @@ namespace sagittar {
                               SearchInfo                               info,
                               std::function<void(const SearchResult&)> searchProgressReportHandler,
                               std::function<void(const SearchResult&)> searchCompleteReportHander) {
-            pvmove = move::Move();
             stop.store(false, std::memory_order_relaxed);
             timeman::setSearchHardBoundTime(&info, board);
 
@@ -180,6 +178,11 @@ namespace sagittar {
                                const SearchInfo&   info,
                                SearchResult*       result,
                                const bool          do_null) {
+
+            constexpr bool is_root_node    = (nodeType == NodeType::ROOT);
+            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
+            const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
+
             if ((result->nodes & 2047) == 0)
             {
                 shouldStopSearchNow(info);
@@ -212,9 +215,6 @@ namespace sagittar {
             {
                 return quiescencesearch(board, alpha, beta, ply, thread, info, result);
             }
-
-            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
-            const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
             const bool is_critical_node = is_pv_node || is_in_check;
 
@@ -307,8 +307,10 @@ namespace sagittar {
             movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
 
             // Score moves
-            const move::Move ttmove = tthit ? ttdata.move : move::Move();
-            scoreMoves(&moves, board, pvmove, ttmove, data, ply);
+            const move::Move ttmove = is_root_node ? thread.pvmove
+                                    : tthit        ? ttdata.move
+                                                   : move::Move{};
+            scoreMoves(&moves, board, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {
@@ -437,7 +439,7 @@ namespace sagittar {
                         ttflag           = tt::TTFlag::EXACT;
                         if (ply == 0 && !stop.load(std::memory_order_relaxed))
                         {
-                            pvmove = move;
+                            thread.pvmove = move;
                         }
                         if (best_score >= beta)
                         {
@@ -475,7 +477,7 @@ namespace sagittar {
 
                 if (ply == 0)
                 {
-                    result->bestmove = pvmove;
+                    result->bestmove = thread.pvmove;
                 }
             }
 
@@ -520,7 +522,7 @@ namespace sagittar {
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            scoreMoves(&moves, board, pvmove, ttmove, data, ply);
+            scoreMoves(&moves, board, ttmove, data, ply);
 
             for (u8 i = 0; i < moves.size(); i++)
             {

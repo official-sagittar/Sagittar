@@ -35,13 +35,13 @@ namespace sagittar {
 
         class Searcher {
            private:
-            move::Move             pvmove;
             std::atomic_bool       stop;
             tt::TranspositionTable tt = tt::TranspositionTable(DEFAULT_TT_SIZE_MB);
             SearcherData           data;
 
             struct ThreadData {
                 std::vector<u64> key_history;
+                move::Move       pvmove{};
 
                 ThreadData();
                 board::DoMoveResult doMove(board::Board& board, const move::Move move);

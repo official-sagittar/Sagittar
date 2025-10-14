@@ -6,7 +6,6 @@ namespace sagittar {
 
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
-                        const move::Move&                  pvmove,
                         const move::Move&                  ttmove,
                         const SearcherData&                data,
                         const i32                          ply) {
@@ -14,11 +13,7 @@ namespace sagittar {
             {
                 const move::Move move = moves->at(i);
 
-                if (move == pvmove)
-                {
-                    moves->at(i).setScore(PVMOVE_SCORE);
-                }
-                else if (move == ttmove)
+                if (move == ttmove)
                 {
                     moves->at(i).setScore(TTMOVE_SCORE);
                 }

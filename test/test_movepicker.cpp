@@ -23,14 +23,13 @@ TEST_SUITE("Movepicker") {
         movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
-        const move::Move ttmove;
 
-        search::scoreMoves(&moves, board, pvmove, ttmove, data, 0);
+        search::scoreMoves(&moves, board, pvmove, data, 0);
         for (u8 i = 1; i < moves.size(); i++)
         {
             if (moves.at(i) == pvmove)
             {
-                REQUIRE(moves.at(i).getScore() == 40000);
+                REQUIRE(moves.at(i).getScore() == 30000);
             }
             else if (move::isCapture(moves.at(i).getFlag()))
             {
@@ -44,7 +43,7 @@ TEST_SUITE("Movepicker") {
 
         search::sortMoves(&moves, 0);
 
-        REQUIRE(moves.at(0).getScore() == 40000);
+        REQUIRE(moves.at(0).getScore() == 30000);
 
         for (u8 i = 1; i < moves.size(); i++)
         {
