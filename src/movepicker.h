@@ -45,7 +45,6 @@ namespace sagittar {
 
         void scoreMoves(containers::ArrayList<move::Move>* moves,
                         const board::Board&                board,
-                        const move::Move&                  pvmove,
                         const move::Move&                  ttmove,
                         const SearcherData&                data,
                         const i32                          ply);
