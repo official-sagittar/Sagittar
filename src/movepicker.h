@@ -35,7 +35,6 @@ namespace sagittar {
         constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
             return ((attacker - 1) * 6) + (victim - 1);
         }
-        constexpr u32 PVMOVE_SCORE        = 40000;
         constexpr u32 TTMOVE_SCORE        = 30000;
         constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
         constexpr u32 KILLER_0_SCORE      = 9000;
