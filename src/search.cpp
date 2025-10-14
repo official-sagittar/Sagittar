@@ -401,7 +401,7 @@ namespace sagittar {
                     }
                 }
 
-                if (is_pv_node && (moves_searched == 0 || score > alpha))
+                if (is_pv_node && ((moves_searched == 0) || ((score > alpha) && (score < beta))))
                 {
                     // PV child with Full-Window search for:
                     // 1. PV node && first move, OR
