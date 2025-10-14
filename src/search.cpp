@@ -360,52 +360,34 @@ namespace sagittar {
 
                 Score score = -INF;
 
-                // PVS + LMR
                 if (!is_pv_node || moves_searched > 0)
                 {
-                    if (moves_searched == 0)
+                    const bool can_reduce = (depth >= 3) && (moves_searched >= 4)
+                                         && (!is_critical_node) && (!move_gives_check)
+                                         && (move.getScore() != KILLER_0_SCORE)
+                                         && (move.getScore() != KILLER_1_SCORE);
+
+                    if (can_reduce)
                     {
-                        // NON_PV child with Full-Window search for:
-                        // 1. NON_PV node && first move
-                        score = -search<NodeType::NON_PV>(board_copy, depth - 1, -beta, -alpha,
+                        const u8 r =
+                          move_is_quite
+                            ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth]
+                            : params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                          [(int) depth];
+
+                        score = -search<NodeType::NON_PV>(board_copy, depth - r, -alpha - 1, -alpha,
                                                           ply + 1, thread, info, result, do_null);
                     }
-                    else
+
+                    if (!can_reduce || score > alpha)
                     {
-                        // Depth reduction factor
-                        u8 r = 1;
-
-                        // Late Move Reduction
-                        // clang-format off
-                        if (depth >= 3
-                            && moves_searched >= 4
-                            && !is_critical_node
-                            && !move_gives_check
-                            && move.getScore() != KILLER_0_SCORE
-                            && move.getScore() != KILLER_1_SCORE
-                        )
-                        // clang-format on
-                        {
-                            r = move_is_quite
-                                ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)]
-                                                           [(int) depth]
-                                : params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
-                                                              [(int) depth];
-                        }
-
-                        // NON_PV child with Zero-Window search for:
-                        // 1. NON_PV node && late moves (with possible LMR), OR
-                        // 2. PV node && late moves (with no LMR: is_critical_node == false; hence r = 1)
-                        score = -search<NodeType::NON_PV>(board_copy, depth - r, -alpha - 1, -alpha,
+                        score = -search<NodeType::NON_PV>(board_copy, depth - 1, -alpha - 1, -alpha,
                                                           ply + 1, thread, info, result, do_null);
                     }
                 }
 
-                if (is_pv_node && ((moves_searched == 0) || ((score > alpha) && (score < beta))))
+                if (is_pv_node && ((moves_searched == 0) || (score > alpha && score < beta)))
                 {
-                    // PV child with Full-Window search for:
-                    // 1. PV node && first move, OR
-                    // 2. PV node AND above block raises alpha
                     score = -search<NodeType::PV>(board_copy, depth - 1, -beta, -alpha, ply + 1,
                                                   thread, info, result, do_null);
                 }
