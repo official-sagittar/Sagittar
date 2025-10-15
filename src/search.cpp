@@ -480,10 +480,9 @@ namespace sagittar {
 
             const bool is_in_check = board.isInCheck();
 
-            Score stand_pat = -INF;
             if (!is_in_check)
             {
-                stand_pat = eval::evaluateBoard(board);
+                const Score stand_pat = eval::evaluateBoard(board);
                 if (stand_pat >= beta)
                 {
                     return beta;
@@ -520,8 +519,7 @@ namespace sagittar {
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
 
-                if ((do_move_result == board::DoMoveResult::ILLEGAL)
-                    || (is_in_check && board_copy.isInCheck()))
+                if (do_move_result == board::DoMoveResult::ILLEGAL)
                 {
                     thread.undoMove();
                     continue;
