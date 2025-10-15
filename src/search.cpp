@@ -360,63 +360,36 @@ namespace sagittar {
 
                 Score score = -INF;
 
-                // PVS + LMR
-                if (moves_searched == 0)
+                if (!is_pv_node || moves_searched > 0)
                 {
-                    if constexpr (nodeType == NodeType::ROOT)
+                    const bool can_reduce = (depth >= 3) && (moves_searched >= 4)
+                                         && (!is_critical_node) && (!move_gives_check)
+                                         && (move.getScore() != KILLER_0_SCORE)
+                                         && (move.getScore() != KILLER_1_SCORE);
+
+                    if (can_reduce)
                     {
-                        score = -search<NodeType::PV>(board_copy, depth - 1, -beta, -alpha, ply + 1,
-                                                      thread, info, result, do_null);
-                    }
-                    else
-                    {
-                        score = -search<nodeType>(board_copy, depth - 1, -beta, -alpha, ply + 1,
-                                                  thread, info, result, do_null);
-                    }
-                }
-                else
-                {
-                    // Late Move Reduction
-                    // clang-format off
-                    if (depth >= 3
-                        && moves_searched >= 4
-                        && !is_critical_node
-                        && !move_gives_check
-                        && move.getScore() != KILLER_0_SCORE
-                        && move.getScore() != KILLER_1_SCORE
-                    )
-                    // clang-format on
-                    {
-                        u8 r = 0;
-                        if (move_is_quite)
-                        {
-                            r =
-                              params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth];
-                        }
-                        else
-                        {
-                            r = params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
-                                                            [(int) depth];
-                        }
+                        const u8 r =
+                          move_is_quite
+                            ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth]
+                            : params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                          [(int) depth];
+
                         score = -search<NodeType::NON_PV>(board_copy, depth - r, -alpha - 1, -alpha,
                                                           ply + 1, thread, info, result, do_null);
                     }
-                    else
-                    {
-                        score = alpha + 1;
-                    }
 
-                    if (score > alpha)
+                    if (!can_reduce || score > alpha)
                     {
                         score = -search<NodeType::NON_PV>(board_copy, depth - 1, -alpha - 1, -alpha,
                                                           ply + 1, thread, info, result, do_null);
-                        if (score > alpha && score < beta)
-                        {
-                            // re-search
-                            score = -search<NodeType::PV>(board_copy, depth - 1, -beta, -alpha,
-                                                          ply + 1, thread, info, result, do_null);
-                        }
                     }
+                }
+
+                if (is_pv_node && ((moves_searched == 0) || (score > alpha && score < beta)))
+                {
+                    score = -search<NodeType::PV>(board_copy, depth - 1, -beta, -alpha, ply + 1,
+                                                  thread, info, result, do_null);
                 }
 
                 moves_searched++;
