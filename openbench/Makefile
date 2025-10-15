@@ -16,7 +16,7 @@ INC_DIR := -I$(SRC_DIR)
 
 EXE ?= Sagittar$(EXE_EXT)
 CXX ?= clang++
-CFLAGS := -MD -MP -DNDEBUG -DEXTERNAL_TUNE -I$(SRC_DIR) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
+CFLAGS := -MD -MP -DNDEBUG -I$(SRC_DIR) -m64 -flto -O3 -Wall -Wextra -std=c++20 -march=native
 LDFLAGS := -m64 -static -flto
 
 all: clean dir sagittar
