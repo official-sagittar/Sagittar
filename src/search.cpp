@@ -410,10 +410,6 @@ namespace sagittar {
                         alpha            = score;
                         best_move_so_far = move;
                         ttflag           = tt::TTFlag::EXACT;
-                        if (ply == 0 && !stop.load(std::memory_order_relaxed))
-                        {
-                            thread.pvmove = move;
-                        }
                         if (best_score >= beta)
                         {
                             if (!move::isCapture(move.getFlag()))
@@ -448,9 +444,10 @@ namespace sagittar {
             {
                 tt.store(board.getHash(), ply, depth, ttflag, best_score, best_move_so_far);
 
-                if (ply == 0)
+                if constexpr (is_root_node)
                 {
-                    result->bestmove = thread.pvmove;
+                    thread.pvmove    = best_move_so_far;
+                    result->bestmove = best_move_so_far;
                 }
             }
 
