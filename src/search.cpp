@@ -520,7 +520,8 @@ namespace sagittar {
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
 
-                if (do_move_result == board::DoMoveResult::ILLEGAL)
+                if ((do_move_result == board::DoMoveResult::ILLEGAL)
+                    || (is_in_check && board_copy.isInCheck()))
                 {
                     thread.undoMove();
                     continue;
