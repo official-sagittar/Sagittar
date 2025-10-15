@@ -478,18 +478,33 @@ namespace sagittar {
                 return eval::evaluateBoard(board);
             }
 
-            const Score stand_pat = eval::evaluateBoard(board);
-            if (stand_pat >= beta)
+            const bool is_in_check = board.isInCheck();
+
+            Score stand_pat = -INF;
+            if (!is_in_check)
             {
-                return beta;
-            }
-            if (alpha < stand_pat)
-            {
-                alpha = stand_pat;
+                stand_pat = eval::evaluateBoard(board);
+                if (stand_pat >= beta)
+                {
+                    return beta;
+                }
+                if (alpha < stand_pat)
+                {
+                    alpha = stand_pat;
+                }
             }
 
+            u32 legal_moves_count = 0;
+
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
+            if (is_in_check)
+            {
+                movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
+            }
+            else
+            {
+                movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
+            }
 
             tt::TTData       ttdata;
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
@@ -511,6 +526,7 @@ namespace sagittar {
                     continue;
                 }
 
+                legal_moves_count++;
                 result->nodes++;
 
                 const Score score =
@@ -531,6 +547,11 @@ namespace sagittar {
                         return beta;
                     }
                 }
+            }
+
+            if ((legal_moves_count == 0) && is_in_check)
+            {
+                return -MATE_VALUE + ply;
             }
 
             return alpha;
