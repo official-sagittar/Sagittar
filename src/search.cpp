@@ -473,27 +473,34 @@ namespace sagittar {
                 }
             }
 
-            if (ply >= MAX_DEPTH - 1)
-            {
-                return eval::evaluateBoard(board);
-            }
-
             const bool is_in_check = board.isInCheck();
 
-            if (!is_in_check)
+            if (ply >= MAX_DEPTH - 1)
             {
-                const Score stand_pat = eval::evaluateBoard(board);
-                if (stand_pat >= beta)
+                return is_in_check ? 0 : eval::evaluateBoard(board);
+            }
+
+            Score eval;
+
+            if (is_in_check)
+            {
+                eval = -MATE_VALUE + ply;
+            }
+            else
+            {
+                eval = eval::evaluateBoard(board);
+                if (eval >= beta)
                 {
                     return beta;
                 }
-                if (alpha < stand_pat)
+                if (alpha < eval)
                 {
-                    alpha = stand_pat;
+                    alpha = eval;
                 }
             }
 
-            u32 legal_moves_count = 0;
+            Score best_score        = eval;
+            u32   legal_moves_count = 0;
 
             containers::ArrayList<move::Move> moves;
             if (is_in_check)
@@ -538,6 +545,8 @@ namespace sagittar {
                     return 0;
                 }
 
+                best_score = std::max(best_score, score);
+
                 if (score > alpha)
                 {
                     alpha = score;
@@ -553,7 +562,7 @@ namespace sagittar {
                 return -MATE_VALUE + ply;
             }
 
-            return alpha;
+            return best_score;
         }
 
     }
