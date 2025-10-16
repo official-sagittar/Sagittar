@@ -263,18 +263,12 @@ namespace sagittar {
                 // Null Move Pruning
                 if (do_null && depth >= 3 && !eval::isEndGame(board))
                 {
-                    const u8 r = 2;
-#ifdef DEBUG
-                    const u64 hash = board.getHash();
-#endif
+                    const u8     r          = 2;
                     board::Board board_copy = board;
                     thread.doNullMove(board_copy);
                     const Score score = -search<NodeType::NON_PV>(
                       board_copy, depth - r, -beta, -beta + 1, ply, thread, info, result, false);
                     thread.undoNullMove();
-#ifdef DEBUG
-                    assert(hash == board.getHash());
-#endif
                     if (score >= beta)
                     {
                         return beta;
