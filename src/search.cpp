@@ -183,25 +183,27 @@ namespace sagittar {
             constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
             const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
 
-            if ((result->nodes & 2047) == 0)
+            if constexpr (!is_root_node)
             {
-                shouldStopSearchNow(info);
-                if (ply > 0 && stop.load(std::memory_order_relaxed))
+                if ((result->nodes & 2047) == 0)
+                {
+                    shouldStopSearchNow(info);
+                    if (stop.load(std::memory_order_relaxed))
+                    {
+                        return 0;
+                    }
+                }
+
+                if (ply >= MAX_DEPTH - 1) [[unlikely]]
+                {
+                    return eval::evaluateBoard(board);
+                }
+
+                if ((do_null && board.hasPositionRepeated(thread.key_history))
+                    || (board.getHalfmoveClock() >= 100))
                 {
                     return 0;
                 }
-            }
-
-            if (ply >= MAX_DEPTH - 1) [[unlikely]]
-            {
-                return eval::evaluateBoard(board);
-            }
-
-            if (ply > 0
-                && ((do_null && board.hasPositionRepeated(thread.key_history))
-                    || (board.getHalfmoveClock() >= 100)))
-            {
-                return 0;
             }
 
             const bool is_in_check = board.isInCheck();
@@ -261,18 +263,12 @@ namespace sagittar {
                 // Null Move Pruning
                 if (do_null && depth >= 3 && !eval::isEndGame(board))
                 {
-                    const u8 r = 2;
-#ifdef DEBUG
-                    const u64 hash = board.getHash();
-#endif
+                    const u8     r          = 2;
                     board::Board board_copy = board;
                     thread.doNullMove(board_copy);
                     const Score score = -search<NodeType::NON_PV>(
                       board_copy, depth - r, -beta, -beta + 1, ply, thread, info, result, false);
                     thread.undoNullMove();
-#ifdef DEBUG
-                    assert(hash == board.getHash());
-#endif
                     if (score >= beta)
                     {
                         return beta;
@@ -430,14 +426,7 @@ namespace sagittar {
 
             if (legal_moves_count == 0)
             {
-                if (is_in_check)
-                {
-                    return -MATE_VALUE + ply;
-                }
-                else
-                {
-                    return 0;
-                }
+                return is_in_check ? (-MATE_VALUE + ply) : 0;
             }
 
             if (!stop.load(std::memory_order_relaxed))
