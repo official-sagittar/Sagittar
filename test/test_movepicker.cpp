@@ -19,9 +19,12 @@ TEST_SUITE("Movepicker") {
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
+        containers::ArrayList<move::Move> moves;
+        movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
+
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        search::MovePicker<movegen::MovegenType::ALL> move_picker(board, pvmove, data, 0);
+        search::MovePicker move_picker(moves, board, pvmove, data, 0);
 
         Score prev_score = -1;
 
