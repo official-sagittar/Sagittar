@@ -19,36 +19,39 @@ TEST_SUITE("Movepicker") {
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
-        containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
-
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        search::scoreMoves(&moves, board, pvmove, data, 0);
-        for (u8 i = 1; i < moves.size(); i++)
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(board, pvmove, data, 0);
+
+        Score prev_score = -1;
+
+        while (move_picker.has_next())
         {
-            if (moves.at(i) == pvmove)
+            const move::Move move       = move_picker.next();
+            const auto       move_score = move.getScore();
+
+            if (prev_score == -1)
             {
-                REQUIRE(moves.at(i).getScore() == 30000);
-            }
-            else if (move::isCapture(moves.at(i).getFlag()))
-            {
-                REQUIRE(moves.at(i).getScore() >= 10100);
+                prev_score = move_score;
             }
             else
             {
-                REQUIRE(moves.at(i).getScore() == 0);
+                CHECK(move_score <= prev_score);
+                prev_score = move_score;
             }
-        }
 
-        search::sortMoves(&moves, 0);
-
-        REQUIRE(moves.at(0).getScore() == 30000);
-
-        for (u8 i = 1; i < moves.size(); i++)
-        {
-            search::sortMoves(&moves, i);
-            REQUIRE(moves.at(i).getScore() <= moves.at(i - 1).getScore());
+            if (move == pvmove)
+            {
+                REQUIRE(move.getScore() == 30000);
+            }
+            else if (move::isCapture(move.getFlag()))
+            {
+                REQUIRE(move.getScore() >= 10100);
+            }
+            else
+            {
+                REQUIRE(move.getScore() == 0);
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 #include "search.h"
 #include "containers.h"
 #include "eval.h"
-#include "movegen.h"
 #include "movepicker.h"
 #include "params.h"
 #include "timeman.h"
@@ -299,19 +298,15 @@ namespace sagittar {
             u32        moves_searched    = 0;
 
             // Generate pseudolegal mooves
-            containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
-
-            // Score moves
             const move::Move ttmove = is_root_node ? thread.pvmove
                                     : tthit        ? ttdata.move
                                                    : move::Move{};
-            scoreMoves(&moves, board, ttmove, data, ply);
 
-            for (u8 i = 0; i < moves.size(); i++)
+            MovePicker<movegen::MovegenType::ALL> move_picker(board, ttmove, data, ply);
+
+            while (move_picker.has_next())
             {
-                sortMoves(&moves, i);
-                const move::Move move            = moves.at(i);
+                const move::Move move            = move_picker.next();
                 const Piece      move_piece      = board.getPiece(move.getFrom());
                 const PieceType  move_piece_type = pieceTypeOf(move_piece);
 
@@ -343,7 +338,7 @@ namespace sagittar {
                     if (depth <= 2 && move_piece_type != PieceType::PAWN)
                     {
                         const u32 LMP_MOVE_CUTOFF =
-                          moves.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
+                          move_picker.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
                         if (moves_searched >= LMP_MOVE_CUTOFF)
                         {
                             thread.undoMove();
@@ -474,19 +469,15 @@ namespace sagittar {
                 alpha = stand_pat;
             }
 
-            containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
-
             tt::TTData       ttdata;
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            scoreMoves(&moves, board, ttmove, data, ply);
+            MovePicker<movegen::MovegenType::CAPTURES> move_picker(board, ttmove, data, ply);
 
-            for (u8 i = 0; i < moves.size(); i++)
+            while (move_picker.has_next())
             {
-                sortMoves(&moves, i);
-                const move::Move move = moves.at(i);
+                const move::Move move = move_picker.next();
 
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
