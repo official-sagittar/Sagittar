@@ -179,9 +179,8 @@ namespace sagittar {
                                SearchResult*       result,
                                const bool          do_null) {
 
-            constexpr bool is_root_node    = (nodeType == NodeType::ROOT);
-            constexpr bool is_pv_node_type = (nodeType != NodeType::NON_PV);
-            const bool     is_pv_node      = ((beta - alpha) > 1) || is_pv_node_type;
+            constexpr bool is_root_node = (nodeType == NodeType::ROOT);
+            constexpr bool is_pv_node   = (nodeType != NodeType::NON_PV);
 
             if constexpr (!is_root_node)
             {
