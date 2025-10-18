@@ -302,8 +302,8 @@ namespace sagittar {
                                     : tthit        ? ttdata.move
                                                    : move::Move{};
 
-            move::ExtMove                         moves[MOVES_MAX];
-            MovePicker<movegen::MovegenType::ALL> move_picker(moves, board, ttmove, data, ply);
+            move::ExtMove                         buffer[MOVES_MAX];
+            MovePicker<movegen::MovegenType::ALL> move_picker(buffer, board, ttmove, data, ply);
             const auto                            n_moves = move_picker.size();
 
             while (move_picker.hasNext())
@@ -475,8 +475,9 @@ namespace sagittar {
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            move::ExtMove                              moves[MOVES_MAX];
-            MovePicker<movegen::MovegenType::CAPTURES> move_picker(moves, board, ttmove, data, ply);
+            move::ExtMove                              buffer[MOVES_MAX];
+            MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer, board, ttmove, data,
+                                                                   ply);
 
             while (move_picker.hasNext())
             {

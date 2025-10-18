@@ -21,10 +21,10 @@ namespace sagittar {
         };
 
         template<movegen::MovegenType T>
-        class MovePicker {
+        class MovePicker final {
            public:
             MovePicker() = delete;
-            explicit MovePicker(move::ExtMove*      ext_moves,
+            explicit MovePicker(move::ExtMove*      buffer,
                                 const board::Board& board,
                                 const move::Move&   ttmove,
                                 const SearcherData& data,
@@ -43,26 +43,26 @@ namespace sagittar {
             move::Move      next();
 
            private:
-            void processMoves(const containers::ArrayList<move::Move>& moves,
-                              const board::Board&                      board,
-                              const move::Move&                        ttmove,
-                              const SearcherData&                      data,
-                              const i32                                ply);
+            void process(move::ExtMove*      buffer,
+                         const board::Board& board,
+                         const move::Move&   ttmove,
+                         const SearcherData& data,
+                         const i32           ply);
 
-            move::ExtMove*            m_ext_moves_begin;
-            move::ExtMove*            m_ext_moves_end;
-            move::ExtMove*            m_ext_moves_it;
+            size_t m_moves_count{0};
+
+            std::span<move::ExtMove> m_captures;
+            std::span<move::ExtMove> m_quiets;
+            move::ExtMove*           m_it_caps;
+            move::ExtMove*           m_it_quiets;
+
             move::Move                m_tt_move{};
             std::array<move::Move, 2> m_killers{};
 
             MovePickerPhase m_phase{MovePickerPhase::TT_MOVE};
 
-            size_t m_moves_count{0};
-            size_t m_capture_moves_count{0};
-
             size_t m_index{0};
-            size_t m_index_captures{0};
-            size_t m_index_killers{0};
+            u8     m_index_killers{0};
         };
 
     }
