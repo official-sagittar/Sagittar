@@ -298,22 +298,25 @@ namespace sagittar {
             u32        legal_moves_count = 0;
             u32        moves_searched    = 0;
 
-            // Generate pseudolegal mooves
+            // Generate pseudolegal moves
             containers::ArrayList<move::Move> moves;
             movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
+            const size_t n_moves = moves.size();
 
-            // Score moves
             const move::Move ttmove = is_root_node ? thread.pvmove
                                     : tthit        ? ttdata.move
                                                    : move::Move{};
-            scoreMoves(&moves, board, ttmove, data, ply);
 
-            for (u8 i = 0; i < moves.size(); i++)
+            MovePicker move_picker(moves, board, ttmove, data, ply);
+
+            while (move_picker.has_next())
             {
-                sortMoves(&moves, i);
-                const move::Move move            = moves.at(i);
-                const Piece      move_piece      = board.getPiece(move.getFrom());
-                const PieceType  move_piece_type = pieceTypeOf(move_piece);
+                const move::Move     move            = move_picker.next();
+                const Piece          move_piece      = board.getPiece(move.getFrom());
+                const PieceType      move_piece_type = pieceTypeOf(move_piece);
+                const Score          move_score      = move.getScore();
+                const move::MoveFlag move_flag       = move.getFlag();
+                const bool           move_is_capture = move::isCapture(move_flag);
 
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
@@ -325,8 +328,7 @@ namespace sagittar {
 
                 legal_moves_count++;
 
-                const bool move_is_quite =
-                  !(move::isCapture(move.getFlag()) || move::isPromotion(move.getFlag()));
+                const bool move_is_quite    = !(move_is_capture || move::isPromotion(move_flag));
                 const bool move_gives_check = board_copy.isInCheck();
 
                 // Move Loop Pruning
@@ -343,7 +345,7 @@ namespace sagittar {
                     if (depth <= 2 && move_piece_type != PieceType::PAWN)
                     {
                         const u32 LMP_MOVE_CUTOFF =
-                          moves.size() * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
+                          n_moves * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
                         if (moves_searched >= LMP_MOVE_CUTOFF)
                         {
                             thread.undoMove();
@@ -360,8 +362,8 @@ namespace sagittar {
                 {
                     const bool can_reduce = (depth >= 3) && (moves_searched >= 4)
                                          && (!is_critical_node) && (!move_gives_check)
-                                         && (move.getScore() != KILLER_0_SCORE)
-                                         && (move.getScore() != KILLER_1_SCORE);
+                                         && (move_score != KILLER_0_SCORE)
+                                         && (move_score != KILLER_1_SCORE);
 
                     if (can_reduce)
                     {
@@ -408,7 +410,7 @@ namespace sagittar {
                         ttflag           = tt::TTFlag::EXACT;
                         if (best_score >= beta)
                         {
-                            if (!move::isCapture(move.getFlag()))
+                            if (!move_is_capture)
                             {
                                 // Killer Heuristic
                                 data.killer_moves[1][ply] = data.killer_moves[0][ply];
@@ -481,12 +483,11 @@ namespace sagittar {
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            scoreMoves(&moves, board, ttmove, data, ply);
+            MovePicker move_picker(moves, board, ttmove, data, ply);
 
-            for (u8 i = 0; i < moves.size(); i++)
+            while (move_picker.has_next())
             {
-                sortMoves(&moves, i);
-                const move::Move move = moves.at(i);
+                const move::Move move = move_picker.next();
 
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);

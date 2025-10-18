@@ -42,12 +42,26 @@ namespace sagittar {
         constexpr u32 HISTORY_SCORE_MIN   = 0;
         constexpr u32 HISTORY_SCORE_MAX   = 7000;
 
-        void scoreMoves(containers::ArrayList<move::Move>* moves,
-                        const board::Board&                board,
-                        const move::Move&                  ttmove,
-                        const SearcherData&                data,
-                        const i32                          ply);
-        void sortMoves(containers::ArrayList<move::Move>* moves, const u8 index);
+        class MovePicker {
+           public:
+            MovePicker(containers::ArrayList<move::Move>& moves,
+                       const board::Board&                board,
+                       const move::Move&                  ttmove,
+                       const SearcherData&                data,
+                       const i32                          ply);
+
+            bool       has_next() const;
+            move::Move next();
+
+           private:
+            void scoreMoves(const board::Board& board,
+                            const move::Move&   ttmove,
+                            const SearcherData& data,
+                            const i32           ply);
+
+            containers::ArrayList<move::Move>& m_list;
+            size_t                             m_index;
+        };
 
     }
 
