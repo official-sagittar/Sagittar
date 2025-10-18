@@ -298,16 +298,13 @@ namespace sagittar {
             u32        legal_moves_count = 0;
             u32        moves_searched    = 0;
 
-            // Generate pseudolegal moves
-            containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
-            const size_t n_moves = moves.size();
-
             const move::Move ttmove = is_root_node ? thread.pvmove
                                     : tthit        ? ttdata.move
                                                    : move::Move{};
 
-            MovePicker move_picker(moves, board, ttmove, data, ply);
+            move::ExtMove                         moves[MOVES_MAX];
+            MovePicker<movegen::MovegenType::ALL> move_picker(moves, board, ttmove, data, ply);
+            const auto                            n_moves = move_picker.size();
 
             while (move_picker.hasNext())
             {
@@ -474,14 +471,12 @@ namespace sagittar {
                 alpha = stand_pat;
             }
 
-            containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
-
             tt::TTData       ttdata;
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            MovePicker move_picker(moves, board, ttmove, data, ply);
+            move::ExtMove                              moves[MOVES_MAX];
+            MovePicker<movegen::MovegenType::CAPTURES> move_picker(moves, board, ttmove, data, ply);
 
             while (move_picker.hasNext())
             {

@@ -4,22 +4,56 @@ namespace sagittar {
 
     namespace search {
 
-        MovePicker::MovePicker(const containers::ArrayList<move::Move>& moves,
-                               const board::Board&                      board,
-                               const move::Move&                        ttmove,
-                               const SearcherData&                      data,
-                               const i32                                ply) :
-            m_moves_count(moves.size()) {
-            m_captures.reserve(64);
-            m_quiets.reserve(64);
+        // clang-format off
+        /*
+                (Victims) Pawn   Knight Bishop Rook   Queen  King
+            (Attackers)
+            Pawn          105    205    305    405    505    605
+            Knight        104    204    304    404    504    604
+            Bishop        103    203    303    403    503    603
+            Rook          102    202    302    402    502    602
+            Queen         101    201    301    401    501    601
+            King          100    200    300    400    500    600
+        */
+        const u32 MVV_LVA_TABLE[36] = {
+            105, 205, 305, 405, 505, 605,
+            104, 204, 304, 404, 504, 604,
+            103, 203, 303, 403, 503, 603,
+            102, 202, 302, 402, 502, 602,
+            101, 201, 301, 401, 501, 601,
+            100, 200, 300, 400, 500, 600
+        };
+        // clang-format on
+
+        constexpr int mvvlvaIdx(const PieceType attacker, const PieceType victim) {
+            return ((attacker - 1) * 6) + (victim - 1);
+        }
+
+        constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
+        constexpr u32 HISTORY_SCORE_MIN   = 0;
+        constexpr u32 HISTORY_SCORE_MAX   = 7000;
+
+        template<movegen::MovegenType T>
+        MovePicker<T>::MovePicker(move::ExtMove*      ext_moves,
+                                  const board::Board& board,
+                                  const move::Move&   ttmove,
+                                  const SearcherData& data,
+                                  const i32           ply) :
+            m_ext_moves_begin(ext_moves),
+            m_ext_moves_end(ext_moves),
+            m_ext_moves_it(ext_moves) {
+            containers::ArrayList<move::Move> moves;
+            movegen::generatePseudolegalMoves<T>(&moves, board);
+            m_moves_count = moves.size();
             processMoves(moves, board, ttmove, data, ply);
         }
 
-        void MovePicker::processMoves(const containers::ArrayList<move::Move>& moves,
-                                      const board::Board&                      board,
-                                      const move::Move&                        ttmove,
-                                      const SearcherData&                      data,
-                                      const i32                                ply) {
+        template<movegen::MovegenType T>
+        void MovePicker<T>::processMoves(const containers::ArrayList<move::Move>& moves,
+                                         const board::Board&                      board,
+                                         const move::Move&                        ttmove,
+                                         const SearcherData&                      data,
+                                         const i32                                ply) {
             for (const auto& move : moves)
             {
                 if ((move == ttmove) && (ttmove != move::NULL_MOVE))
@@ -33,8 +67,9 @@ namespace sagittar {
                                                ? PieceType::PAWN
                                                : pieceTypeOf(board.getPiece(move.getTo()));
                     const auto      idx      = mvvlvaIdx(attacker, victim);
-                    const auto      score    = MVV_LVA_TABLE[idx];
-                    m_captures.emplace_back(move, score);
+                    const auto      score    = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
+                    m_capture_moves_count++;
+                    *m_ext_moves_end++ = move::ExtMove{move, score};
                 }
                 else
                 {
@@ -48,23 +83,35 @@ namespace sagittar {
                     }
                     else
                     {
-                        const Piece piece = board.getPiece(move.getFrom());
-                        const auto  score = std::clamp(data.history[piece][move.getTo()],
-                                                       HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
-                        m_quiets.emplace_back(move, score);
+                        const Piece piece  = board.getPiece(move.getFrom());
+                        const auto  score  = std::clamp(data.history[piece][move.getTo()],
+                                                        HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
+                        *m_ext_moves_end++ = move::ExtMove{move, score};
                     }
                 }
             }
 
-            std::ranges::sort(m_captures, std::greater{}, &ScoredMove::score);
-            std::ranges::sort(m_quiets, std::greater{}, &ScoredMove::score);
+            std::ranges::sort(m_ext_moves_begin, m_ext_moves_end, std::greater{},
+                              &move::ExtMove::score);
         }
 
-        MovePickerPhase MovePicker::phase() const { return m_phase; }
+        template<movegen::MovegenType T>
+        size_t MovePicker<T>::size() const {
+            return m_moves_count;
+        }
 
-        bool MovePicker::hasNext() const { return (m_index < m_moves_count); }
+        template<movegen::MovegenType T>
+        MovePickerPhase MovePicker<T>::phase() const {
+            return m_phase;
+        }
 
-        move::Move MovePicker::next() {
+        template<movegen::MovegenType T>
+        bool MovePicker<T>::hasNext() const {
+            return (m_index < m_moves_count);
+        }
+
+        template<movegen::MovegenType T>
+        move::Move MovePicker<T>::next() {
             switch (m_phase)
             {
                 case MovePickerPhase::TT_MOVE : {
@@ -78,9 +125,11 @@ namespace sagittar {
                 }
 
                 case MovePickerPhase::CAPTURES : {
-                    if (m_index_captures < m_captures.size())
+                    if ((m_ext_moves_it != m_ext_moves_end)
+                        && (m_index_captures < m_capture_moves_count))
                     {
-                        const auto& move = m_captures[m_index_captures++].move;
+                        const auto& move = (m_ext_moves_it++)->move;
+                        ++m_index_captures;
                         ++m_index;
                         return move;
                     }
@@ -103,9 +152,9 @@ namespace sagittar {
                 }
 
                 case MovePickerPhase::QUIETS : {
-                    if (m_index_quiets < m_quiets.size())
+                    if (m_ext_moves_it != m_ext_moves_end)
                     {
-                        const auto& move = m_quiets[m_index_quiets++].move;
+                        const auto& move = (m_ext_moves_it++)->move;
                         ++m_index;
                         return move;
                     }
@@ -120,6 +169,9 @@ namespace sagittar {
                     return move::NULL_MOVE;
             }
         }
+
+        template class MovePicker<movegen::MovegenType::ALL>;
+        template class MovePicker<movegen::MovegenType::CAPTURES>;
 
     }
 

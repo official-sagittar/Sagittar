@@ -19,15 +19,14 @@ TEST_SUITE("Movepicker") {
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
-        containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
-
-        const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
-
         int i                    = 0;
         int capture_move_done_at = -1;
 
-        search::MovePicker move_picker(moves, board, pvmove, data, 0);
+        const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
+
+        move::ExtMove                                 moves[MOVES_MAX];
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(moves, board, pvmove, data, 0);
+
         while (move_picker.hasNext())
         {
             const move::Move move = move_picker.next();
@@ -68,7 +67,7 @@ TEST_SUITE("Movepicker") {
         }
 
         // Check if all moves are processed
-        REQUIRE(i == moves.size());
+        REQUIRE(i == move_picker.size());
     }
 
     TEST_CASE("movepicker::next::all with Killers") {
@@ -78,19 +77,18 @@ TEST_SUITE("Movepicker") {
         fen::parseFEN(&board,
                       "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
-        containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
-
-        const move::Move pvmove(Square::D5, Square::E6, move::MoveFlag::MOVE_CAPTURE);
-        data.killer_moves[0][0] = move::Move(Square::F3, Square::D3, move::MoveFlag::MOVE_QUIET);
-        data.killer_moves[1][0] = move::Move(Square::D2, Square::E3, move::MoveFlag::MOVE_QUIET);
-
         int i                    = 0;
         int capture_move_done_at = -1;
         int killers              = 0;
         int killer_move_done_at  = -1;
 
-        search::MovePicker move_picker(moves, board, pvmove, data, 0);
+        const move::Move pvmove(Square::D5, Square::E6, move::MoveFlag::MOVE_CAPTURE);
+        data.killer_moves[0][0] = move::Move(Square::F3, Square::D3, move::MoveFlag::MOVE_QUIET);
+        data.killer_moves[1][0] = move::Move(Square::D2, Square::E3, move::MoveFlag::MOVE_QUIET);
+
+        move::ExtMove                                 moves[MOVES_MAX];
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(moves, board, pvmove, data, 0);
+
         while (move_picker.hasNext())
         {
             const move::Move move = move_picker.next();
@@ -144,7 +142,7 @@ TEST_SUITE("Movepicker") {
         }
 
         // Check if all moves are processed
-        REQUIRE(i == moves.size());
+        REQUIRE(i == move_picker.size());
     }
 
     TEST_CASE("movepicker::next::captures") {
@@ -153,14 +151,13 @@ TEST_SUITE("Movepicker") {
         board::Board board;
         fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
-        containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves<movegen::MovegenType::CAPTURES>(&moves, board);
+        int i = 0;
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        int i = 0;
-
-        search::MovePicker move_picker(moves, board, pvmove, data, 0);
+        move::ExtMove                                      moves[MOVES_MAX];
+        search::MovePicker<movegen::MovegenType::CAPTURES> move_picker(moves, board, pvmove, data,
+                                                                       0);
         while (move_picker.hasNext())
         {
             const move::Move move = move_picker.next();
@@ -182,6 +179,6 @@ TEST_SUITE("Movepicker") {
         }
 
         // Check if all moves are processed
-        REQUIRE(i == moves.size());
+        REQUIRE(i == move_picker.size());
     }
 }

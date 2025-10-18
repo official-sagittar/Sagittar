@@ -9,20 +9,17 @@ namespace sagittar {
         Move::Move() :
             from(Square::NO_SQ),
             to(Square::NO_SQ),
-            flag(MOVE_QUIET),
-            score(0) {}
+            flag(MOVE_QUIET) {}
 
         Move::Move(const Move& other) :
             from(other.from),
             to(other.to),
-            flag(other.flag),
-            score(other.score) {}
+            flag(other.flag) {}
 
         Move::Move(const Square from, const Square to, const MoveFlag flag) :
             from(from),
             to(to),
-            flag(flag),
-            score(0) {}
+            flag(flag) {}
 
         Move Move::fromId(const u16 id) {
             const Square   from = static_cast<Square>(id & 0x3F);
@@ -31,15 +28,11 @@ namespace sagittar {
             return Move(from, to, flag);
         }
 
-        void Move::setScore(const u32 s) { score = s; }
-
         Square Move::getFrom() const { return from; }
 
         Square Move::getTo() const { return to; }
 
         MoveFlag Move::getFlag() const { return flag; }
-
-        u32 Move::getScore() const { return score; }
 
         u16 Move::id() const { return (flag << 12) | (to << 6) | from; }
 
@@ -62,10 +55,9 @@ namespace sagittar {
         }
 
         Move& Move::operator=(const Move& rhs) {
-            from  = rhs.from;
-            to    = rhs.to;
-            flag  = rhs.flag;
-            score = rhs.score;
+            from = rhs.from;
+            to   = rhs.to;
+            flag = rhs.flag;
             return *this;
         }
 

@@ -16,6 +16,8 @@ namespace sagittar {
     using Score = i16;
     using Depth = i8;
 
+    constexpr int MOVES_MAX = 256;
+
     enum Color : u8 {
         WHITE,
         BLACK
