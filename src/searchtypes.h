@@ -36,7 +36,7 @@ namespace sagittar {
             bool                    is_mate;
             i8                      mate_in;
             Depth                   depth;
-            u64                     nodes;
+            size_t                  nodes;
             u64                     time;
             u32                     hashfull;
             std::vector<move::Move> pv;

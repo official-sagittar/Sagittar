@@ -42,6 +42,7 @@ namespace sagittar {
             struct ThreadData {
                 std::vector<u64> key_history;
                 move::Move       pvmove{};
+                size_t           nodes;
 
                 ThreadData();
                 board::DoMoveResult doMove(board::Board& board, const move::Move move);
@@ -68,7 +69,6 @@ namespace sagittar {
                          const i32           ply,
                          ThreadData&         thread,
                          const SearchInfo&   info,
-                         SearchResult*       result,
                          const bool          do_null);
 
             Score quiescencesearch(const board::Board& board,
@@ -76,8 +76,7 @@ namespace sagittar {
                                    Score               beta,
                                    const i32           ply,
                                    ThreadData&         thread,
-                                   const SearchInfo&   info,
-                                   SearchResult*       result);
+                                   const SearchInfo&   info);
 
            public:
             Searcher();
