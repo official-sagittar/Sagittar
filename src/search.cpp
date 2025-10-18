@@ -302,17 +302,14 @@ namespace sagittar {
                                     : tthit        ? ttdata.move
                                                    : move::Move{};
 
-            move::ExtMove                         buffer[MOVES_MAX];
-            MovePicker<movegen::MovegenType::ALL> move_picker(buffer, board, ttmove, data, ply);
+            std::array<move::ExtMove, MOVES_MAX>  buffer{};
+            MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), board, ttmove, data,
+                                                              ply);
             const auto                            n_moves = move_picker.size();
 
             while (move_picker.hasNext())
             {
-                const move::Move     move            = move_picker.next();
-                const Piece          move_piece      = board.getPiece(move.getFrom());
-                const PieceType      move_piece_type = pieceTypeOf(move_piece);
-                const move::MoveFlag move_flag       = move.getFlag();
-                const bool           move_is_capture = move::isCapture(move_flag);
+                const move::Move move = move_picker.next();
 
                 board::Board              board_copy     = board;
                 const board::DoMoveResult do_move_result = thread.doMove(board_copy, move);
@@ -322,9 +319,13 @@ namespace sagittar {
                     continue;
                 }
 
+                const Piece     move_piece      = board.getPiece(move.from());
+                const PieceType move_piece_type = pieceTypeOf(move_piece);
+                const bool      move_is_capture = move.isCapture();
+
                 legal_moves_count++;
 
-                const bool move_is_quite    = !(move_is_capture || move::isPromotion(move_flag));
+                const bool move_is_quite    = !(move_is_capture || move.isPromotion());
                 const bool move_gives_check = board_copy.isInCheck();
 
                 // Move Loop Pruning
@@ -412,7 +413,7 @@ namespace sagittar {
                                 data.killer_moves[0][ply] = move;
 
                                 // History Heuristic
-                                data.history[move_piece][move.getTo()] += depth;
+                                data.history[move_piece][move.to()] += depth;
                             }
                             ttflag = tt::TTFlag::LOWERBOUND;
                             break;
@@ -475,9 +476,9 @@ namespace sagittar {
             const bool       tthit  = tt.probe(&ttdata, board.getHash());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
-            move::ExtMove                              buffer[MOVES_MAX];
-            MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer, board, ttmove, data,
-                                                                   ply);
+            std::array<move::ExtMove, MOVES_MAX>       buffer{};
+            MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer.data(), board, ttmove,
+                                                                   data, ply);
 
             while (move_picker.hasNext())
             {

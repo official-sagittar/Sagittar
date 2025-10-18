@@ -24,8 +24,9 @@ TEST_SUITE("Movepicker") {
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        move::ExtMove                                 buffer[MOVES_MAX];
-        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer, board, pvmove, data, 0);
+        std::array<move::ExtMove, MOVES_MAX>          buffer{};
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), board, pvmove,
+                                                                  data, 0);
 
         while (move_picker.hasNext())
         {
@@ -39,7 +40,7 @@ TEST_SUITE("Movepicker") {
             }
             else
             {
-                if (move::isCapture(move.getFlag()))
+                if (move.isCapture())
                 {
                     REQUIRE(move_picker.phase() == search::MovePickerPhase::CAPTURES);
                     REQUIRE(move != pvmove);
@@ -86,8 +87,9 @@ TEST_SUITE("Movepicker") {
         data.killer_moves[0][0] = move::Move(Square::F3, Square::D3, move::MoveFlag::MOVE_QUIET);
         data.killer_moves[1][0] = move::Move(Square::D2, Square::E3, move::MoveFlag::MOVE_QUIET);
 
-        move::ExtMove                                 buffer[MOVES_MAX];
-        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer, board, pvmove, data, 0);
+        std::array<move::ExtMove, MOVES_MAX>          buffer{};
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), board, pvmove,
+                                                                  data, 0);
 
         while (move_picker.hasNext())
         {
@@ -101,7 +103,7 @@ TEST_SUITE("Movepicker") {
             }
             else
             {
-                if (move::isCapture(move.getFlag()))
+                if (move.isCapture())
                 {
                     REQUIRE(move_picker.phase() == search::MovePickerPhase::CAPTURES);
                     REQUIRE(move != pvmove);
@@ -155,9 +157,9 @@ TEST_SUITE("Movepicker") {
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
-        move::ExtMove                                      buffer[MOVES_MAX];
-        search::MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer, board, pvmove, data,
-                                                                       0);
+        std::array<move::ExtMove, MOVES_MAX>               buffer{};
+        search::MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer.data(), board, pvmove,
+                                                                       data, 0);
         while (move_picker.hasNext())
         {
             const move::Move move = move_picker.next();
@@ -170,7 +172,7 @@ TEST_SUITE("Movepicker") {
             }
             else
             {
-                REQUIRE(move::isCapture(move.getFlag()));
+                REQUIRE(move.isCapture());
                 REQUIRE(move_picker.phase() == search::MovePickerPhase::CAPTURES);
                 REQUIRE(move != pvmove);
             }

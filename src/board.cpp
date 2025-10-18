@@ -302,9 +302,9 @@ namespace sagittar {
         }
 
         [[nodiscard]] DoMoveResult Board::doMove(const move::Move move) noexcept {
-            const Square         from     = move.getFrom();
-            const Square         to       = move.getTo();
-            const move::MoveFlag flag     = move.getFlag();
+            const Square         from     = move.from();
+            const Square         to       = move.to();
+            const move::MoveFlag flag     = move.flag();
             const Piece          piece    = pieces[from];
             const Piece          captured = pieces[to];
 
@@ -384,9 +384,9 @@ namespace sagittar {
                     promoted = Piece::NO_PIECE;
             }
 
-            movePiece(piece, from, to, move::isCapture(flag), move::isPromotion(flag), promoted);
+            movePiece(piece, from, to, move.isCapture(), move.isPromotion(), promoted);
 
-            if ((pieceTypeOf(piece) == PieceType::PAWN) || move::isCapture(flag))
+            if ((pieceTypeOf(piece) == PieceType::PAWN) || move.isCapture())
             {
                 half_move_clock = 0;
             }

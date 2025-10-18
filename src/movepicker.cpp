@@ -15,7 +15,7 @@ namespace sagittar {
             Queen         101    201    301    401    501    601
             King          100    200    300    400    500    600
         */
-        const u32 MVV_LVA_TABLE[36] = {
+        static const u32 MVV_LVA_TABLE[36] = {
             105, 205, 305, 405, 505, 605,
             104, 204, 304, 404, 504, 604,
             103, 203, 303, 403, 503, 603,
@@ -25,9 +25,15 @@ namespace sagittar {
         };
         // clang-format on
 
-        constexpr int mvvlvaIdx(const PieceType attacker, const PieceType victim) {
+        static constexpr int mvvlvaIdx(const PieceType attacker, const PieceType victim) {
             return ((attacker - 1) * 6) + (victim - 1);
         }
+
+        static const auto cmp = [](const move::ExtMove& a, const move::ExtMove& b) {
+            if (a.score != b.score)
+                return a.score > b.score;
+            return a.move.id() < b.move.id();
+        };
 
         constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
         constexpr u32 HISTORY_SCORE_MIN   = 0;
@@ -67,12 +73,12 @@ namespace sagittar {
                     continue;
                 }
 
-                if (move::isCapture(move.getFlag()))
+                if (move.isCapture())
                 {
-                    const PieceType attacker = pieceTypeOf(board.getPiece(move.getFrom()));
-                    const PieceType victim   = (move.getFlag() == move::MoveFlag::MOVE_CAPTURE_EP)
+                    const PieceType attacker = pieceTypeOf(board.getPiece(move.from()));
+                    const PieceType victim   = (move.flag() == move::MoveFlag::MOVE_CAPTURE_EP)
                                                ? PieceType::PAWN
-                                               : pieceTypeOf(board.getPiece(move.getTo()));
+                                               : pieceTypeOf(board.getPiece(move.to()));
                     const auto      idx      = mvvlvaIdx(attacker, victim);
                     const auto      score    = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
                     buffer[capture_count++]  = move::ExtMove{move, score};
@@ -85,7 +91,7 @@ namespace sagittar {
 
             for (const auto& move : moves)
             {
-                if (move::isCapture(move.getFlag()) || (move == ttmove))
+                if (move.isCapture() || (move == ttmove))
                 {
                     continue;
                 }
@@ -100,10 +106,10 @@ namespace sagittar {
                 }
                 else
                 {
-                    const Piece piece = board.getPiece(move.getFrom());
-                    const auto  score = std::clamp(data.history[piece][move.getTo()],
-                                                   HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
-                    *quiet_ptr++      = move::ExtMove{move, score};
+                    const Piece piece = board.getPiece(move.from());
+                    const auto score = std::clamp(data.history[piece][move.to()], HISTORY_SCORE_MIN,
+                                                  HISTORY_SCORE_MAX);
+                    *quiet_ptr++     = move::ExtMove{move, score};
                 }
             }
 
@@ -112,8 +118,8 @@ namespace sagittar {
             m_captures = std::span<move::ExtMove>(buffer, capture_count);
             m_quiets   = std::span<move::ExtMove>(buffer + capture_count, quiet_count);
 
-            std::ranges::sort(m_captures, std::greater{}, &move::ExtMove::score);
-            std::ranges::sort(m_quiets, std::greater{}, &move::ExtMove::score);
+            std::ranges::sort(m_captures, cmp);
+            std::ranges::sort(m_quiets, cmp);
 
             m_it_caps   = m_captures.data();
             m_it_quiets = m_quiets.data();

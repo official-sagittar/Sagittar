@@ -25,32 +25,34 @@ namespace sagittar {
         };
 
         class Move {
-           private:
-            Square   from;
-            Square   to;
-            MoveFlag flag;
-
            public:
             Move();
             Move(const Move&);
             Move(const Square from, const Square to, const MoveFlag flag);
+            Move(const u16 data);
+
+            Move& operator=(const Move& rhs);
+            bool  operator==(const Move& rhs) const;
+            bool  operator!=(const Move& rhs) const;
+
             static Move fromId(const u16 id);
-            Square      getFrom() const;
-            Square      getTo() const;
-            MoveFlag    getFlag() const;
-            u16         id() const;
-            void        toString(std::ostringstream&) const;
-            void        display() const;
-            Move&       operator=(const Move& rhs);
-            bool        operator==(const Move& rhs) const;
-            bool        operator!=(const Move& rhs) const;
+
+            Square   from() const;
+            Square   to() const;
+            MoveFlag flag() const;
+            u16      id() const;
+
+            bool isCapture() const;
+            bool isPromotion() const;
+
+            void toString(std::ostringstream&) const;
+            void display() const;
+
+           private:
+            u16 m_data;
         };
 
         const Move NULL_MOVE = Move{};
-
-        constexpr bool isCapture(const MoveFlag m) { return (m & 0x4); }
-
-        constexpr bool isPromotion(const MoveFlag m) { return (m & 0x8); }
 
         struct ExtMove final {
             move::Move move;

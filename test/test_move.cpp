@@ -10,9 +10,9 @@ TEST_SUITE("Move") {
 
         SUBCASE("Default") {
             const move::Move m;
-            CHECK(m.getFrom() == Square::NO_SQ);
-            CHECK(m.getTo() == Square::NO_SQ);
-            CHECK(m.getFlag() == move::MoveFlag::MOVE_QUIET);
+            CHECK(m.from() == 0);
+            CHECK(m.to() == 0);
+            CHECK(m.flag() == 0);
         }
 
         SUBCASE("Comparison") {
@@ -20,9 +20,9 @@ TEST_SUITE("Move") {
             move::Move e2e4 =
               move::Move(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
-            CHECK(e2e4.getFrom() == Square::E2);
-            CHECK(e2e4.getTo() == Square::E4);
-            CHECK(e2e4.getFlag() == move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
+            CHECK(e2e4.from() == Square::E2);
+            CHECK(e2e4.to() == Square::E4);
+            CHECK(e2e4.flag() == move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
             const move::Move e2e4_again =
               move::Move(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);

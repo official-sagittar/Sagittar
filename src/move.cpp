@@ -7,44 +7,54 @@ namespace sagittar {
         static const char* PROMOTION_PIECE_STR = "xxxxxxxxnbrqnbrq";
 
         Move::Move() :
-            from(Square::NO_SQ),
-            to(Square::NO_SQ),
-            flag(MOVE_QUIET) {}
+            m_data(0) {}
 
         Move::Move(const Move& other) :
-            from(other.from),
-            to(other.to),
-            flag(other.flag) {}
+            m_data(other.m_data) {}
 
-        Move::Move(const Square from, const Square to, const MoveFlag flag) :
-            from(from),
-            to(to),
-            flag(flag) {}
-
-        Move Move::fromId(const u16 id) {
-            const Square   from = static_cast<Square>(id & 0x3F);
-            const Square   to   = static_cast<Square>((id >> 6) & 0x3F);
-            const MoveFlag flag = static_cast<MoveFlag>((id >> 12) & 0xF);
-            return Move(from, to, flag);
+        Move::Move(const Square from, const Square to, const MoveFlag flag) {
+            m_data = (flag << 12) | (to << 6) | from;
         }
 
-        Square Move::getFrom() const { return from; }
+        Move::Move(const u16 data) :
+            m_data(data) {}
 
-        Square Move::getTo() const { return to; }
+        Move& Move::operator=(const Move& rhs) {
+            m_data = rhs.m_data;
+            return *this;
+        }
 
-        MoveFlag Move::getFlag() const { return flag; }
+        bool Move::operator==(const Move& rhs) const { return id() == rhs.id(); }
 
-        u16 Move::id() const { return (flag << 12) | (to << 6) | from; }
+        bool Move::operator!=(const Move& rhs) const { return id() != rhs.id(); };
+
+        Move Move::fromId(const u16 id) { return Move(id); }
+
+        Square Move::from() const { return static_cast<Square>(m_data & 0x3F); }
+
+        Square Move::to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
+
+        MoveFlag Move::flag() const { return static_cast<MoveFlag>((m_data >> 12) & 0xF); }
+
+        u16 Move::id() const { return m_data; }
+
+        bool Move::isCapture() const { return (flag() & 0x4); }
+
+        bool Move::isPromotion() const { return (flag() & 0x8); }
 
         void Move::toString(std::ostringstream& ss) const {
-            ss << (char) FILE_STR[sq2file(from)];
-            ss << (int) (sq2rank(from) + 1);
-            ss << (char) FILE_STR[sq2file(to)];
-            ss << (int) (sq2rank(to) + 1);
+            const auto from_sq = from();
+            const auto to_sq   = to();
+            const auto f       = flag();
 
-            if (isPromotion(flag))
+            ss << (char) FILE_STR[sq2file(from_sq)];
+            ss << (int) (sq2rank(from_sq) + 1);
+            ss << (char) FILE_STR[sq2file(to_sq)];
+            ss << (int) (sq2rank(to_sq) + 1);
+
+            if (isPromotion())
             {
-                ss << (char) PROMOTION_PIECE_STR[flag];
+                ss << (char) PROMOTION_PIECE_STR[f];
             }
         }
 
@@ -53,16 +63,5 @@ namespace sagittar {
             toString(ss);
             std::cout << ss.str() << std::flush;
         }
-
-        Move& Move::operator=(const Move& rhs) {
-            from = rhs.from;
-            to   = rhs.to;
-            flag = rhs.flag;
-            return *this;
-        }
-
-        bool Move::operator==(const Move& rhs) const { return id() == rhs.id(); }
-
-        bool Move::operator!=(const Move& rhs) const { return id() != rhs.id(); };
     }
 }
