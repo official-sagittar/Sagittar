@@ -49,6 +49,8 @@ namespace sagittar {
             bool        operator!=(const Move& rhs) const;
         };
 
+        const Move NULL_MOVE = Move{};
+
         constexpr bool isCapture(const MoveFlag m) { return (m & 0x4); }
 
         constexpr bool isPromotion(const MoveFlag m) { return (m & 0x8); }

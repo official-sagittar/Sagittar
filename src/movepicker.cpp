@@ -4,27 +4,27 @@ namespace sagittar {
 
     namespace search {
 
-        MovePicker::MovePicker(containers::ArrayList<move::Move>& moves,
-                               const board::Board&                board,
-                               const move::Move&                  ttmove,
-                               const SearcherData&                data,
-                               const i32                          ply) :
-            m_list(moves),
-            m_index(0) {
-            scoreMoves(board, ttmove, data, ply);
+        MovePicker::MovePicker(const containers::ArrayList<move::Move>& moves,
+                               const board::Board&                      board,
+                               const move::Move&                        ttmove,
+                               const SearcherData&                      data,
+                               const i32                                ply) :
+            m_moves_count(moves.size()) {
+            m_captures.reserve(64);
+            m_quiets.reserve(64);
+            processMoves(moves, board, ttmove, data, ply);
         }
 
-        void MovePicker::scoreMoves(const board::Board& board,
-                                    const move::Move&   ttmove,
-                                    const SearcherData& data,
-                                    const i32           ply) {
-            for (size_t i = 0; i < m_list.size(); i++)
+        void MovePicker::processMoves(const containers::ArrayList<move::Move>& moves,
+                                      const board::Board&                      board,
+                                      const move::Move&                        ttmove,
+                                      const SearcherData&                      data,
+                                      const i32                                ply) {
+            for (const auto& move : moves)
             {
-                const move::Move move = m_list.at(i);
-
-                if (move == ttmove)
+                if ((move == ttmove) && (ttmove != move::NULL_MOVE))
                 {
-                    m_list.at(i).setScore(TTMOVE_SCORE);
+                    m_tt_move = move;
                 }
                 else if (move::isCapture(move.getFlag()))
                 {
@@ -32,51 +32,93 @@ namespace sagittar {
                     const PieceType victim   = (move.getFlag() == move::MoveFlag::MOVE_CAPTURE_EP)
                                                ? PieceType::PAWN
                                                : pieceTypeOf(board.getPiece(move.getTo()));
-#ifdef DEBUG
-                    assert(attacker != 0);
-                    assert(victim != 0);
-#endif
-                    const u8  idx   = mvvlvaIdx(attacker, victim);
-                    const u32 score = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
-#ifdef DEBUG
-                    assert(idx >= 0 && idx < 36);
-                    assert(score >= 10100 && score <= 10605);
-#endif
-                    m_list.at(i).setScore(score);
+                    const auto      idx      = mvvlvaIdx(attacker, victim);
+                    const auto      score    = MVV_LVA_TABLE[idx];
+                    m_captures.emplace_back(move, score);
                 }
                 else
                 {
                     if (move == data.killer_moves[0][ply])
                     {
-                        m_list.at(i).setScore(KILLER_0_SCORE);
+                        m_killers[0] = move;
                     }
                     else if (move == data.killer_moves[1][ply])
                     {
-                        m_list.at(i).setScore(KILLER_1_SCORE);
+                        m_killers[1] = move;
                     }
                     else
                     {
                         const Piece piece = board.getPiece(move.getFrom());
-                        const u32   score = std::clamp(data.history[piece][move.getTo()],
+                        const auto  score = std::clamp(data.history[piece][move.getTo()],
                                                        HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
-                        m_list.at(i).setScore(score);
+                        m_quiets.emplace_back(move, score);
                     }
                 }
             }
+
+            std::ranges::sort(m_captures, std::greater{}, &ScoredMove::score);
+            std::ranges::sort(m_quiets, std::greater{}, &ScoredMove::score);
         }
 
-        bool MovePicker::has_next() const { return (m_index < m_list.size()); }
+        MovePickerPhase MovePicker::phase() const { return m_phase; }
+
+        bool MovePicker::hasNext() const { return (m_index < m_moves_count); }
 
         move::Move MovePicker::next() {
-            for (size_t i = m_index + 1; i < m_list.size(); i++)
+            switch (m_phase)
             {
-                if (m_list.at(i).getScore() > m_list.at(m_index).getScore())
-                {
-                    std::swap(m_list.at(m_index), m_list.at(i));
+                case MovePickerPhase::TT_MOVE : {
+                    m_phase = MovePickerPhase::CAPTURES;
+                    if (m_tt_move != move::NULL_MOVE)
+                    {
+                        ++m_index;
+                        return m_tt_move;
+                    }
+                    [[fallthrough]];
                 }
-            }
 
-            return m_list.at(m_index++);
+                case MovePickerPhase::CAPTURES : {
+                    if (m_index_captures < m_captures.size())
+                    {
+                        const auto& move = m_captures[m_index_captures++].move;
+                        ++m_index;
+                        return move;
+                    }
+                    m_phase = MovePickerPhase::KILLERS;
+                    [[fallthrough]];
+                }
+
+                case MovePickerPhase::KILLERS : {
+                    while (m_index_killers < 2)
+                    {
+                        const auto& move = m_killers[m_index_killers++];
+                        if (move != move::NULL_MOVE)
+                        {
+                            ++m_index;
+                            return move;
+                        }
+                    }
+                    m_phase = MovePickerPhase::QUIETS;
+                    [[fallthrough]];
+                }
+
+                case MovePickerPhase::QUIETS : {
+                    if (m_index_quiets < m_quiets.size())
+                    {
+                        const auto& move = m_quiets[m_index_quiets++].move;
+                        ++m_index;
+                        return move;
+                    }
+                    m_phase = MovePickerPhase::DONE;
+                    [[fallthrough]];
+                }
+
+                case MovePickerPhase::DONE :
+                    [[fallthrough]];
+
+                default :
+                    return move::NULL_MOVE;
+            }
         }
 
     }

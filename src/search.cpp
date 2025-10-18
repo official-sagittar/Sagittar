@@ -309,12 +309,11 @@ namespace sagittar {
 
             MovePicker move_picker(moves, board, ttmove, data, ply);
 
-            while (move_picker.has_next())
+            while (move_picker.hasNext())
             {
                 const move::Move     move            = move_picker.next();
                 const Piece          move_piece      = board.getPiece(move.getFrom());
                 const PieceType      move_piece_type = pieceTypeOf(move_piece);
-                const Score          move_score      = move.getScore();
                 const move::MoveFlag move_flag       = move.getFlag();
                 const bool           move_is_capture = move::isCapture(move_flag);
 
@@ -362,8 +361,7 @@ namespace sagittar {
                 {
                     const bool can_reduce = (depth >= 3) && (moves_searched >= 4)
                                          && (!is_critical_node) && (!move_gives_check)
-                                         && (move_score != KILLER_0_SCORE)
-                                         && (move_score != KILLER_1_SCORE);
+                                         && (move_picker.phase() != MovePickerPhase::KILLERS);
 
                     if (can_reduce)
                     {
@@ -485,7 +483,7 @@ namespace sagittar {
 
             MovePicker move_picker(moves, board, ttmove, data, ply);
 
-            while (move_picker.has_next())
+            while (move_picker.hasNext())
             {
                 const move::Move move = move_picker.next();
 
