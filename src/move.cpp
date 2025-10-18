@@ -12,6 +12,9 @@ namespace sagittar {
         Move::Move(const Move& other) :
             m_data(other.m_data) {}
 
+        Move::Move(Move&& other) :
+            m_data(other.m_data) {}
+
         Move::Move(const Square from, const Square to, const MoveFlag flag) {
             m_data = (flag << 12) | (to << 6) | from;
         }
@@ -20,13 +23,24 @@ namespace sagittar {
             m_data(data) {}
 
         Move& Move::operator=(const Move& rhs) {
-            m_data = rhs.m_data;
+            if (this != &rhs)
+            {
+                m_data = rhs.m_data;
+            }
             return *this;
         }
 
-        bool Move::operator==(const Move& rhs) const { return id() == rhs.id(); }
+        Move& Move::operator=(const Move&& rhs) {
+            if (this != &rhs)
+            {
+                m_data = rhs.m_data;
+            }
+            return *this;
+        }
 
-        bool Move::operator!=(const Move& rhs) const { return id() != rhs.id(); };
+        bool Move::operator==(const Move& rhs) const { return m_data == rhs.m_data; }
+
+        bool Move::operator!=(const Move& rhs) const { return m_data != rhs.m_data; };
 
         Move Move::fromId(const u16 id) { return Move(id); }
 

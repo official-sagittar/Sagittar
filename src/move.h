@@ -24,16 +24,20 @@ namespace sagittar {
             MOVE_CAPTURE_PROMOTION_QUEEN,
         };
 
-        class Move {
+        class Move final {
            public:
             Move();
-            Move(const Move&);
+            Move(const Move& other);
+            Move(Move&& other);
+            Move& operator=(const Move& rhs);
+            Move& operator=(const Move&& rhs);
+            ~Move() = default;
+
             Move(const Square from, const Square to, const MoveFlag flag);
             Move(const u16 data);
 
-            Move& operator=(const Move& rhs);
-            bool  operator==(const Move& rhs) const;
-            bool  operator!=(const Move& rhs) const;
+            bool operator==(const Move& rhs) const;
+            bool operator!=(const Move& rhs) const;
 
             static Move fromId(const u16 id);
 
@@ -49,13 +53,13 @@ namespace sagittar {
             void display() const;
 
            private:
-            u16 m_data;
+            u16 m_data{0};
         };
 
         const Move NULL_MOVE = Move{};
 
         struct ExtMove final {
-            move::Move move;
+            move::Move move{};
             u32        score;
 
             ExtMove() noexcept :
