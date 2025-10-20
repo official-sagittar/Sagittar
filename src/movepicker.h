@@ -3,6 +3,7 @@
 #include "board.h"
 #include "containers.h"
 #include "move.h"
+#include "movegen.h"
 #include "pch.h"
 #include "search.h"
 #include "types.h"
@@ -11,56 +12,57 @@ namespace sagittar {
 
     namespace search {
 
-        // clang-format off
-        /*
-            (Victims) Pawn   Knight Bishop Rook   Queen  King
-        (Attackers)
-        Pawn          105    205    305    405    505    605
-        Knight        104    204    304    404    504    604
-        Bishop        103    203    303    403    503    603
-        Rook          102    202    302    402    502    602
-        Queen         101    201    301    401    501    601
-        King          100    200    300    400    500    600
-        */
-        const u32 MVV_LVA_TABLE[36] = {
-            105, 205, 305, 405, 505, 605,
-            104, 204, 304, 404, 504, 604,
-            103, 203, 303, 403, 503, 603,
-            102, 202, 302, 402, 502, 602,
-            101, 201, 301, 401, 501, 601,
-            100, 200, 300, 400, 500, 600
+        enum class MovePickerPhase {
+            TT_MOVE,
+            CAPTURES,
+            KILLERS,
+            QUIETS,
+            DONE
         };
-        // clang-format on
 
-        constexpr u8 mvvlvaIdx(const PieceType attacker, const PieceType victim) {
-            return ((attacker - 1) * 6) + (victim - 1);
-        }
-        constexpr u32 TTMOVE_SCORE        = 30000;
-        constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
-        constexpr u32 KILLER_0_SCORE      = 9000;
-        constexpr u32 KILLER_1_SCORE      = 8000;
-        constexpr u32 HISTORY_SCORE_MIN   = 0;
-        constexpr u32 HISTORY_SCORE_MAX   = 7000;
-
-        class MovePicker {
+        template<movegen::MovegenType T>
+        class MovePicker final {
            public:
-            MovePicker(containers::ArrayList<move::Move>& moves,
-                       const board::Board&                board,
-                       const move::Move&                  ttmove,
-                       const SearcherData&                data,
-                       const i32                          ply);
+            MovePicker() = delete;
+            explicit MovePicker(move::ExtMove*      buffer,
+                                const board::Board& board,
+                                const move::Move&   ttmove,
+                                const SearcherData& data,
+                                const i32           ply);
+            MovePicker(const MovePicker&)                = delete;
+            MovePicker(MovePicker&&) noexcept            = delete;
+            MovePicker& operator=(const MovePicker&)     = delete;
+            MovePicker& operator=(MovePicker&&) noexcept = delete;
+            void*       operator new(std::size_t)        = delete;
+            void*       operator new[](std::size_t)      = delete;
+            ~MovePicker() noexcept                       = default;
 
-            bool       has_next() const;
-            move::Move next();
+            size_t          size() const;
+            MovePickerPhase phase() const;
+            bool            hasNext() const;
+            move::Move      next();
 
            private:
-            void scoreMoves(const board::Board& board,
-                            const move::Move&   ttmove,
-                            const SearcherData& data,
-                            const i32           ply);
+            void process(move::ExtMove*      buffer,
+                         const board::Board& board,
+                         const move::Move&   ttmove,
+                         const SearcherData& data,
+                         const i32           ply);
 
-            containers::ArrayList<move::Move>& m_list;
-            size_t                             m_index;
+            size_t m_moves_count{0};
+
+            std::span<move::ExtMove> m_captures;
+            std::span<move::ExtMove> m_quiets;
+            move::ExtMove*           m_it_caps;
+            move::ExtMove*           m_it_quiets;
+
+            move::Move                m_tt_move{};
+            std::array<move::Move, 2> m_killers{};
+
+            MovePickerPhase m_phase{MovePickerPhase::TT_MOVE};
+
+            size_t m_index{0};
+            u8     m_index_killers{0};
         };
 
     }

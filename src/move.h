@@ -24,34 +24,80 @@ namespace sagittar {
             MOVE_CAPTURE_PROMOTION_QUEEN,
         };
 
-        class Move {
-           private:
-            Square   from;
-            Square   to;
-            MoveFlag flag;
-            u32      score;
-
+        class Move final {
            public:
             Move();
-            Move(const Move&);
+            Move(const Move& other);
+            Move(Move&& other);
+            Move& operator=(const Move& rhs);
+            Move& operator=(const Move&& rhs);
+            ~Move() = default;
+
             Move(const Square from, const Square to, const MoveFlag flag);
+            Move(const u16 data);
+
+            bool operator==(const Move& rhs) const;
+            bool operator!=(const Move& rhs) const;
+
             static Move fromId(const u16 id);
-            void        setScore(const u32);
-            Square      getFrom() const;
-            Square      getTo() const;
-            MoveFlag    getFlag() const;
-            u32         getScore() const;
-            u16         id() const;
-            void        toString(std::ostringstream&) const;
-            void        display() const;
-            Move&       operator=(const Move& rhs);
-            bool        operator==(const Move& rhs) const;
-            bool        operator!=(const Move& rhs) const;
+
+            Square   from() const;
+            Square   to() const;
+            MoveFlag flag() const;
+            u16      id() const;
+
+            bool isCapture() const;
+            bool isPromotion() const;
+
+            void toString(std::ostringstream&) const;
+            void display() const;
+
+           private:
+            u16 m_data{0};
         };
 
-        constexpr bool isCapture(const MoveFlag m) { return (m & 0x4); }
+        const Move NULL_MOVE = Move{};
 
-        constexpr bool isPromotion(const MoveFlag m) { return (m & 0x8); }
+        struct ExtMove final {
+            move::Move move{};
+            u32        score;
+
+            ExtMove() noexcept :
+                move(),
+                score(0) {}
+
+            ExtMove(const move::Move& m, u32 s) noexcept :
+                move(m),
+                score(s) {}
+
+            ExtMove(const ExtMove& other) noexcept :
+                move(other.move),
+                score(other.score) {}
+
+            ExtMove(ExtMove&& other) noexcept :
+                move(std::move(other.move)),
+                score(other.score) {}
+
+            ExtMove& operator=(const ExtMove& other) noexcept {
+                if (this != &other)
+                {
+                    move  = other.move;
+                    score = other.score;
+                }
+                return *this;
+            }
+
+            ExtMove& operator=(ExtMove&& other) noexcept {
+                if (this != &other)
+                {
+                    move  = std::move(other.move);
+                    score = other.score;
+                }
+                return *this;
+            }
+
+            ~ExtMove() noexcept = default;
+        };
 
     }
 
