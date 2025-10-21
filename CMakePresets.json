@@ -1,0 +1,60 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/clang-toolchain.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "base",
+            "displayName": "Debug Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_SAN": "ON"
+            }
+        },
+        {
+            "name": "test",
+            "inherits": "base",
+            "displayName": "Test Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Test",
+                "ENABLE_SAN": "ON"
+            }
+        },
+        {
+            "name": "release",
+            "inherits": "base",
+            "displayName": "Release Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_SAN": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "build-test",
+            "configurePreset": "test"
+        },
+        {
+            "name": "build-release",
+            "configurePreset": "release"
+        }
+    ]
+}
