@@ -6,16 +6,12 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type")
 endif()
 
-if(DEFINED ENV{CXX})
-    set(CMAKE_CXX_COMPILER "$ENV{CXX}" CACHE STRING "C++ compiler")
-endif()
-
 if(DEFINED EXE AND NOT EXE STREQUAL "")
     set(EXE_NAME "${EXE}")
 elseif(DEFINED ENV{EXE} AND NOT "$ENV{EXE}" STREQUAL "")
     set(EXE_NAME "$ENV{EXE}")
 else()
-    set(EXE_NAME "Sagittar")
+    set(EXE_NAME "${PROJECT_NAME}")
 endif()
 
 if(DEFINED BIN_DIR AND NOT "${BIN_DIR}" STREQUAL "")
@@ -26,13 +22,11 @@ else()
     set(BIN_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
 endif()
 
-if(BIN_DIR STREQUAL ".")
-    set(BIN_DIR "${CMAKE_SOURCE_DIR}")
-endif()
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -march=native")
 
 option(ENABLE_SAN "Enable Address and Undefined sanitizers" OFF)
 
@@ -59,7 +53,7 @@ set_target_properties(${EXE_NAME} PROPERTIES
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
     target_compile_definitions(${EXE_NAME} PRIVATE DEBUG)
-    target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -O0 -g -march=native)
+    target_compile_options(${EXE_NAME} PRIVATE -O0 -g)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     set(CORE_SRC_FOR_TEST ${CORE_SRC})
@@ -67,12 +61,12 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC_FOR_TEST} ${TEST_SRC})
     target_include_directories(${EXE_NAME} PRIVATE test/lib/doctest)
     target_compile_definitions(${EXE_NAME} PRIVATE DEBUG TEST)
-    target_compile_options(${EXE_NAME} PRIVATE -O3 -march=native)
+    target_compile_options(${EXE_NAME} PRIVATE -O3)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
     target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
-    target_compile_options(${EXE_NAME} PRIVATE -O3 -march=native)
+    target_compile_options(${EXE_NAME} PRIVATE -O3)
 endif()
 
 if(ENABLE_SAN)
