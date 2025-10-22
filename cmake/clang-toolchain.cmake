@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.25)
-message(STATUS "=== Sagittar toolchain ===")
 
 # 1. Disallow MSVC
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -32,18 +31,3 @@ if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -static")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -static -lc++ -lc++abi -lunwind -lwinpthread")
 endif()
-
-# 5. Default build type
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
-endif()
-
-# 6. Summary
-message(STATUS "")
-message(STATUS "=== Toolchain Summary ===")
-message(STATUS "C++ Compiler : ${CMAKE_CXX_COMPILER}")
-message(STATUS "C++ Flags    : ${CMAKE_CXX_FLAGS}")
-message(STATUS "Linker Flags : ${CMAKE_EXE_LINKER_FLAGS}")
-message(STATUS "Build Type   : ${CMAKE_BUILD_TYPE}")
-message(STATUS "=================================")
-message(STATUS "")
