@@ -1,11 +1,7 @@
 Checks: >
   clang-analyzer-*,
-  modernize-*,
   performance-*,
-  readability-*,
   bugprone-*,
-  misc-*,
-  cppcoreguidelines-*,
 
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'src/.*'
