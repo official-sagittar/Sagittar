@@ -10,7 +10,7 @@ namespace sagittar {
 
     namespace movegen {
 
-        enum class MovegenType {
+        enum class MovegenType : u8 {
             ALL,
             CAPTURES
         };
