@@ -12,7 +12,7 @@ namespace sagittar {
 
     namespace search {
 
-        enum class MovePickerPhase {
+        enum class MovePickerPhase : u8 {
             TT_MOVE,
             CAPTURES,
             KILLERS,

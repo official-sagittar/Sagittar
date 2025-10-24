@@ -19,7 +19,7 @@ namespace sagittar {
 
         constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
 
-        enum class NodeType {
+        enum class NodeType : u8 {
             NON_PV,
             ROOT,
             PV
@@ -45,7 +45,7 @@ namespace sagittar {
                 size_t           nodes;
 
                 ThreadData();
-                board::DoMoveResult doMove(board::Board& board, const move::Move move);
+                board::DoMoveResult doMove(board::Board& board, const move::Move& move);
                 void                doNullMove(board::Board& board);
                 void                undoMove();
                 void                undoNullMove();
@@ -54,12 +54,12 @@ namespace sagittar {
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
-            SearchResult
-            searchIteratively(const board::Board&                      board,
-                              ThreadData&                              thread,
-                              const SearchInfo&                        info,
-                              std::function<void(const SearchResult&)> searchProgressReportHandler,
-                              std::function<void(const SearchResult&)> searchCompleteReportHander);
+            SearchResult searchIteratively(
+              const board::Board&                        board,
+              ThreadData&                                thread,
+              const SearchInfo&                          info,
+              std::function<void(const SearchResult&)>&& searchProgressReportHandler,
+              std::function<void(const SearchResult&)>&& searchCompleteReportHander);
 
             template<NodeType nodeType>
             Score search(const board::Board& board,
