@@ -35,10 +35,10 @@ namespace sagittar {
         static constexpr int BITBOARD_CAPTURE_RIGHT_DIR = (US == WHITE) ? 9 : -9;
 
         static board::BitBoard bishopMask(const Square sq) {
-            i8 r, f;
+            i32 r, f;
 
-            const u8 tr = sq2rank(sq);
-            const u8 tf = sq2file(sq);
+            const i32 tr = sq2rank(sq);
+            const i32 tf = sq2file(sq);
 
             board::BitBoard attack_mask = 0ULL;
 
@@ -63,10 +63,10 @@ namespace sagittar {
         }
 
         static board::BitBoard bishopAttacks(const Square sq, const board::BitBoard blockers) {
-            i8 r, f;
+            i32 r, f;
 
-            const u8 tr = sq2rank(sq);
-            const u8 tf = sq2file(sq);
+            const i32 tr = sq2rank(sq);
+            const i32 tf = sq2file(sq);
 
             board::BitBoard attack_mask = 0ULL;
             board::BitBoard sqb;
@@ -112,10 +112,10 @@ namespace sagittar {
         }
 
         static board::BitBoard rookMask(const Square sq) {
-            i8 r, f;
+            i32 r, f;
 
-            const u8 tr = sq2rank(sq);
-            const u8 tf = sq2file(sq);
+            const i32 tr = sq2rank(sq);
+            const i32 tf = sq2file(sq);
 
             board::BitBoard attack_mask = 0ULL;
 
@@ -140,10 +140,10 @@ namespace sagittar {
         }
 
         static board::BitBoard rookAttacks(const Square sq, const board::BitBoard blockers) {
-            i8 r, f;
+            i32 r, f;
 
-            const u8 tr = sq2rank(sq);
-            const u8 tf = sq2file(sq);
+            const i32 tr = sq2rank(sq);
+            const i32 tf = sq2file(sq);
 
             board::BitBoard attack_mask = 0ULL;
             board::BitBoard sqb;
