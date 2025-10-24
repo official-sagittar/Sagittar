@@ -12,7 +12,7 @@ namespace sagittar {
         Move::Move(const Move& other) :
             m_data(other.m_data) {}
 
-        Move::Move(Move&& other) :
+        Move::Move(Move&& other) noexcept :
             m_data(other.m_data) {}
 
         Move::Move(const Square from, const Square to, const MoveFlag flag) {
@@ -30,7 +30,7 @@ namespace sagittar {
             return *this;
         }
 
-        Move& Move::operator=(const Move&& rhs) {
+        Move& Move::operator=(const Move&& rhs) noexcept {
             if (this != &rhs)
             {
                 m_data = rhs.m_data;
