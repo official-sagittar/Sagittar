@@ -28,9 +28,9 @@ namespace sagittar {
            public:
             Move();
             Move(const Move& other);
-            Move(Move&& other);
+            Move(Move&& other) noexcept;
             Move& operator=(const Move& rhs);
-            Move& operator=(const Move&& rhs);
+            Move& operator=(const Move&& rhs) noexcept;
             ~Move() = default;
 
             Move(const Square from, const Square to, const MoveFlag flag);
