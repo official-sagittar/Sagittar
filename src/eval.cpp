@@ -4,7 +4,7 @@ namespace sagittar {
 
     namespace eval {
 
-        enum GamePhase {
+        enum GamePhase : u8 {
             MG,
             EG
         };
@@ -138,7 +138,7 @@ namespace sagittar {
 
             Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
-            const i8 stm = 1 - (2 * board.getActiveColor());
+            const auto stm = 1 - (2 * board.getActiveColor());
 #ifdef DEBUG
             if (board.getActiveColor() == Color::WHITE)
             {
