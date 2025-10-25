@@ -197,11 +197,12 @@ namespace sagittar {
                 std::cout << "bestmove " << ss.str() << std::endl;
             };
 
-            std::future<void> f = std::async(std::launch::async, [this, info,
-                                                                  searchProgressReportHandler,
-                                                                  searchCompleteReportHander] {
-                (void) engine.search(info, std::move(searchProgressReportHandler), std::move(searchCompleteReportHander));
-            });
+            std::future<void> f =
+              std::async(std::launch::async,
+                         [this, info, searchProgressReportHandler, searchCompleteReportHander] {
+                             (void) engine.search(info, std::move(searchProgressReportHandler),
+                                                  std::move(searchCompleteReportHander));
+                         });
 
             return f;
         }

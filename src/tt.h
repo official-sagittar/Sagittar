@@ -36,11 +36,11 @@ namespace sagittar {
                 struct TTEntry {
                     static constexpr u8 AGE_BITS = 5;
 
-                    u64   key;
-                    i16   score;
-                    u16   move_id;
-                    u8    depth;
-                    u8    age_flag_pv;
+                    u64 key;
+                    i16 score;
+                    u16 move_id;
+                    u8  depth;
+                    u8  age_flag_pv;
 
                     TTEntry() :
                         key(0ULL),
@@ -77,11 +77,11 @@ namespace sagittar {
                 std::size_t        getSize() const;
                 void               clear();
                 void               resetForSearch();
-                void               store(const u64        hash,
-                                         const i32        ply,
-                                         const Depth      depth,
-                                         const TTFlag     flag,
-                                         Score            value,
+                void               store(const u64         hash,
+                                         const i32         ply,
+                                         const Depth       depth,
+                                         const TTFlag      flag,
+                                         Score             value,
                                          const move::Move& move);
                 [[nodiscard]] bool probe(TTData* entry, const u64 hash) const;
                 u32                hashfull() const;

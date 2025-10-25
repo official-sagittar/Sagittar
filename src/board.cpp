@@ -22,8 +22,8 @@ namespace sagittar {
         // clang-format on
 
         static std::array<std::array<u64, 64>, 15> ZOBRIST_TABLE;
-        static std::array<u64, 16> ZOBRIST_CA;
-        static u64 ZOBRIST_SIDE;
+        static std::array<u64, 16>                 ZOBRIST_CA;
+        static u64                                 ZOBRIST_SIDE;
 
         void Board::initialize() {
 
@@ -302,10 +302,10 @@ namespace sagittar {
         }
 
         [[nodiscard]] DoMoveResult Board::doMove(const move::Move& move) noexcept {
-            const Square         from     = move.from();
-            const Square         to       = move.to();
-            const move::MoveFlag flag     = move.flag();
-            const Piece          piece    = pieces[from];
+            const Square         from  = move.from();
+            const Square         to    = move.to();
+            const move::MoveFlag flag  = move.flag();
+            const Piece          piece = pieces[from];
 
             if (pieceColorOf(piece) == colorFlip(active_color)) [[unlikely]]
             {
@@ -323,7 +323,7 @@ namespace sagittar {
             if (flag == move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH)
             {
                 movePiece(piece, from, to);
-                const i32 stm     = 1 - (2 * active_color);  // WHITE = 1; BLACK = -1
+                const i32 stm    = 1 - (2 * active_color);  // WHITE = 1; BLACK = -1
                 enpassant_target = static_cast<Square>(from + (8 * stm));
                 half_move_clock  = 0;
                 return doMoveComplete();
@@ -331,7 +331,7 @@ namespace sagittar {
             else if (flag == move::MoveFlag::MOVE_CAPTURE_EP)
             {
                 movePiece(piece, from, to);
-                const i32     stm         = -1 + (2 * active_color);  // WHITE = -1; BLACK = 1
+                const i32    stm         = -1 + (2 * active_color);  // WHITE = -1; BLACK = 1
                 const Square captured_sq = static_cast<Square>(to + (8 * stm));
                 const Piece  captured    = pieceCreate(PieceType::PAWN, colorFlip(active_color));
                 clearPiece(captured, captured_sq);
@@ -454,8 +454,9 @@ namespace sagittar {
                     if (!is_capture)
                     {
                         if ((active_color == Color::WHITE && from_rank == Rank::RANK_2
-                            && to_rank == Rank::RANK_4) || (active_color == Color::BLACK && from_rank == Rank::RANK_7
-                                 && to_rank == Rank::RANK_5))
+                             && to_rank == Rank::RANK_4)
+                            || (active_color == Color::BLACK && from_rank == Rank::RANK_7
+                                && to_rank == Rank::RANK_5))
                         {
                             flag = move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH;
                         }

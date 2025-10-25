@@ -75,10 +75,11 @@ namespace sagittar {
     }
 
     search::SearchResult
-    Engine::search(search::SearchInfo                               info,
+    Engine::search(search::SearchInfo                                 info,
                    std::function<void(const search::SearchResult&)>&& searchProgressReportHandler,
                    std::function<void(const search::SearchResult&)>&& searchCompleteReportHander) {
-        return searcher.startSearch(board, key_history, info, std::move(searchProgressReportHandler),
+        return searcher.startSearch(board, key_history, info,
+                                    std::move(searchProgressReportHandler),
                                     std::move(searchCompleteReportHander));
     }
 

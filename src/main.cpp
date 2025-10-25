@@ -11,14 +11,15 @@ int main(int argc, char* argv[]) {
     }
     else if (argc == 2)
     {
-        try {
+        try
+        {
             std::string cmd = std::string(argv[1]);
             if (cmd == "bench")
             {
                 engine.bench();
             }
-        }
-        catch (const std::exception& e) {
+        } catch (const std::exception& e)
+        {
             std::cerr << "Exception: " << e.what() << '\n';
             return 1;
         }

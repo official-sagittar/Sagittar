@@ -66,12 +66,12 @@ namespace sagittar {
 
         void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
 
-        SearchResult
-        Searcher::startSearch(const board::Board&                      board,
-                              std::span<u64>                           key_history,
-                              SearchInfo                               info,
-                              std::function<void(const SearchResult&)>&& searchProgressReportHandler,
-                              std::function<void(const SearchResult&)>&& searchCompleteReportHander) {
+        SearchResult Searcher::startSearch(
+          const board::Board&                        board,
+          std::span<u64>                             key_history,
+          SearchInfo                                 info,
+          std::function<void(const SearchResult&)>&& searchProgressReportHandler,
+          std::function<void(const SearchResult&)>&& searchCompleteReportHander) {
             stop.store(false, std::memory_order_relaxed);
             timeman::setSearchHardBoundTime(&info, board);
 
