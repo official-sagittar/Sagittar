@@ -35,14 +35,14 @@ namespace sagittar {
         inline Parameter& param_##name = addParam(#name, val, min, max, step, callback); \
         inline const int& name         = param_##name.value;
 #else
-    #define PARAM(name, val, min, max, step) constexpr int name = val;
+    #define PARAM(name, val, min, max, step) constexpr int(name) = val;
 
     #define PARAM_CALLBACK(name, val, min, max, step, callback) PARAM(name, val, min, max, step)
 #endif
 
         inline double lmp_treshold_pct;
-        inline u8     lmr_r_table_tactical[64][64];  // [move][depth]
-        inline u8     lmr_r_table_quiet[64][64];     // [move][depth]
+        inline i8     lmr_r_table_tactical[64][64];  // [move][depth]
+        inline i8     lmr_r_table_quiet[64][64];     // [move][depth]
         inline Score  futility_margin[5];            // [depth]
 
         void init();

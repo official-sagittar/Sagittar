@@ -37,15 +37,15 @@ namespace sagittar {
                     static constexpr u8 AGE_BITS = 5;
 
                     u64   key;
-                    Score score;
+                    i16   score;
                     u16   move_id;
-                    Depth depth;
+                    u8    depth;
                     u8    age_flag_pv;
 
                     TTEntry() :
                         key(0ULL),
                         score(0),
-                        move_id(move::Move().id()),
+                        move_id(0),
                         depth(0),
                         age_flag_pv(0) {}
 
@@ -82,7 +82,7 @@ namespace sagittar {
                                          const Depth      depth,
                                          const TTFlag     flag,
                                          Score            value,
-                                         const move::Move move);
+                                         const move::Move& move);
                 [[nodiscard]] bool probe(TTData* entry, const u64 hash) const;
                 u32                hashfull() const;
             };

@@ -2,7 +2,8 @@ Checks: >
   clang-analyzer-*,
   performance-*,
   bugprone-*,
+  -bugprone-easily-swappable-parameters
 
-WarningsAsErrors: '*'
-HeaderFilterRegex: 'src/.*'
+WarningsAsErrors: "*"
+HeaderFilterRegex: "src/.*"
 FormatStyle: file

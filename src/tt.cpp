@@ -41,7 +41,7 @@ namespace sagittar {
                                            const Depth      depth,
                                            const TTFlag     flag,
                                            Score            value,
-                                           const move::Move move) {
+                                           const move::Move& move) {
                 const u64     index     = getIndex(hash);
                 const TTEntry currentry = entries.at(index);
 
@@ -65,16 +65,16 @@ namespace sagittar {
                 // If current entry is from the current position AND if move is a null move,
                 // DO NOT replace the move in the entry
                 move::Move move_to_replace = move;
-                if ((move == move::Move()) && (currentry.key == hash))
+                if ((move == move::NULL_MOVE) && (currentry.key == hash))
                 {
                     move_to_replace = currentry.move();
                 }
 
                 TTEntry newentry;
                 newentry.key         = hash;
-                newentry.score       = value;
+                newentry.score       = static_cast<i16>(value);
                 newentry.move_id     = move_to_replace.id();
-                newentry.depth       = depth;
+                newentry.depth       = static_cast<u8>(depth);
                 newentry.age_flag_pv = TTEntry::foldAgeFlagPV(currentage, flag, false);
 
                 entries.at(index) = newentry;

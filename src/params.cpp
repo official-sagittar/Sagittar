@@ -58,21 +58,21 @@ namespace sagittar {
             const float lmr_beta_t  = static_cast<float>(lmr_beta_tactical) / 100.0f;
             const float lmr_alpha_q = static_cast<float>(lmr_alpha_quiet) / 100.0f;
             const float lmr_beta_q  = static_cast<float>(lmr_beta_quiet) / 100.0f;
-            u8          r;
-            for (u8 depth = 0; depth < 64; depth++)
+            i8          r;
+            for (i8 depth = 0; depth < 64; depth++)
             {
-                for (u8 move = 0; move < 64; move++)
+                for (i8 move = 0; move < 64; move++)
                 {
                     // Update LMR Tactical table
                     auto r_f = lmr_alpha_t + std::log(depth) * std::log(move) / lmr_beta_t;
                     auto r_i = std::isfinite(r_f) ? static_cast<int>(r_f) : 0;
-                    r        = static_cast<u8>(std::min(r_i, depth - 1));
+                    r        = static_cast<i8>(std::min(r_i, depth - 1));
                     lmr_r_table_tactical[move][depth] = r;
 
                     // Update LMR Quiet table
                     r_f = lmr_alpha_q + std::log(depth) * std::log(move) / lmr_beta_q;
                     r_i = std::isfinite(r_f) ? static_cast<int>(r_f) : 0;
-                    r   = static_cast<u8>(std::min(r_i, depth - 1));
+                    r   = static_cast<i8>(std::min(r_i, depth - 1));
                     lmr_r_table_quiet[move][depth] = r;
                 }
             }

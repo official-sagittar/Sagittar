@@ -35,8 +35,8 @@ namespace sagittar {
             key_history.clear();
         }
 
-        board::DoMoveResult Searcher::ThreadData::doMove(board::Board&    board,
-                                                         const move::Move move) {
+        board::DoMoveResult Searcher::ThreadData::doMove(board::Board&     board,
+                                                         const move::Move& move) {
             key_history.push_back(board.getHash());
             return board.doMove(move);
         }
@@ -78,8 +78,8 @@ namespace sagittar {
             ThreadData thread{};
             std::ranges::copy(key_history, std::back_inserter(thread.key_history));
 
-            return searchIteratively(board, thread, info, searchProgressReportHandler,
-                                     searchCompleteReportHander);
+            return searchIteratively(board, thread, info, std::move(searchProgressReportHandler),
+                                     std::move(searchCompleteReportHander));
         }
 
         SearchResult Searcher::startSearch(const board::Board& board,
@@ -98,11 +98,11 @@ namespace sagittar {
         }
 
         SearchResult Searcher::searchIteratively(
-          const board::Board&                      board,
-          ThreadData&                              thread,
-          const SearchInfo&                        info,
-          std::function<void(const SearchResult&)> searchProgressReportHandler,
-          std::function<void(const SearchResult&)> searchCompleteReportHander) {
+          const board::Board&                        board,
+          ThreadData&                                thread,
+          const SearchInfo&                          info,
+          std::function<void(const SearchResult&)>&& searchProgressReportHandler,
+          std::function<void(const SearchResult&)>&& searchCompleteReportHander) {
             SearchResult bestresult{};
 
             Score alpha = -INF;
@@ -112,8 +112,8 @@ namespace sagittar {
             {
                 thread.nodes = 0;
 
-                const u64 starttime = utils::currtimeInMilliseconds();
-                Score     score =
+                const u64   starttime = utils::currtimeInMilliseconds();
+                const Score score =
                   search<NodeType::ROOT>(board, currdepth, alpha, beta, 0, thread, info, true);
                 const u64 time = utils::currtimeInMilliseconds() - starttime;
 
@@ -134,8 +134,8 @@ namespace sagittar {
                 }
                 else
                 {
-                    alpha = score - 50;
-                    beta  = score + 50;
+                    alpha = static_cast<Score>(score - 50);
+                    beta  = static_cast<Score>(score + 50);
                 }
 
                 SearchResult result{};
@@ -233,11 +233,11 @@ namespace sagittar {
                 Score ttscore = ttdata.score;
                 if (ttscore < -MATE_SCORE)
                 {
-                    ttscore += ply;
+                    ttscore = static_cast<Score>(ttscore + ply);
                 }
                 else if (ttscore > MATE_SCORE)
                 {
-                    ttscore -= ply;
+                    ttscore = static_cast<Score>(ttscore - ply);
                 }
 
                 if (ttdata.flag == tt::TTFlag::EXACT
@@ -257,7 +257,7 @@ namespace sagittar {
                 // Reverse Futility Pruning
                 if (depth <= 3)
                 {
-                    const Score margin = params::rfp_margin * depth;
+                    const Score margin = static_cast<Score>(params::rfp_margin * depth);
                     if (static_eval >= beta + margin)
                     {
                         return static_eval;
@@ -283,7 +283,7 @@ namespace sagittar {
                 // clang-format off
                 if (depth <= 3
                     && alpha < WIN_SCORE
-                    && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
+                    && ((static_eval + params::futility_margin[static_cast<u8>(depth)]) <= alpha))
                 {
                     do_futility_pruning = true;
                 }
@@ -345,9 +345,11 @@ namespace sagittar {
                     // Late Move Pruning
                     if (depth <= 2 && move_piece_type != PieceType::PAWN)
                     {
-                        const u32 LMP_MOVE_CUTOFF =
-                          n_moves * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
-                        if (moves_searched >= LMP_MOVE_CUTOFF)
+                        const double lmp_factor =
+                          1.0 - (params::lmp_treshold_pct - 0.1 * static_cast<double>(depth));
+                        const u32 cutoff =
+                          static_cast<u32>(static_cast<double>(n_moves) * lmp_factor);
+                        if (moves_searched >= cutoff)
                         {
                             thread.undoMove();
                             continue;
@@ -367,11 +369,11 @@ namespace sagittar {
 
                     if (can_reduce)
                     {
-                        const u8 r =
-                          move_is_quite
-                            ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth]
-                            : params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
-                                                          [(int) depth];
+                        const i8 r = move_is_quite
+                                     ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)]
+                                                                [static_cast<u8>(depth)]
+                                     : params::lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                                   [static_cast<u8>(depth)];
 
                         score = -search<NodeType::NON_PV>(board_copy, depth - r, -alpha - 1, -alpha,
                                                           ply + 1, thread, info, do_null);
