@@ -4,7 +4,7 @@ project(Sagittar LANGUAGES CXX)
 # ----------------------------------------------------------
 # Disallow MSVC
 # ----------------------------------------------------------
-if (MSVC)
+if(MSVC)
     message(FATAL_ERROR "Sagittar does not support MSVC. Please use Clang (MSYS2/clang64) or GCC.")
 endif()
 
@@ -43,26 +43,26 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -march=native")
-
 option(ENABLE_SAN "Enable Address and Undefined sanitizers" OFF)
 
-# ----------------------------------------------------------
-# Sources
-# ----------------------------------------------------------
-file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/*.cpp src/*.h)
-list(FILTER CORE_SRC EXCLUDE REGEX "src/pch.cpp")
-
-file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)
-
+# Only affect this target (avoid global flag pollution)
 add_executable(${EXE_NAME})
+target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic -march=native)
 target_precompile_headers(${EXE_NAME} PRIVATE src/pch.h)
 target_include_directories(${EXE_NAME} PRIVATE src)
 
 set_target_properties(${EXE_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR}
+    POSITION_INDEPENDENT_CODE OFF
 )
+
+# ----------------------------------------------------------
+# Source files
+# ----------------------------------------------------------
+file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/*.cpp src/*.h)
+list(FILTER CORE_SRC EXCLUDE REGEX "src/pch.cpp")
+
+file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)
 
 # ----------------------------------------------------------
 # Build type configurations
@@ -130,17 +130,26 @@ if(NOT ENABLE_SAN)
             -static-libstdc++
         )
         set(STATIC_STATUS "ON (Linux static)")
+    elseif(APPLE)
+        message(STATUS "Static linking skipped on macOS (unsupported)")
     endif()
 endif()
 
 # ----------------------------------------------------------
-# Force LLD linker everywhere (except macOS)
+# Linker selection
 # ----------------------------------------------------------
-if(NOT APPLE)
-    add_link_options(-fuse-ld=lld)
-    set(LINKER_STATUS "LLD (forced)")
-else()
+if(APPLE)
     set(LINKER_STATUS "Apple ld64 (default)")
+
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_link_options(-fuse-ld=lld)
+    set(LINKER_STATUS "LLD (forced for Clang)")
+
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(LINKER_STATUS "System ld (default for GCC)")
+
+else()
+    set(LINKER_STATUS "Unknown linker (default)")
 endif()
 
 # ----------------------------------------------------------
@@ -148,12 +157,13 @@ endif()
 # ----------------------------------------------------------
 message(STATUS "")
 message(STATUS "================ Sagittar Build Summary ================")
-message(STATUS "Target:       ${EXE_NAME}")
-message(STATUS "Output Dir:   ${BIN_DIR}")
-message(STATUS "Compiler:     ${CMAKE_CXX_COMPILER}")
-message(STATUS "Configuration:${CMAKE_BUILD_TYPE}")
-message(STATUS "Sanitizers:   ${ENABLE_SAN}")
-message(STATUS "Static Link:  ${STATIC_STATUS}")
-message(STATUS "Linker:       ${LINKER_STATUS}")
+message(STATUS "Target:        ${EXE_NAME}")
+message(STATUS "Output Dir:    ${BIN_DIR}")
+message(STATUS "Compiler Path: ${CMAKE_CXX_COMPILER}")
+message(STATUS "Compiler:      ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+message(STATUS "Configuration: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Sanitizers:    ${ENABLE_SAN}")
+message(STATUS "Static Link:   ${STATIC_STATUS}")
+message(STATUS "Linker:        ${LINKER_STATUS}")
 message(STATUS "========================================================")
 message(STATUS "")
