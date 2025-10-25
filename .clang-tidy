@@ -1,6 +1,7 @@
 Checks: >
   clang-analyzer-*,
   performance-*,
+  -performance-avoid-endl,
   bugprone-*,
   -bugprone-easily-swappable-parameters
 

@@ -32,7 +32,7 @@ namespace sagittar {
 
         void setStartpos();
 
-        void setPositionFromFEN(std::string);
+        void setPositionFromFEN(const std::string&);
 
         std::string getPositionAsFEN();
 
@@ -44,8 +44,8 @@ namespace sagittar {
 
         search::SearchResult
         search(search::SearchInfo,
-               std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-               std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+               std::function<void(const search::SearchResult&)>&& searchProgressReportHandler,
+               std::function<void(const search::SearchResult&)>&& searchCompleteReportHander);
 
         void stopSearch();
 

@@ -200,7 +200,7 @@ namespace sagittar {
             std::future<void> f = std::async(std::launch::async, [this, info,
                                                                   searchProgressReportHandler,
                                                                   searchCompleteReportHander] {
-                (void) engine.search(info, searchProgressReportHandler, searchCompleteReportHander);
+                (void) engine.search(info, std::move(searchProgressReportHandler), std::move(searchCompleteReportHander));
             });
 
             return f;
