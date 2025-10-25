@@ -42,12 +42,11 @@ define run_cmake
 	@echo "=== Build complete: $(BIN_DIR)/$(EXE) ==="
 endef
 
-.PHONY: all release debug test clean rebuild info
+.PHONY: all release clean info
 
-all: release
+all: clean release
+
 release: ; $(call run_cmake,release,Release,OFF)
-debug:   ; $(call run_cmake,debug,Debug,ON)
-test:    ; $(call run_cmake,test,Test,ON)
 
 # ----------------------------------------------------------
 # Clean target — pure Windows commands if under cmd.exe
@@ -61,8 +60,6 @@ else
 	@$(RMDIR_CMD)
 	@$(DEL_CMD)
 endif
-
-rebuild: clean release
 
 info:
 	@echo "---------------------------------------------"
