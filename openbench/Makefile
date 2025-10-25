@@ -1,4 +1,3 @@
-
 EXE        ?= Sagittar
 BIN_DIR    ?= .
 ROOT_DIR   := $(realpath $(dir $(lastword $(MAKEFILE_LIST)))/..)
