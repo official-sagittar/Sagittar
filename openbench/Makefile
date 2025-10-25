@@ -3,7 +3,7 @@ EXE        ?= Sagittar
 BIN_DIR    ?= .
 ROOT_DIR   := $(realpath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 BUILD_ROOT := $(ROOT_DIR)/build
-CXX        := clang++
+override CXX := clang++
 
 ifeq ($(OS),Windows_NT)
 	IS_WINDOWS := 1
