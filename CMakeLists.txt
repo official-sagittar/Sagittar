@@ -116,23 +116,16 @@ endif()
 set(STATIC_STATUS "OFF")
 
 if(NOT ENABLE_SAN)
-    if(WIN32 AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-        target_link_options(${EXE_NAME} PRIVATE
-            -static
-            -static-libgcc
-            -static-libstdc++
-        )
-        set(STATIC_STATUS "ON (clang64 static)")
-    elseif(UNIX AND NOT APPLE)
-        target_link_options(${EXE_NAME} PRIVATE
-            -static
-            -static-libgcc
-            -static-libstdc++
-        )
-        set(STATIC_STATUS "ON (Linux static)")
-    elseif(APPLE)
+    if(APPLE)
         message(STATUS "Static linking skipped on macOS (unsupported)")
+    else()
+        target_link_options(${EXE_NAME} PRIVATE -static)
+        set(STATIC_STATUS "ON")
     endif()
+endif()
+
+if(ENABLE_SAN AND STATIC_STATUS STREQUAL "ON")
+    message(WARNING "Sanitizers and full static linking are incompatible; expect linker errors.")
 endif()
 
 # ----------------------------------------------------------
