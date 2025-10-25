@@ -7,7 +7,7 @@ namespace sagittar {
 
     namespace fen {
 
-        void        parseFEN(board::Board*, std::string, const bool full = true);
+        void        parseFEN(board::Board*, const std::string&, const bool full = true);
         std::string toFEN(const board::Board&);
 
     }

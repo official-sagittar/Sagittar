@@ -70,8 +70,8 @@ namespace sagittar {
         Searcher::startSearch(const board::Board&                      board,
                               std::span<u64>                           key_history,
                               SearchInfo                               info,
-                              std::function<void(const SearchResult&)> searchProgressReportHandler,
-                              std::function<void(const SearchResult&)> searchCompleteReportHander) {
+                              std::function<void(const SearchResult&)>&& searchProgressReportHandler,
+                              std::function<void(const SearchResult&)>&& searchCompleteReportHander) {
             stop.store(false, std::memory_order_relaxed);
             timeman::setSearchHardBoundTime(&info, board);
 

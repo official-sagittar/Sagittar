@@ -91,8 +91,8 @@ namespace sagittar {
             startSearch(const board::Board&                      board,
                         std::span<u64>                           key_history,
                         SearchInfo                               info,
-                        std::function<void(const SearchResult&)> searchProgressReportHandler,
-                        std::function<void(const SearchResult&)> searchCompleteReportHander);
+                        std::function<void(const SearchResult&)>&& searchProgressReportHandler,
+                        std::function<void(const SearchResult&)>&& searchCompleteReportHander);
 
             SearchResult
             startSearch(const board::Board& board, std::span<u64> key_history, SearchInfo info);

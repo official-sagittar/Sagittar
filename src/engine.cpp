@@ -42,7 +42,7 @@ namespace sagittar {
 
     void Engine::setStartpos() { board.setStartpos(); }
 
-    void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&board, fen); }
+    void Engine::setPositionFromFEN(const std::string& fen) { fen::parseFEN(&board, fen); }
 
     std::string Engine::getPositionAsFEN() { return fen::toFEN(board); }
 
@@ -76,10 +76,10 @@ namespace sagittar {
 
     search::SearchResult
     Engine::search(search::SearchInfo                               info,
-                   std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-                   std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-        return searcher.startSearch(board, key_history, info, searchProgressReportHandler,
-                                    searchCompleteReportHander);
+                   std::function<void(const search::SearchResult&)>&& searchProgressReportHandler,
+                   std::function<void(const search::SearchResult&)>&& searchCompleteReportHander) {
+        return searcher.startSearch(board, key_history, info, std::move(searchProgressReportHandler),
+                                    std::move(searchCompleteReportHander));
     }
 
     void Engine::stopSearch() { searcher.stopSearch(); }
