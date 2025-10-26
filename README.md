@@ -10,14 +10,6 @@ A free UCI Chess engine
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![Sagittar Unit Test](https://github.com/codemaniac/Sagittar/actions/workflows/unit-test.yml/badge.svg)
 
-<br />
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/codemaniac)
-
-# Building Sagittar
-
-See [BUILDING.md](BUILDING.md) for instructions on how to build Sagittar from source and a list of supported platforms.
-
 # Acknowledgements
 
 - https://www.chessprogramming.org for concepts
