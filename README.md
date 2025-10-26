@@ -10,8 +10,6 @@ A free UCI Chess engine
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 ![Sagittar Unit Test](https://github.com/codemaniac/Sagittar/actions/workflows/unit-test.yml/badge.svg)
 
-<br />
-
 # Acknowledgements
 
 - https://www.chessprogramming.org for concepts
