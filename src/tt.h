@@ -1,8 +1,8 @@
 #pragma once
 
-#include "board.h"
 #include "move.h"
 #include "pch.h"
+#include "position.h"
 #include "types.h"
 
 namespace sagittar {

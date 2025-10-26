@@ -1,6 +1,6 @@
 #include "uci.h"
-#include "board.h"
 #include "params.h"
+#include "position.h"
 #include "searchtypes.h"
 #include "utils.h"
 
@@ -100,7 +100,7 @@ namespace sagittar {
                 std::string       move;
                 while (movesss >> move)
                 {
-                    if (engine.doMove(move) != board::DoMoveResult::LEGAL) [[unlikely]]
+                    if (engine.doMove(move) != core::DoMoveResult::LEGAL) [[unlikely]]
                     {
                         std::cerr << "Invalid Move!" << std::endl;
                     }
@@ -206,7 +206,7 @@ namespace sagittar {
             return f;
         }
 
-        void UCIHandler::handleDisplay() { engine.displayBoard(); }
+        void UCIHandler::handleDisplay() { engine.display(); }
 
 #ifdef EXTERNAL_TUNE
         void UCIHandler::handleDisplayParams() {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "board.h"
 #include "move.h"
 #include "pch.h"
+#include "position.h"
 #include "searchtypes.h"
 #include "tt.h"
 #include "types.h"
@@ -45,38 +45,38 @@ namespace sagittar {
                 size_t           nodes;
 
                 ThreadData();
-                board::DoMoveResult doMove(board::Board& board, const move::Move move);
-                void                doNullMove(board::Board& board);
-                void                undoMove();
-                void                undoNullMove();
+                core::DoMoveResult doMove(core::Position& pos, const move::Move move);
+                void               doNullMove(core::Position& pos);
+                void               undoMove();
+                void               undoNullMove();
             };
 
            private:
             void shouldStopSearchNow(const SearchInfo&);
 
             SearchResult
-            searchIteratively(const board::Board&                      board,
+            searchIteratively(const core::Position&                    pos,
                               ThreadData&                              thread,
                               const SearchInfo&                        info,
                               std::function<void(const SearchResult&)> searchProgressReportHandler,
                               std::function<void(const SearchResult&)> searchCompleteReportHander);
 
             template<NodeType nodeType>
-            Score search(const board::Board& board,
-                         Depth               depth,
-                         Score               alpha,
-                         Score               beta,
-                         const i32           ply,
-                         ThreadData&         thread,
-                         const SearchInfo&   info,
-                         const bool          do_null);
+            Score search(const core::Position& pos,
+                         Depth                 depth,
+                         Score                 alpha,
+                         Score                 beta,
+                         const i32             ply,
+                         ThreadData&           thread,
+                         const SearchInfo&     info,
+                         const bool            do_null);
 
-            Score quiescencesearch(const board::Board& board,
-                                   Score               alpha,
-                                   Score               beta,
-                                   const i32           ply,
-                                   ThreadData&         thread,
-                                   const SearchInfo&   info);
+            Score quiescencesearch(const core::Position& pos,
+                                   Score                 alpha,
+                                   Score                 beta,
+                                   const i32             ply,
+                                   ThreadData&           thread,
+                                   const SearchInfo&     info);
 
            public:
             Searcher();
@@ -88,14 +88,14 @@ namespace sagittar {
             void setTranspositionTableSize(const std::size_t);
 
             SearchResult
-            startSearch(const board::Board&                      board,
+            startSearch(const core::Position&                    pos,
                         std::span<u64>                           key_history,
                         SearchInfo                               info,
                         std::function<void(const SearchResult&)> searchProgressReportHandler,
                         std::function<void(const SearchResult&)> searchCompleteReportHander);
 
             SearchResult
-            startSearch(const board::Board& board, std::span<u64> key_history, SearchInfo info);
+            startSearch(const core::Position& pos, std::span<u64> key_history, SearchInfo info);
 
             void stopSearch();
         };

@@ -9,7 +9,7 @@ namespace sagittar {
     Engine::Engine() {
         name    = "Sagittar";
         version = "0.1.0";
-        board::Board::initialize();
+        core::Position::initialize();
         eval::initialize();
         params::init();
         key_history.reserve(1024);
@@ -22,7 +22,7 @@ namespace sagittar {
     std::string Engine::getName() const { return name + " " + version; }
 
     void Engine::reset() {
-        board.reset();
+        pos.reset();
         searcher.reset();
         key_history.reserve(1024);
         key_history.shrink_to_fit();
@@ -40,45 +40,45 @@ namespace sagittar {
         searcher.setTranspositionTableSize(size);
     }
 
-    void Engine::setStartpos() { board.setStartpos(); }
+    void Engine::setStartpos() { pos.setStartpos(); }
 
-    void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&board, fen); }
+    void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&pos, fen); }
 
-    std::string Engine::getPositionAsFEN() { return fen::toFEN(board); }
+    std::string Engine::getPositionAsFEN() { return fen::toFEN(pos); }
 
-    board::DoMoveResult Engine::doMove(const std::string& move) {
-        const auto   curr_key   = board.getHash();
-        board::Board board_copy = board;
-        const auto   result     = board_copy.doMove(move);
-        if (result == board::DoMoveResult::LEGAL)
+    core::DoMoveResult Engine::doMove(const std::string& move) {
+        const auto     curr_key = pos.getHash();
+        core::Position pos_copy = pos;
+        const auto     result   = pos_copy.doMove(move);
+        if (result == core::DoMoveResult::LEGAL)
         {
             key_history.push_back(curr_key);
-            board = board_copy;
+            pos = pos_copy;
         }
         return result;
     }
 
-    board::DoMoveResult Engine::doMove(const move::Move& move) {
-        const auto   curr_key   = board.getHash();
-        board::Board board_copy = board;
-        const auto   result     = board_copy.doMove(move);
-        if (result == board::DoMoveResult::LEGAL)
+    core::DoMoveResult Engine::doMove(const move::Move& move) {
+        const auto     curr_key = pos.getHash();
+        core::Position pos_copy = pos;
+        const auto     result   = pos_copy.doMove(move);
+        if (result == core::DoMoveResult::LEGAL)
         {
             key_history.push_back(curr_key);
-            board = board_copy;
+            pos = pos_copy;
         }
         return result;
     }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
-        return searcher.startSearch(board, key_history, info);
+        return searcher.startSearch(pos, key_history, info);
     }
 
     search::SearchResult
     Engine::search(search::SearchInfo                               info,
                    std::function<void(const search::SearchResult&)> searchProgressReportHandler,
                    std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-        return searcher.startSearch(board, key_history, info, searchProgressReportHandler,
+        return searcher.startSearch(pos, key_history, info, searchProgressReportHandler,
                                     searchCompleteReportHander);
     }
 
@@ -163,6 +163,6 @@ namespace sagittar {
         std::cout << ss.str() << std::endl;
     }
 
-    void Engine::displayBoard() const { board.display(); }
+    void Engine::display() const { pos.display(); }
 
 }

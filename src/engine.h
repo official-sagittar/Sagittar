@@ -1,8 +1,8 @@
 #pragma once
 
-#include "board.h"
 #include "move.h"
 #include "pch.h"
+#include "position.h"
 #include "search.h"
 #include "searchtypes.h"
 #include "types.h"
@@ -13,7 +13,7 @@ namespace sagittar {
        private:
         std::string      name;
         std::string      version;
-        board::Board     board;
+        core::Position   pos;
         search::Searcher searcher;
         std::vector<u64> key_history;
 
@@ -36,9 +36,9 @@ namespace sagittar {
 
         std::string getPositionAsFEN();
 
-        board::DoMoveResult doMove(const std::string&);
+        core::DoMoveResult doMove(const std::string&);
 
-        board::DoMoveResult doMove(const move::Move&);
+        core::DoMoveResult doMove(const move::Move&);
 
         search::SearchResult search(search::SearchInfo);
 
@@ -51,7 +51,7 @@ namespace sagittar {
 
         void bench();
 
-        void displayBoard() const;
+        void display() const;
     };
 
 }

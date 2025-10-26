@@ -1,7 +1,7 @@
-#include "board.h"
 #include "doctest/doctest.h"
 #include "fen.h"
 #include "move.h"
+#include "position.h"
 #include "tt.h"
 #include "types.h"
 
@@ -20,8 +20,8 @@ TEST_SUITE("TT") {
     }
 
     TEST_CASE("TranspositionTable::store and TranspositionTable::probe") {
-        board::Board board;
-        board.setStartpos();
+        core::Position pos;
+        pos.setStartpos();
 
         search::tt::TranspositionTable tt(2);
 
@@ -29,11 +29,11 @@ TEST_SUITE("TT") {
 
         move::Move m(Square::E2, Square::E4, move::MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
-        tt.store(board.getHash(), 0, 1, search::tt::TTFlag::EXACT, 10, m);
+        tt.store(pos.getHash(), 0, 1, search::tt::TTFlag::EXACT, 10, m);
 
         search::tt::TTData ttdata;
 
-        bool tthit = tt.probe(&ttdata, board.getHash());
+        bool tthit = tt.probe(&ttdata, pos.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttdata.depth == 1);
@@ -42,13 +42,13 @@ TEST_SUITE("TT") {
         REQUIRE(ttdata.move == m);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&board, fen);
+        fen::parseFEN(&pos, fen);
 
         m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board.getHash(), 0, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
+        tt.store(pos.getHash(), 0, 3, search::tt::TTFlag::LOWERBOUND, 100, m);
 
-        tthit = tt.probe(&ttdata, board.getHash());
+        tthit = tt.probe(&ttdata, pos.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttdata.depth == 3);
@@ -58,21 +58,21 @@ TEST_SUITE("TT") {
     }
 
     TEST_CASE("Null Move Replacement from the same position") {
-        board::Board board;
+        core::Position pos;
 
         search::tt::TranspositionTable tt(2);
 
         REQUIRE(tt.getSize() > 0);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&board, fen);
+        fen::parseFEN(&pos, fen);
 
         const move::Move m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
-        tt.store(board.getHash(), 0, 3, search::tt::TTFlag::EXACT, 100, m);
+        tt.store(pos.getHash(), 0, 3, search::tt::TTFlag::EXACT, 100, m);
 
         search::tt::TTData ttdata;
-        bool               tthit = tt.probe(&ttdata, board.getHash());
+        bool               tthit = tt.probe(&ttdata, pos.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttdata.depth == 3);
@@ -82,9 +82,9 @@ TEST_SUITE("TT") {
 
         const move::Move nullmove;
 
-        tt.store(board.getHash(), 0, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
+        tt.store(pos.getHash(), 0, 5, search::tt::TTFlag::LOWERBOUND, 50, nullmove);
 
-        tthit = tt.probe(&ttdata, board.getHash());
+        tthit = tt.probe(&ttdata, pos.getHash());
 
         REQUIRE(tthit == true);
         REQUIRE(ttdata.depth == 5);

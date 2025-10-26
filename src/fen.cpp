@@ -7,12 +7,12 @@ namespace sagittar {
 
     namespace fen {
 
-        void parseFEN(board::Board* board, std::string fen, const bool full) {
+        void parseFEN(core::Position* pos, std::string fen, const bool full) {
             std::string        segment;
             std::istringstream ss(fen);
 
-            // Reset board
-            board->reset();
+            // Reset pos
+            pos->reset();
 
             // Parse Piece placement data
             u8 rank = Rank::RANK_8;
@@ -41,7 +41,7 @@ namespace sagittar {
                     {
                         throw std::invalid_argument("Invalid FEN!");
                     }
-                    board->setPiece(static_cast<Piece>(piece_id), rf2sq(rank, file++));
+                    pos->setPiece(static_cast<Piece>(piece_id), rf2sq(rank, file++));
                 }
             }
 
@@ -49,11 +49,11 @@ namespace sagittar {
             ss >> segment;
             if (segment == "w")
             {
-                board->setActiveColor(Color::WHITE);
+                pos->setActiveColor(Color::WHITE);
             }
             else if (segment == "b")
             {
-                board->setActiveColor(Color::BLACK);
+                pos->setActiveColor(Color::BLACK);
             }
             else [[unlikely]]
             {
@@ -64,25 +64,25 @@ namespace sagittar {
             ss >> segment;
             if (segment == "-")
             {
-                board->addCastelingRights(board::CastleFlag::NOCA);
+                pos->addCastelingRights(core::CastleFlag::NOCA);
             }
             else
             {
                 if (segment.find('K') != std::string::npos)
                 {
-                    board->addCastelingRights(board::CastleFlag::WKCA);
+                    pos->addCastelingRights(core::CastleFlag::WKCA);
                 }
                 if (segment.find('Q') != std::string::npos)
                 {
-                    board->addCastelingRights(board::CastleFlag::WQCA);
+                    pos->addCastelingRights(core::CastleFlag::WQCA);
                 }
                 if (segment.find('k') != std::string::npos)
                 {
-                    board->addCastelingRights(board::CastleFlag::BKCA);
+                    pos->addCastelingRights(core::CastleFlag::BKCA);
                 }
                 if (segment.find('q') != std::string::npos)
                 {
-                    board->addCastelingRights(board::CastleFlag::BQCA);
+                    pos->addCastelingRights(core::CastleFlag::BQCA);
                 }
             }
 
@@ -90,12 +90,12 @@ namespace sagittar {
             ss >> segment;
             if (segment == "-")
             {
-                board->setEnpassantTarget(Square::NO_SQ);
+                pos->setEnpassantTarget(Square::NO_SQ);
             }
             else
             {
                 const Rank rank = static_cast<Rank>((segment[1] - '0') - 1);
-                if (board->getActiveColor() == Color::WHITE)
+                if (pos->getActiveColor() == Color::WHITE)
                 {
                     if (rank != Rank::RANK_6) [[unlikely]]
                     {
@@ -111,43 +111,43 @@ namespace sagittar {
                 }
                 const File   file         = static_cast<File>(segment[0] - 'a');
                 const Square ep_target_sq = rf2sq(rank, file);
-                board->setEnpassantTarget(ep_target_sq);
+                pos->setEnpassantTarget(ep_target_sq);
             }
 
             // Parse Halfmove clock
             ss >> segment;
             if (!full || segment.empty() || segment == "-")
             {
-                board->setHalfmoveClock(0);
+                pos->setHalfmoveClock(0);
             }
             else
             {
-                board->setHalfmoveClock(std::stoi(segment));
+                pos->setHalfmoveClock(std::stoi(segment));
             }
 
             // Parse Fullmove number
             ss >> segment;
             if (!full || segment.empty() || segment == "-")
             {
-                board->setFullmoveNumber(1);
+                pos->setFullmoveNumber(1);
             }
             else
             {
-                board->setFullmoveNumber(std::stoi(segment));
+                pos->setFullmoveNumber(std::stoi(segment));
             }
 
             // Set checkers
-            const Piece     king = pieceCreate(PieceType::KING, board->getActiveColor());
-            board::BitBoard bb   = board->getBitboard(king);
-            const Square    sq   = static_cast<Square>(utils::bitScanForward(&bb));
-            const Color     them = colorFlip(board->getActiveColor());
-            board->setCheckers(movegen::getSquareAttackers(*board, sq, them));
+            const Piece    king = pieceCreate(PieceType::KING, pos->getActiveColor());
+            core::BitBoard bb   = pos->getBitboard(king);
+            const Square   sq   = static_cast<Square>(utils::bitScanForward(&bb));
+            const Color    them = colorFlip(pos->getActiveColor());
+            pos->setCheckers(movegen::getSquareAttackers(*pos, sq, them));
 
             // Reset Hash
-            board->resetHash();
+            pos->resetHash();
         }
 
-        std::string toFEN(const board::Board& board) {
+        std::string toFEN(const core::Position& pos) {
             std::ostringstream oss;
 
             // Piece placement data
@@ -157,7 +157,7 @@ namespace sagittar {
                 for (u8 file = File::FILE_A; file <= File::FILE_H; file++)
                 {
                     const Square sq    = rf2sq(rank, file);
-                    const Piece  piece = board.getPiece(sq);
+                    const Piece  piece = pos.getPiece(sq);
                     if (piece != Piece::NO_PIECE)
                     {
                         if (empty > 0)
@@ -184,7 +184,7 @@ namespace sagittar {
             oss << " ";
 
             // Active color
-            if (board.getActiveColor() == Color::WHITE)
+            if (pos.getActiveColor() == Color::WHITE)
             {
                 oss << "w";
             }
@@ -195,25 +195,25 @@ namespace sagittar {
             oss << " ";
 
             // Castling availability
-            if (board.getCastelingRights() == board::CastleFlag::NOCA)
+            if (pos.getCastelingRights() == core::CastleFlag::NOCA)
             {
                 oss << "-";
             }
             else
             {
-                if (board.getCastelingRights() & board::CastleFlag::WKCA)
+                if (pos.getCastelingRights() & core::CastleFlag::WKCA)
                 {
                     oss << "K";
                 }
-                if (board.getCastelingRights() & board::CastleFlag::WQCA)
+                if (pos.getCastelingRights() & core::CastleFlag::WQCA)
                 {
                     oss << "Q";
                 }
-                if (board.getCastelingRights() & board::CastleFlag::BKCA)
+                if (pos.getCastelingRights() & core::CastleFlag::BKCA)
                 {
                     oss << "k";
                 }
-                if (board.getCastelingRights() & board::CastleFlag::BQCA)
+                if (pos.getCastelingRights() & core::CastleFlag::BQCA)
                 {
                     oss << "q";
                 }
@@ -221,13 +221,13 @@ namespace sagittar {
             oss << " ";
 
             // En passant target
-            if (board.getEnpassantTarget() == Square::NO_SQ)
+            if (pos.getEnpassantTarget() == Square::NO_SQ)
             {
                 oss << "-";
             }
             else
             {
-                const Square ep_target = board.getEnpassantTarget();
+                const Square ep_target = pos.getEnpassantTarget();
                 const File   file      = sq2file(ep_target);
                 const Rank   rank      = sq2rank(ep_target);
                 oss << FILE_STR[file] << (int) rank + 1;
@@ -235,10 +235,10 @@ namespace sagittar {
             oss << " ";
 
             // Halfmove clock
-            oss << (int) board.getHalfmoveClock() << " ";
+            oss << (int) pos.getHalfmoveClock() << " ";
 
             // Fullmove number
-            oss << (int) board.getFullmoveNumber() << " ";
+            oss << (int) pos.getFullmoveNumber() << " ";
 
             return oss.str();
         }

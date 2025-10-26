@@ -9,7 +9,7 @@ namespace sagittar {
 
         namespace timeman {
 
-            void setSearchHardBoundTime(SearchInfo* info, const board::Board& board) {
+            void setSearchHardBoundTime(SearchInfo* info, const core::Position& pos) {
                 u32 time = 0, inc = 0;
 
                 if (info->movetime > 0)
@@ -19,7 +19,7 @@ namespace sagittar {
                 }
                 else if (!info->infinite)
                 {
-                    if (board.getActiveColor() == Color::WHITE)
+                    if (pos.getActiveColor() == Color::WHITE)
                     {
                         time = info->wtime;
                         inc  = info->winc;

@@ -33,7 +33,7 @@ define run_cmake
 	@echo "=== Build complete: $(BIN_DIR)/$(EXE) ==="
 endef
 
-.PHONY: all release clean info
+.PHONY: all release clean
 
 all: clean release
 
@@ -49,12 +49,3 @@ else
 	@$(RMDIR_CMD)
 	@$(DEL_CMD)
 endif
-
-info:
-	@echo "---------------------------------------------"
-	@echo "Compiler   : $(CXX)"
-	@echo "Executable : $(EXE)"
-	@echo "Root Dir   : $(ROOT_DIR)"
-	@echo "Build Root : $(BUILD_ROOT)"
-	@echo "Binary Dir : $(BIN_DIR)"
-	@echo "---------------------------------------------"

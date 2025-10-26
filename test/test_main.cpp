@@ -1,10 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT
-#include "board.h"
 #include "doctest/doctest.h"
+#include "position.h"
 
 int main(int argc, char** argv) {
 
-    sagittar::board::Board::initialize();
+    sagittar::core::Position::initialize();
 
     doctest::Context context;
     context.applyCommandLine(argc, argv);

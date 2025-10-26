@@ -7,27 +7,27 @@ namespace sagittar {
 
     namespace perft {
 
-        u64 perft(const board::Board& board, const Depth depth) {
+        u64 perft(const core::Position& pos, const Depth depth) {
             if (depth == 0)
             {
                 return 1ULL;
             }
             u64                               nodes = 0ULL;
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
+            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, pos);
             for (auto const& move : moves)
             {
-                board::Board              board_copy = board;
-                const board::DoMoveResult result     = board_copy.doMove(move);
-                if (result == board::DoMoveResult::LEGAL)
+                core::Position           pos_copy = pos;
+                const core::DoMoveResult result   = pos_copy.doMove(move);
+                if (result == core::DoMoveResult::LEGAL)
                 {
-                    nodes += perft(board_copy, depth - 1);
+                    nodes += perft(pos_copy, depth - 1);
                 }
             }
             return nodes;
         }
 
-        u64 divide(const board::Board& board, const Depth depth) {
+        u64 divide(const core::Position& pos, const Depth depth) {
             if (depth == 0)
             {
                 return 1ULL;
@@ -35,14 +35,14 @@ namespace sagittar {
             u64                               nodes       = 0ULL;
             u64                               total_nodes = 0ULL;
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
+            movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, pos);
             for (auto const& move : moves)
             {
-                board::Board              board_copy = board;
-                const board::DoMoveResult result     = board_copy.doMove(move);
-                if (result == board::DoMoveResult::LEGAL)
+                core::Position           pos_copy = pos;
+                const core::DoMoveResult result   = pos_copy.doMove(move);
+                if (result == core::DoMoveResult::LEGAL)
                 {
-                    nodes = perft(board_copy, depth - 1);
+                    nodes = perft(pos_copy, depth - 1);
                     total_nodes += nodes;
                     move.display();
                     std::cout << " " << (u64) nodes << std::endl;
