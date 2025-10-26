@@ -40,23 +40,23 @@ namespace sagittar {
         constexpr u32 HISTORY_SCORE_MAX   = 7000;
 
         template<movegen::MovegenType T>
-        MovePicker<T>::MovePicker(move::ExtMove*      buffer,
-                                  const board::Board& board,
-                                  const move::Move&   ttmove,
-                                  const SearcherData& data,
-                                  const i32           ply) {
-            process(buffer, board, ttmove, data, ply);
+        MovePicker<T>::MovePicker(move::ExtMove*        buffer,
+                                  const core::Position& pos,
+                                  const move::Move&     ttmove,
+                                  const SearcherData&   data,
+                                  const i32             ply) {
+            process(buffer, pos, ttmove, data, ply);
         }
 
         template<movegen::MovegenType T>
-        void MovePicker<T>::process(move::ExtMove*      buffer,
-                                    const board::Board& board,
-                                    const move::Move&   ttmove,
-                                    const SearcherData& data,
-                                    const i32           ply) {
+        void MovePicker<T>::process(move::ExtMove*        buffer,
+                                    const core::Position& pos,
+                                    const move::Move&     ttmove,
+                                    const SearcherData&   data,
+                                    const i32             ply) {
             // Generate pseudolegal moves
             containers::ArrayList<move::Move> moves;
-            movegen::generatePseudolegalMoves<T>(&moves, board);
+            movegen::generatePseudolegalMoves<T>(&moves, pos);
 
             // Save number of moves
             m_moves_count = moves.size();
@@ -75,10 +75,10 @@ namespace sagittar {
 
                 if (move.isCapture())
                 {
-                    const PieceType attacker = pieceTypeOf(board.getPiece(move.from()));
+                    const PieceType attacker = pieceTypeOf(pos.getPiece(move.from()));
                     const PieceType victim   = (move.flag() == move::MoveFlag::MOVE_CAPTURE_EP)
                                                ? PieceType::PAWN
-                                               : pieceTypeOf(board.getPiece(move.to()));
+                                               : pieceTypeOf(pos.getPiece(move.to()));
                     const auto      idx      = mvvlvaIdx(attacker, victim);
                     const auto      score    = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
                     buffer[capture_count++]  = move::ExtMove{move, score};
@@ -106,7 +106,7 @@ namespace sagittar {
                 }
                 else
                 {
-                    const Piece piece = board.getPiece(move.from());
+                    const Piece piece = pos.getPiece(move.from());
                     const auto score = std::clamp(data.history[piece][move.to()], HISTORY_SCORE_MIN,
                                                   HISTORY_SCORE_MAX);
                     *quiet_ptr++     = move::ExtMove{move, score};

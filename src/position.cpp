@@ -1,11 +1,11 @@
-#include "board.h"
+#include "position.h"
 #include "fen.h"
 #include "movegen.h"
 #include "utils.h"
 
 namespace sagittar {
 
-    namespace board {
+    namespace core {
 
         // Little-Endian Rank-File Mapping
         // clang-format off
@@ -25,7 +25,7 @@ namespace sagittar {
         static u64 ZOBRIST_CA[16];
         static u64 ZOBRIST_SIDE;
 
-        void Board::initialize() {
+        void Position::initialize() {
 
             for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
             {
@@ -45,11 +45,11 @@ namespace sagittar {
             movegen::initialize();
         }
 
-        Board::Board() { reset(); }
+        Position::Position() { reset(); }
 
-        Board::~Board() {}
+        Position::~Position() {}
 
-        void Board::reset() {
+        void Position::reset() {
             for (auto& bb : bitboards)
             {
                 bb = 0ULL;
@@ -73,7 +73,7 @@ namespace sagittar {
             hash             = 0ULL;
         }
 
-        void Board::resetHash() {
+        void Position::resetHash() {
             hash = 0ULL;
 
             if (active_color == Color::WHITE)
@@ -96,7 +96,7 @@ namespace sagittar {
             }
         }
 
-        void Board::setPiece(const Piece piece, const Square square) {
+        void Position::setPiece(const Piece piece, const Square square) {
 #ifdef DEBUG
             assert(piece != Piece::NO_PIECE);
             assert(square != Square::NO_SQ);
@@ -110,7 +110,7 @@ namespace sagittar {
             hash ^= ZOBRIST_TABLE[piece][square];
         }
 
-        void Board::clearPiece(const Piece piece, const Square square) {
+        void Position::clearPiece(const Piece piece, const Square square) {
 #ifdef DEBUG
             assert(piece != Piece::NO_PIECE);
             assert(square != Square::NO_SQ);
@@ -124,7 +124,7 @@ namespace sagittar {
             hash ^= ZOBRIST_TABLE[piece][square];
         }
 
-        void Board::setStartpos() {
+        void Position::setStartpos() {
             reset();
 
             setPiece(Piece::WHITE_ROOK, Square::A1);
@@ -174,12 +174,12 @@ namespace sagittar {
             resetHash();
         }
 
-        void Board::movePiece(const Piece  piece,
-                              const Square from,
-                              const Square to,
-                              const bool   is_capture,
-                              const bool   is_promotion,
-                              const Piece  promoted) {
+        void Position::movePiece(const Piece  piece,
+                                 const Square from,
+                                 const Square to,
+                                 const bool   is_capture,
+                                 const bool   is_promotion,
+                                 const Piece  promoted) {
 #ifdef DEBUG
             assert(piece != Piece::NO_PIECE);
             assert(from != Square::NO_SQ);
@@ -221,13 +221,13 @@ namespace sagittar {
             }
         }
 
-        void Board::undoMovePiece(const Piece  piece,
-                                  const Square from,
-                                  const Square to,
-                                  const bool   is_capture,
-                                  const Piece  captured,
-                                  const bool   is_promotion,
-                                  const Piece  promoted) {
+        void Position::undoMovePiece(const Piece  piece,
+                                     const Square from,
+                                     const Square to,
+                                     const bool   is_capture,
+                                     const Piece  captured,
+                                     const bool   is_promotion,
+                                     const Piece  promoted) {
 
             if (is_promotion)
             {
@@ -262,27 +262,27 @@ namespace sagittar {
             setPiece(piece, from);
         }
 
-        void Board::setCheckers(const BitBoard bb) { checkers = bb; }
+        void Position::setCheckers(const BitBoard bb) { checkers = bb; }
 
-        void Board::setActiveColor(const Color c) { active_color = c; }
+        void Position::setActiveColor(const Color c) { active_color = c; }
 
-        void Board::addCastelingRights(const CastleFlag f) { casteling_rights |= f; }
+        void Position::addCastelingRights(const CastleFlag f) { casteling_rights |= f; }
 
-        void Board::setEnpassantTarget(const Square s) { enpassant_target = s; }
+        void Position::setEnpassantTarget(const Square s) { enpassant_target = s; }
 
-        void Board::setHalfmoveClock(const u8 n) { half_move_clock = n; }
+        void Position::setHalfmoveClock(const u8 n) { half_move_clock = n; }
 
-        void Board::setFullmoveNumber(const u8 n) { full_move_number = n; }
+        void Position::setFullmoveNumber(const u8 n) { full_move_number = n; }
 
-        DoMoveResult Board::doMoveComplete() {
+        DoMoveResult Position::doMoveComplete() {
             const Color them = colorFlip(active_color);
 
-            // Check if move does not leave our King in check and board is valid
-            Piece           king          = pieceCreate(PieceType::KING, active_color);
-            board::BitBoard bb            = bitboards[king];
-            Square          sq            = static_cast<Square>(utils::bitScanForward(&bb));
-            const BitBoard  checkers_us   = movegen::getSquareAttackers(*this, sq, them);
-            const bool      is_valid_move = (checkers_us == 0ULL) && isValid();
+            // Check if move does not leave our King in check and pos is valid
+            Piece          king          = pieceCreate(PieceType::KING, active_color);
+            core::BitBoard bb            = bitboards[king];
+            Square         sq            = static_cast<Square>(utils::bitScanForward(&bb));
+            const BitBoard checkers_us   = movegen::getSquareAttackers(*this, sq, them);
+            const bool     is_valid_move = (checkers_us == 0ULL) && isValid();
 
             // Set checkers
             king     = pieceCreate(PieceType::KING, them);
@@ -301,7 +301,7 @@ namespace sagittar {
             return is_valid_move ? DoMoveResult::LEGAL : DoMoveResult::ILLEGAL;
         }
 
-        [[nodiscard]] DoMoveResult Board::doMove(const move::Move move) noexcept {
+        [[nodiscard]] DoMoveResult Position::doMove(const move::Move move) noexcept {
             const Square         from     = move.from();
             const Square         to       = move.to();
             const move::MoveFlag flag     = move.flag();
@@ -398,7 +398,7 @@ namespace sagittar {
             return doMoveComplete();
         }
 
-        [[nodiscard]] DoMoveResult Board::doMove(const std::string& move_str) noexcept {
+        [[nodiscard]] DoMoveResult Position::doMove(const std::string& move_str) noexcept {
             const std::size_t len = move_str.length();
             if (len < 4 || len > 5)
             {
@@ -552,38 +552,38 @@ namespace sagittar {
             return doMove(move);
         }
 
-        void Board::doNullMove() {
+        void Position::doNullMove() {
             checkers         = 0ULL;
             enpassant_target = Square::NO_SQ;
             active_color     = colorFlip(active_color);
             hash ^= ZOBRIST_SIDE;
         }
 
-        BitBoard Board::getBitboard(const u8 index) const { return bitboards[index]; }
+        BitBoard Position::getBitboard(const u8 index) const { return bitboards[index]; }
 
-        BitBoard Board::getBitboard(const PieceType pt, const Color c) const {
+        BitBoard Position::getBitboard(const PieceType pt, const Color c) const {
             return bitboards[pieceCreate(pt, c)];
         }
 
-        Piece Board::getPiece(const Square square) const { return pieces[square]; }
+        Piece Position::getPiece(const Square square) const { return pieces[square]; }
 
-        u8 Board::getPieceCount(const Piece piece) const {
+        u8 Position::getPieceCount(const Piece piece) const {
             return utils::bitCount1s(bitboards[piece]);
         }
 
-        Color Board::getActiveColor() const { return active_color; }
+        Color Position::getActiveColor() const { return active_color; }
 
-        u8 Board::getCastelingRights() const { return casteling_rights; }
+        u8 Position::getCastelingRights() const { return casteling_rights; }
 
-        Square Board::getEnpassantTarget() const { return enpassant_target; }
+        Square Position::getEnpassantTarget() const { return enpassant_target; }
 
-        u8 Board::getHalfmoveClock() const { return half_move_clock; }
+        u8 Position::getHalfmoveClock() const { return half_move_clock; }
 
-        u8 Board::getFullmoveNumber() const { return full_move_number; }
+        u8 Position::getFullmoveNumber() const { return full_move_number; }
 
-        u64 Board::getHash() const { return hash; }
+        u64 Position::getHash() const { return hash; }
 
-        bool Board::isValid() const {
+        bool Position::isValid() const {
             const bool check = (getPieceCount(Piece::WHITE_KING) == 1)
                             && (getPieceCount(Piece::BLACK_KING) == 1)
                             && (!(bitboards[Piece::WHITE_PAWN] & MASK_RANK_1))
@@ -593,9 +593,9 @@ namespace sagittar {
             return check;
         }
 
-        bool Board::isInCheck() const { return (checkers != 0ULL); }
+        bool Position::isInCheck() const { return (checkers != 0ULL); }
 
-        bool Board::hasPositionRepeated(std::span<u64> key_history) const {
+        bool Position::hasPositionRepeated(std::span<u64> key_history) const {
 #ifdef DEBUG
             assert(key_history.size() == static_cast<size_t>(ply_count));
 #endif
@@ -609,9 +609,9 @@ namespace sagittar {
             return false;
         }
 
-        bool Board::operator==(Board const& rhs) const { return hash == rhs.getHash(); }
+        bool Position::operator==(Position const& rhs) const { return hash == rhs.getHash(); }
 
-        void Board::display() const {
+        void Position::display() const {
             std::ostringstream ss;
 
             for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)

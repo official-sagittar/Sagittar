@@ -103,14 +103,14 @@ namespace sagittar {
             }
         }
 
-        Score evaluateBoard(const board::Board& board) {
+        Score evaluate(const core::Position& pos) {
             i32   phase   = TOTAL_PHASE;
             Score eval_mg = 0;
             Score eval_eg = 0;
 
             for (u8 sq = A1; sq <= H8; sq++)
             {
-                const Piece piece = board.getPiece(static_cast<Square>(sq));
+                const Piece piece = pos.getPiece(static_cast<Square>(sq));
                 if (piece == Piece::NO_PIECE)
                 {
                     continue;
@@ -138,9 +138,9 @@ namespace sagittar {
 
             Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
-            const i8 stm = 1 - (2 * board.getActiveColor());
+            const i8 stm = 1 - (2 * pos.getActiveColor());
 #ifdef DEBUG
-            if (board.getActiveColor() == Color::WHITE)
+            if (pos.getActiveColor() == Color::WHITE)
             {
                 assert(stm == 1);
             }
@@ -160,18 +160,18 @@ namespace sagittar {
             return eval;
         }
 
-        bool isEndGame(const board::Board& board) {
-            const u8 wQ = board.getPieceCount(Piece::WHITE_QUEEN);
-            const u8 bQ = board.getPieceCount(Piece::BLACK_QUEEN);
+        bool isEndGame(const core::Position& pos) {
+            const u8 wQ = pos.getPieceCount(Piece::WHITE_QUEEN);
+            const u8 bQ = pos.getPieceCount(Piece::BLACK_QUEEN);
 
-            const u8 wR = board.getPieceCount(Piece::WHITE_ROOK);
-            const u8 bR = board.getPieceCount(Piece::BLACK_ROOK);
+            const u8 wR = pos.getPieceCount(Piece::WHITE_ROOK);
+            const u8 bR = pos.getPieceCount(Piece::BLACK_ROOK);
 
-            const u8 wB = board.getPieceCount(Piece::WHITE_BISHOP);
-            const u8 bB = board.getPieceCount(Piece::BLACK_BISHOP);
+            const u8 wB = pos.getPieceCount(Piece::WHITE_BISHOP);
+            const u8 bB = pos.getPieceCount(Piece::BLACK_BISHOP);
 
-            const u8 wN = board.getPieceCount(Piece::WHITE_KNIGHT);
-            const u8 bN = board.getPieceCount(Piece::BLACK_KNIGHT);
+            const u8 wN = pos.getPieceCount(Piece::WHITE_KNIGHT);
+            const u8 bN = pos.getPieceCount(Piece::BLACK_KNIGHT);
 
             bool is_end_game = false;
 

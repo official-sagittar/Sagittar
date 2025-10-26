@@ -1,10 +1,10 @@
-#include "board.h"
 #include "containers.h"
 #include "doctest/doctest.h"
 #include "fen.h"
 #include "move.h"
 #include "movegen.h"
 #include "pch.h"
+#include "position.h"
 #include "types.h"
 
 using namespace sagittar;
@@ -12,30 +12,30 @@ using namespace sagittar;
 TEST_SUITE("Movegen") {
 
     TEST_CASE("isSquareAttacked") {
-        board::Board board;
+        core::Position pos;
 
         std::string fen = "4k3/8/8/4p3/8/8/8/4K3 w - - 0 1";
-        fen::parseFEN(&board, fen);
+        fen::parseFEN(&pos, fen);
 
-        REQUIRE(movegen::getSquareAttackers(board, Square::D4, Color::BLACK));
-        REQUIRE(movegen::getSquareAttackers(board, Square::F4, Color::BLACK));
+        REQUIRE(movegen::getSquareAttackers(pos, Square::D4, Color::BLACK));
+        REQUIRE(movegen::getSquareAttackers(pos, Square::F4, Color::BLACK));
     }
 
     TEST_CASE("isInCheck") {
-        board::Board board;
+        core::Position pos;
 
         std::string fen = "4k3/8/8/8/8/8/3p4/4K3 w - - 0 1";
-        fen::parseFEN(&board, fen);
+        fen::parseFEN(&pos, fen);
 
-        REQUIRE(board.isInCheck());
+        REQUIRE(pos.isInCheck());
     }
 
     TEST_CASE("generatePseudolegalMoves") {
-        board::Board board;
-        board.setStartpos();
+        core::Position pos;
+        pos.setStartpos();
 
         containers::ArrayList<move::Move> moves;
-        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, board);
+        movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, pos);
 
         CHECK(moves.size() == 20);
     }

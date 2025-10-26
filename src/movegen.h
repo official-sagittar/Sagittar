@@ -1,9 +1,9 @@
 #pragma once
 
-#include "board.h"
 #include "containers.h"
 #include "move.h"
 #include "pch.h"
+#include "position.h"
 #include "types.h"
 
 namespace sagittar {
@@ -17,12 +17,12 @@ namespace sagittar {
 
         void initialize();
 
-        board::BitBoard
-        getSquareAttackers(const board::Board& board, const Square sq, const Color attacked_by);
+        core::BitBoard
+        getSquareAttackers(const core::Position& pos, const Square sq, const Color attacked_by);
 
         template<MovegenType T>
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
-                                      const board::Board&                board);
+                                      const core::Position&              pos);
 
     }
 

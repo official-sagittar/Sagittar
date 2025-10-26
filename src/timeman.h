@@ -1,7 +1,7 @@
 #pragma once
 
-#include "board.h"
 #include "pch.h"
+#include "position.h"
 #include "searchtypes.h"
 
 namespace sagittar {
@@ -10,7 +10,7 @@ namespace sagittar {
 
         namespace timeman {
 
-            void setSearchHardBoundTime(SearchInfo* info, const board::Board& board);
+            void setSearchHardBoundTime(SearchInfo* info, const core::Position& pos);
 
         }
 

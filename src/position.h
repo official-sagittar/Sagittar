@@ -7,7 +7,7 @@
 
 namespace sagittar {
 
-    namespace board {
+    namespace core {
 
         using BitBoard = u64;
 
@@ -46,11 +46,11 @@ namespace sagittar {
 
         enum class DoMoveResult : u8 {
             INVALID,  // Incorrect Move
-            ILLEGAL,  // Move is correct, but results in check or invalid board
+            ILLEGAL,  // Move is correct, but results in check or invalid pos
             LEGAL     // Move is correct and move is legal
         };
 
-        class Board {
+        class Position {
            private:
             std::array<BitBoard, 15> bitboards;
             std::array<Piece, 64>    pieces;
@@ -68,11 +68,11 @@ namespace sagittar {
            public:
             static void initialize();
 
-            Board();
-            ~Board();
-            Board(const Board&)            = default;
-            Board& operator=(const Board&) = default;
-            bool   operator==(Board const& rhs) const;
+            Position();
+            ~Position();
+            Position(const Position&)            = default;
+            Position& operator=(const Position&) = default;
+            bool      operator==(Position const& rhs) const;
 
             void                       reset();
             void                       resetHash();

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "board.h"
 #include "containers.h"
 #include "move.h"
 #include "movegen.h"
 #include "pch.h"
+#include "position.h"
 #include "search.h"
 #include "types.h"
 
@@ -24,11 +24,11 @@ namespace sagittar {
         class MovePicker final {
            public:
             MovePicker() = delete;
-            explicit MovePicker(move::ExtMove*      buffer,
-                                const board::Board& board,
-                                const move::Move&   ttmove,
-                                const SearcherData& data,
-                                const i32           ply);
+            explicit MovePicker(move::ExtMove*        buffer,
+                                const core::Position& pos,
+                                const move::Move&     ttmove,
+                                const SearcherData&   data,
+                                const i32             ply);
             MovePicker(const MovePicker&)                = delete;
             MovePicker(MovePicker&&) noexcept            = delete;
             MovePicker& operator=(const MovePicker&)     = delete;
@@ -43,11 +43,11 @@ namespace sagittar {
             move::Move      next();
 
            private:
-            void process(move::ExtMove*      buffer,
-                         const board::Board& board,
-                         const move::Move&   ttmove,
-                         const SearcherData& data,
-                         const i32           ply);
+            void process(move::ExtMove*        buffer,
+                         const core::Position& pos,
+                         const move::Move&     ttmove,
+                         const SearcherData&   data,
+                         const i32             ply);
 
             size_t m_moves_count{0};
 

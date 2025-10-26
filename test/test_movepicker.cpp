@@ -1,4 +1,3 @@
-#include "board.h"
 #include "containers.h"
 #include "doctest/doctest.h"
 #include "fen.h"
@@ -6,6 +5,7 @@
 #include "movegen.h"
 #include "movepicker.h"
 #include "pch.h"
+#include "position.h"
 #include "search.h"
 #include "types.h"
 
@@ -16,8 +16,8 @@ TEST_SUITE("Movepicker") {
     TEST_CASE("movepicker::next::all") {
         search::SearcherData data;
 
-        board::Board board;
-        fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
+        core::Position pos;
+        fen::parseFEN(&pos, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i                    = 0;
         int capture_move_done_at = -1;
@@ -25,8 +25,8 @@ TEST_SUITE("Movepicker") {
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
         std::array<move::ExtMove, MOVES_MAX>          buffer{};
-        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), board, pvmove,
-                                                                  data, 0);
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), pos, pvmove, data,
+                                                                  0);
 
         while (move_picker.hasNext())
         {
@@ -74,9 +74,8 @@ TEST_SUITE("Movepicker") {
     TEST_CASE("movepicker::next::all with Killers") {
         search::SearcherData data;
 
-        board::Board board;
-        fen::parseFEN(&board,
-                      "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        core::Position pos;
+        fen::parseFEN(&pos, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
         int i                    = 0;
         int capture_move_done_at = -1;
@@ -88,8 +87,8 @@ TEST_SUITE("Movepicker") {
         data.killer_moves[1][0] = move::Move(Square::D2, Square::E3, move::MoveFlag::MOVE_QUIET);
 
         std::array<move::ExtMove, MOVES_MAX>          buffer{};
-        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), board, pvmove,
-                                                                  data, 0);
+        search::MovePicker<movegen::MovegenType::ALL> move_picker(buffer.data(), pos, pvmove, data,
+                                                                  0);
 
         while (move_picker.hasNext())
         {
@@ -150,15 +149,15 @@ TEST_SUITE("Movepicker") {
     TEST_CASE("movepicker::next::captures") {
         search::SearcherData data;
 
-        board::Board board;
-        fen::parseFEN(&board, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
+        core::Position pos;
+        fen::parseFEN(&pos, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i = 0;
 
         const move::Move pvmove(Square::E1, Square::F2, move::MoveFlag::MOVE_CAPTURE);
 
         std::array<move::ExtMove, MOVES_MAX>               buffer{};
-        search::MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer.data(), board, pvmove,
+        search::MovePicker<movegen::MovegenType::CAPTURES> move_picker(buffer.data(), pos, pvmove,
                                                                        data, 0);
         while (move_picker.hasNext())
         {

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "board.h"
 #include "pch.h"
+#include "position.h"
 
 namespace sagittar {
 
     namespace fen {
 
-        void        parseFEN(board::Board*, std::string, const bool full = true);
-        std::string toFEN(const board::Board&);
+        void        parseFEN(core::Position*, std::string, const bool full = true);
+        std::string toFEN(const core::Position&);
 
     }
 
