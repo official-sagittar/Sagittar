@@ -45,7 +45,7 @@ namespace sagittar {
                 size_t           nodes;
 
                 ThreadData();
-                core::DoMoveResult doMove(core::Position& pos, const move::Move move);
+                core::DoMoveResult doMove(core::Position& pos, const move::Move& move);
                 void               doNullMove(core::Position& pos);
                 void               undoMove();
                 void               undoNullMove();

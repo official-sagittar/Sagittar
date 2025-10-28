@@ -35,8 +35,8 @@ namespace sagittar {
             key_history.clear();
         }
 
-        core::DoMoveResult Searcher::ThreadData::doMove(core::Position&  pos,
-                                                        const move::Move move) {
+        core::DoMoveResult Searcher::ThreadData::doMove(core::Position&   pos,
+                                                        const move::Move& move) {
             key_history.push_back(pos.getHash());
             return pos.doMove(move);
         }

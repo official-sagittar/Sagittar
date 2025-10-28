@@ -36,12 +36,12 @@ namespace sagittar {
                 currentage = (currentage + 1) % AGE_CYCLE_LEN;
             }
 
-            void TranspositionTable::store(const u64        hash,
-                                           const i32        ply,
-                                           const Depth      depth,
-                                           const TTFlag     flag,
-                                           Score            value,
-                                           const move::Move move) {
+            void TranspositionTable::store(const u64         hash,
+                                           const i32         ply,
+                                           const Depth       depth,
+                                           const TTFlag      flag,
+                                           Score             value,
+                                           const move::Move& move) {
                 const u64     index     = getIndex(hash);
                 const TTEntry currentry = entries.at(index);
 

@@ -58,18 +58,6 @@ namespace sagittar {
         return result;
     }
 
-    core::DoMoveResult Engine::doMove(const move::Move& move) {
-        const auto     curr_key = pos.getHash();
-        core::Position pos_copy = pos;
-        const auto     result   = pos_copy.doMove(move);
-        if (result == core::DoMoveResult::LEGAL)
-        {
-            key_history.push_back(curr_key);
-            pos = pos_copy;
-        }
-        return result;
-    }
-
     search::SearchResult Engine::search(search::SearchInfo info) {
         return searcher.startSearch(pos, key_history, info);
     }
