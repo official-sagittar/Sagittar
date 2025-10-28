@@ -101,7 +101,7 @@ namespace sagittar {
             void                       setEnpassantTarget(const Square);
             void                       setHalfmoveClock(const u8);
             void                       setFullmoveNumber(const u8);
-            [[nodiscard]] DoMoveResult doMove(const move::Move) noexcept;
+            [[nodiscard]] DoMoveResult doMove(const move::Move&) noexcept;
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
             void                       doNullMove();
             BitBoard                   getBitboard(const u8 index) const;

@@ -535,7 +535,7 @@ namespace sagittar {
             return is_valid_move ? DoMoveResult::LEGAL : DoMoveResult::ILLEGAL;
         }
 
-        [[nodiscard]] DoMoveResult Position::doMove(const move::Move move) noexcept {
+        [[nodiscard]] DoMoveResult Position::doMove(const move::Move& move) noexcept {
             const Square         from     = move.from();
             const Square         to       = move.to();
             const move::MoveFlag flag     = move.flag();
