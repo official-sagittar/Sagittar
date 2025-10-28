@@ -1,5 +1,4 @@
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "move.h"
 #include "pch.h"
 #include "position.h"
@@ -135,7 +134,7 @@ TEST_SUITE("Position") {
 
         // MOVE_CASTLE_KING_SIDE WHITE
         std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("e1g1") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::E1) == Piece::NO_PIECE);
@@ -145,7 +144,7 @@ TEST_SUITE("Position") {
 
         // MOVE_CASTLE_KING_SIDE BLACK
         fen = "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 0 5";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("e8g8") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::E8) == Piece::NO_PIECE);
@@ -155,7 +154,7 @@ TEST_SUITE("Position") {
 
         // MOVE_CASTLE_QUEEN_SIDE WHITE
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/R3KB1R w KQkq - 6 8";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("e1c1") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::E1) == Piece::NO_PIECE);
@@ -166,7 +165,7 @@ TEST_SUITE("Position") {
 
         // MOVE_CASTLE_QUEEN_SIDE BLACK
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/2KR1B1R b kq - 7 8";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("e8c8") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::E8) == Piece::NO_PIECE);
@@ -179,7 +178,7 @@ TEST_SUITE("Position") {
 
         // WHITE
         fen = "4k3/8/8/3Pp3/8/8/8/4K3 w - e6 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("d5e6") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::D5) == Piece::NO_PIECE);
@@ -188,7 +187,7 @@ TEST_SUITE("Position") {
 
         // BLACK
         fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
         is_valid = (pos.doMove("d4e3") == core::DoMoveResult::LEGAL);
         CHECK(is_valid);
         CHECK(pos.getPiece(Square::D4) == Piece::NO_PIECE);
@@ -197,7 +196,7 @@ TEST_SUITE("Position") {
 
         // MOVE_PROMOTION
         fen = "1q2k3/P7/8/8/8/8/8/4K3 w - - 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         // KNIGHT
         core::Position pos_copy = pos;

@@ -1,6 +1,5 @@
 #include "containers.h"
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "move.h"
 #include "movegen.h"
 #include "movepicker.h"
@@ -17,7 +16,7 @@ TEST_SUITE("Movepicker") {
         search::SearcherData data;
 
         core::Position pos;
-        fen::parseFEN(&pos, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
+        pos.setFen("4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i                    = 0;
         int capture_move_done_at = -1;
@@ -75,7 +74,7 @@ TEST_SUITE("Movepicker") {
         search::SearcherData data;
 
         core::Position pos;
-        fen::parseFEN(&pos, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        pos.setFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
         int i                    = 0;
         int capture_move_done_at = -1;
@@ -150,7 +149,7 @@ TEST_SUITE("Movepicker") {
         search::SearcherData data;
 
         core::Position pos;
-        fen::parseFEN(&pos, "4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
+        pos.setFen("4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i = 0;
 

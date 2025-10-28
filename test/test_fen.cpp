@@ -1,5 +1,4 @@
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "pch.h"
 #include "position.h"
 #include "types.h"
@@ -12,7 +11,7 @@ TEST_SUITE("FEN") {
         core::Position pos;
 
         std::string startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        fen::parseFEN(&pos, startpos_fen);
+        pos.setFen(startpos_fen);
 
         core::Position startpos;
         startpos.setStartpos();
@@ -20,18 +19,18 @@ TEST_SUITE("FEN") {
         CHECK(pos == startpos);
 
         startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
-        fen::parseFEN(&pos, startpos_fen);
+        pos.setFen(startpos_fen);
 
         CHECK(pos == startpos);
 
         startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - \"1/2-1/2\"";
-        fen::parseFEN(&pos, startpos_fen, false);
+        pos.setFen(startpos_fen, false);
 
         CHECK(pos == startpos);
 
         // Test with Kiwipete
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         REQUIRE(pos.isValid());
 

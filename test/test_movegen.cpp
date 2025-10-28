@@ -1,6 +1,5 @@
 #include "containers.h"
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "move.h"
 #include "movegen.h"
 #include "pch.h"
@@ -15,7 +14,7 @@ TEST_SUITE("Movegen") {
         core::Position pos;
 
         std::string fen = "4k3/8/8/4p3/8/8/8/4K3 w - - 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         REQUIRE(movegen::getSquareAttackers(pos, Square::D4, Color::BLACK));
         REQUIRE(movegen::getSquareAttackers(pos, Square::F4, Color::BLACK));
@@ -25,7 +24,7 @@ TEST_SUITE("Movegen") {
         core::Position pos;
 
         std::string fen = "4k3/8/8/8/8/8/3p4/4K3 w - - 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         REQUIRE(pos.isInCheck());
     }

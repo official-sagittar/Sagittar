@@ -74,6 +74,9 @@ namespace sagittar {
             Position& operator=(const Position&) = default;
             bool      operator==(Position const& rhs) const;
 
+            void setFen(std::string, const bool full = true);
+            std::string toFen() const;
+
             void                       reset();
             void                       resetHash();
             void                       setPiece(const Piece, const Square);
