@@ -38,8 +38,6 @@ namespace sagittar {
 
         core::DoMoveResult doMove(const std::string&);
 
-        core::DoMoveResult doMove(const move::Move&);
-
         search::SearchResult search(search::SearchInfo);
 
         search::SearchResult

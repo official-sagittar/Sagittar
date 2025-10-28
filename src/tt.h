@@ -77,12 +77,12 @@ namespace sagittar {
                 std::size_t        getSize() const;
                 void               clear();
                 void               resetForSearch();
-                void               store(const u64        hash,
-                                         const i32        ply,
-                                         const Depth      depth,
-                                         const TTFlag     flag,
-                                         Score            value,
-                                         const move::Move move);
+                void               store(const u64         hash,
+                                         const i32         ply,
+                                         const Depth       depth,
+                                         const TTFlag      flag,
+                                         Score             value,
+                                         const move::Move& move);
                 [[nodiscard]] bool probe(TTData* entry, const u64 hash) const;
                 u32                hashfull() const;
             };
