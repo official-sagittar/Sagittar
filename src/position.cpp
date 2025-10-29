@@ -1,5 +1,5 @@
 #include "position.h"
-#include "fen.h"
+
 #include "movegen.h"
 #include "utils.h"
 
@@ -94,6 +94,240 @@ namespace sagittar {
 
                 hash ^= ZOBRIST_TABLE[p][sq];
             }
+        }
+
+        void Position::setFen(std::string fen, const bool full) {
+            std::string        segment;
+            std::istringstream ss(fen);
+
+            // Reset pos
+            reset();
+
+            // Parse Piece placement data
+            u8 rank = Rank::RANK_8;
+            u8 file = File::FILE_A;
+            ss >> segment;
+            for (const char& ch : segment)
+            {
+                if (ch == '/')
+                {
+                    rank--;
+                    file = File::FILE_A;
+                }
+                else if (isdigit(ch))
+                {
+                    const u8 empty_squares = ch - '0';
+                    if (empty_squares < 1 || empty_squares > 8) [[unlikely]]
+                    {
+                        throw std::invalid_argument("Invalid FEN!");
+                    }
+                    file += empty_squares;
+                }
+                else if (isalpha(ch))
+                {
+                    std::size_t piece_id = PIECES_STR.find(ch);
+                    if (piece_id == std::string::npos) [[unlikely]]
+                    {
+                        throw std::invalid_argument("Invalid FEN!");
+                    }
+                    setPiece(static_cast<Piece>(piece_id), rf2sq(rank, file++));
+                }
+            }
+
+            // Parse Active color
+            ss >> segment;
+            if (segment == "w")
+            {
+                active_color = Color::WHITE;
+            }
+            else if (segment == "b")
+            {
+                active_color = Color::BLACK;
+            }
+            else [[unlikely]]
+            {
+                throw std::invalid_argument("Invalid FEN!");
+            }
+
+            // Parse Castling availability
+            ss >> segment;
+            if (segment == "-")
+            {
+                casteling_rights = core::CastleFlag::NOCA;
+            }
+            else
+            {
+                if (segment.find('K') != std::string::npos)
+                {
+                    casteling_rights |= core::CastleFlag::WKCA;
+                }
+                if (segment.find('Q') != std::string::npos)
+                {
+                    casteling_rights |= core::CastleFlag::WQCA;
+                }
+                if (segment.find('k') != std::string::npos)
+                {
+                    casteling_rights |= core::CastleFlag::BKCA;
+                }
+                if (segment.find('q') != std::string::npos)
+                {
+                    casteling_rights |= core::CastleFlag::BQCA;
+                }
+            }
+
+            // Parse En passant target square
+            ss >> segment;
+            if (segment == "-")
+            {
+                enpassant_target = Square::NO_SQ;
+            }
+            else
+            {
+                const Rank rank = static_cast<Rank>((segment[1] - '0') - 1);
+                if (active_color == Color::WHITE)
+                {
+                    if (rank != Rank::RANK_6) [[unlikely]]
+                    {
+                        throw std::invalid_argument("Invalid FEN!");
+                    }
+                }
+                else
+                {
+                    if (rank != Rank::RANK_3) [[unlikely]]
+                    {
+                        throw std::invalid_argument("Invalid FEN!");
+                    }
+                }
+                const File   file         = static_cast<File>(segment[0] - 'a');
+                const Square ep_target_sq = rf2sq(rank, file);
+                enpassant_target = ep_target_sq;
+            }
+
+            // Parse Halfmove clock
+            ss >> segment;
+            if (!full || segment.empty() || segment == "-")
+            {
+                half_move_clock = 0;
+            }
+            else
+            {
+                half_move_clock = std::stoi(segment);
+            }
+
+            // Parse Fullmove number
+            ss >> segment;
+            if (!full || segment.empty() || segment == "-")
+            {
+                full_move_number = 1;
+            }
+            else
+            {
+                full_move_number = std::stoi(segment);
+            }
+
+            // Set checkers
+            const Piece    king = pieceCreate(PieceType::KING, active_color);
+            core::BitBoard bb   = bitboards[king];
+            const Square   sq   = static_cast<Square>(utils::bitScanForward(&bb));
+            checkers = movegen::getSquareAttackers(*this, sq, colorFlip(active_color));
+
+            // Reset Hash
+            resetHash();
+        }
+
+        std::string Position::toFen() const {
+            std::ostringstream oss;
+
+            // Piece placement data
+            for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
+            {
+                u8 empty = 0;
+                for (u8 file = File::FILE_A; file <= File::FILE_H; file++)
+                {
+                    const Square sq    = rf2sq(rank, file);
+                    const Piece  piece = pieces[sq];
+                    if (piece != Piece::NO_PIECE)
+                    {
+                        if (empty > 0)
+                        {
+                            oss << (int) empty;
+                            empty = 0;
+                        }
+                        oss << PIECES_STR[piece];
+                    }
+                    else
+                    {
+                        empty++;
+                    }
+                }
+                if (empty > 0)
+                {
+                    oss << (int) empty;
+                }
+                if (rank != Rank::RANK_1)
+                {
+                    oss << "/";
+                }
+            }
+            oss << " ";
+
+            // Active color
+            if (active_color == Color::WHITE)
+            {
+                oss << "w";
+            }
+            else
+            {
+                oss << "b";
+            }
+            oss << " ";
+
+            // Castling availability
+            if (casteling_rights == core::CastleFlag::NOCA)
+            {
+                oss << "-";
+            }
+            else
+            {
+                if (casteling_rights & core::CastleFlag::WKCA)
+                {
+                    oss << "K";
+                }
+                if (casteling_rights & core::CastleFlag::WQCA)
+                {
+                    oss << "Q";
+                }
+                if (casteling_rights & core::CastleFlag::BKCA)
+                {
+                    oss << "k";
+                }
+                if (casteling_rights & core::CastleFlag::BQCA)
+                {
+                    oss << "q";
+                }
+            }
+            oss << " ";
+
+            // En passant target
+            if (enpassant_target == Square::NO_SQ)
+            {
+                oss << "-";
+            }
+            else
+            {
+                const File   file      = sq2file(enpassant_target);
+                const Rank   rank      = sq2rank(enpassant_target);
+                oss << FILE_STR[file] << (int) rank + 1;
+            }
+            oss << " ";
+
+            // Halfmove clock
+            oss << (int) half_move_clock << " ";
+
+            // Fullmove number
+            oss << (int) full_move_number << " ";
+
+            return oss.str();
         }
 
         void Position::setPiece(const Piece piece, const Square square) {
@@ -632,7 +866,7 @@ namespace sagittar {
             ss << " " << (int) ply_count;
             ss << " " << (unsigned long long) hash << "\n";
 
-            std::cout << ss.str() << fen::toFEN(*this) << std::endl;
+            std::cout << ss.str() << toFen() << std::endl;
         }
 
     }

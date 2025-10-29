@@ -1,5 +1,4 @@
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "pch.h"
 #include "perft.h"
 #include "position.h"
@@ -31,7 +30,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -59,7 +58,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -79,7 +78,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -97,7 +96,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -118,7 +117,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -136,7 +135,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -166,7 +165,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -194,7 +193,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -235,7 +234,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i + 1);
@@ -253,7 +252,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -275,7 +274,7 @@ TEST_SUITE("Perft") {
         for (const auto& [fen, nodes] : positions)
         {
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
                 const u64 result = perft::perft(pos, i);
@@ -319,7 +318,7 @@ TEST_SUITE("Perft Full") {
             }
 
             core::Position pos;
-            fen::parseFEN(&pos, fen);
+            pos.setFen(fen);
 
             for (const auto& [key, value] : extracted_perft_values)
             {

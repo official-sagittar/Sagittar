@@ -34,8 +34,6 @@ namespace sagittar {
 
         void setPositionFromFEN(std::string);
 
-        std::string getPositionAsFEN();
-
         core::DoMoveResult doMove(const std::string&);
 
         search::SearchResult search(search::SearchInfo);

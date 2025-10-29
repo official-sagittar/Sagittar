@@ -1,5 +1,4 @@
 #include "doctest/doctest.h"
-#include "fen.h"
 #include "move.h"
 #include "position.h"
 #include "tt.h"
@@ -42,7 +41,7 @@ TEST_SUITE("TT") {
         REQUIRE(ttdata.move == m);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 
@@ -65,7 +64,7 @@ TEST_SUITE("TT") {
         REQUIRE(tt.getSize() > 0);
 
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        fen::parseFEN(&pos, fen);
+        pos.setFen(fen);
 
         const move::Move m = move::Move(Square::E2, Square::A6, move::MoveFlag::MOVE_CAPTURE);
 

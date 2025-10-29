@@ -1,6 +1,6 @@
 #include "engine.h"
 #include "eval.h"
-#include "fen.h"
+
 #include "params.h"
 #include "utils.h"
 
@@ -42,9 +42,7 @@ namespace sagittar {
 
     void Engine::setStartpos() { pos.setStartpos(); }
 
-    void Engine::setPositionFromFEN(std::string fen) { fen::parseFEN(&pos, fen); }
-
-    std::string Engine::getPositionAsFEN() { return fen::toFEN(pos); }
+    void Engine::setPositionFromFEN(std::string fen) { pos.setFen(fen); }
 
     core::DoMoveResult Engine::doMove(const std::string& move) {
         const auto     curr_key = pos.getHash();
