@@ -31,7 +31,7 @@ TEST_SUITE("Movegen") {
 
     TEST_CASE("generatePseudolegalMoves") {
         core::Position pos;
-        pos.setStartpos();
+        pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         containers::ArrayList<move::Move> moves;
         movegen::generatePseudolegalMoves<movegen::MovegenType::ALL>(&moves, pos);

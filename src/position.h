@@ -52,72 +52,67 @@ namespace sagittar {
 
         class Position {
            private:
-            std::array<BitBoard, 15> bitboards;
-            std::array<Piece, 64>    pieces;
-            BitBoard                 checkers;
-            Color                    active_color;
-            u8                       casteling_rights;
-            Square                   enpassant_target;
-            u8                       half_move_clock;
-            u8                       full_move_number;
-            i32                      ply_count;
-            u64                      hash;
-
+            void         resetHash();
+            void         setPiece(const Piece, const Square);
+            void         clearPiece(const Piece, const Square);
+            void         movePiece(const Piece  piece,
+                                   const Square from,
+                                   const Square to,
+                                   const bool   is_capture   = false,
+                                   const bool   is_promotion = false,
+                                   const Piece  promoted     = Piece::NO_PIECE);
             DoMoveResult doMoveComplete();
 
            public:
             static void initialize();
 
             Position();
-            ~Position();
-            Position(const Position&)            = default;
-            Position& operator=(const Position&) = default;
-            bool      operator==(Position const& rhs) const;
+            Position(const Position&)                = default;
+            Position(Position&&) noexcept            = default;
+            Position& operator=(const Position&)     = default;
+            Position& operator=(Position&&) noexcept = default;
+            ~Position()                              = default;
 
-            void setFen(std::string, const bool full = true);
+            void reset();
+
+            void        setFen(std::string, const bool full = true);
             std::string toFen() const;
 
-            void                       reset();
-            void                       resetHash();
-            void                       setPiece(const Piece, const Square);
-            void                       clearPiece(const Piece, const Square);
-            void                       setStartpos();
-            void                       movePiece(const Piece  piece,
-                                                 const Square from,
-                                                 const Square to,
-                                                 const bool   is_capture   = false,
-                                                 const bool   is_promotion = false,
-                                                 const Piece  promoted     = Piece::NO_PIECE);
-            void                       undoMovePiece(const Piece  piece,
-                                                     const Square from,
-                                                     const Square to,
-                                                     const bool   is_capture   = false,
-                                                     const Piece  captured     = Piece::NO_PIECE,
-                                                     const bool   is_promotion = false,
-                                                     const Piece  promoted     = Piece::NO_PIECE);
-            void                       setCheckers(const BitBoard bb);
-            void                       setActiveColor(const Color);
-            void                       addCastelingRights(const CastleFlag);
-            void                       setEnpassantTarget(const Square);
-            void                       setHalfmoveClock(const u8);
-            void                       setFullmoveNumber(const u8);
             [[nodiscard]] DoMoveResult doMove(const move::Move&) noexcept;
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
             void                       doNullMove();
-            BitBoard                   getBitboard(const u8 index) const;
-            BitBoard                   getBitboard(const PieceType, const Color) const;
-            Piece                      getPiece(const Square) const;
-            u8                         getPieceCount(const Piece) const;
-            Color                      getActiveColor() const;
-            u8                         getCastelingRights() const;
-            Square                     getEnpassantTarget() const;
-            u8                         getHalfmoveClock() const;
-            u8                         getFullmoveNumber() const;
-            u64                        getHash() const;
-            bool                       isValid() const;
-            bool                       isInCheck() const;
-            bool                       hasPositionRepeated(std::span<u64> key_history) const;
-            void                       display() const;
+
+            BitBoard getBitboard(const u8 index) const;
+            BitBoard getBitboard(const PieceType, const Color) const;
+            Piece    pieceOn(const Square) const;
+            u8       pieceCount(const Piece) const;
+
+            Color  stm() const;
+            u8     caRights() const;
+            Square epTarget() const;
+            u8     halfmoves() const;
+            u8     fullmoves() const;
+            u64    key() const;
+
+            bool isValid() const;
+            bool isInCheck() const;
+            bool isDrawn(std::span<u64> key_history) const;
+
+            void display() const;
+
+            bool operator==(Position const& rhs) const;
+
+           private:
+            std::array<BitBoard, 15> m_bitboards;
+            std::array<Piece, 64>    m_board;
+            BitBoard                 m_checkers;
+            Color                    m_stm;
+            u8                       m_ca_rights;
+            Square                   m_ep_target;
+            u8                       m_halfmoves;
+            u8                       m_fullmoves;
+            i32                      m_ply_count;
+            u64                      m_key;
         };
 
     }

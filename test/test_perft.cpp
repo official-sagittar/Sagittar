@@ -11,7 +11,7 @@ TEST_SUITE("Perft") {
 
     TEST_CASE("Perft - startpos") {
         core::Position pos;
-        pos.setStartpos();
+        pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         u64 nodes = perft::perft(pos, 6);
         CHECK(nodes == 119060324);

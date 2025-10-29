@@ -75,10 +75,10 @@ namespace sagittar {
 
                 if (move.isCapture())
                 {
-                    const PieceType attacker = pieceTypeOf(pos.getPiece(move.from()));
+                    const PieceType attacker = pieceTypeOf(pos.pieceOn(move.from()));
                     const PieceType victim   = (move.flag() == move::MoveFlag::MOVE_CAPTURE_EP)
                                                ? PieceType::PAWN
-                                               : pieceTypeOf(pos.getPiece(move.to()));
+                                               : pieceTypeOf(pos.pieceOn(move.to()));
                     const auto      idx      = mvvlvaIdx(attacker, victim);
                     const auto      score    = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
                     buffer[capture_count++]  = move::ExtMove{move, score};
@@ -106,7 +106,7 @@ namespace sagittar {
                 }
                 else
                 {
-                    const Piece piece = pos.getPiece(move.from());
+                    const Piece piece = pos.pieceOn(move.from());
                     const auto score = std::clamp(data.history[piece][move.to()], HISTORY_SCORE_MIN,
                                                   HISTORY_SCORE_MAX);
                     *quiet_ptr++     = move::ExtMove{move, score};

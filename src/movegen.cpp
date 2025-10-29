@@ -463,12 +463,11 @@ namespace sagittar {
             }
 
             const core::BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
-            const core::BitBoard capture_l = fwd_l & enemies_not_on_promotion_dest;
-            const core::BitBoard capture_r = fwd_r & enemies_not_on_promotion_dest;
-            const core::BitBoard ep_target_bb =
-              (pos.getEnpassantTarget() != Square::NO_SQ)
-                ? ((1ULL << pos.getEnpassantTarget()) & ep_target_rank)
-                : 0ULL;
+            const core::BitBoard capture_l                 = fwd_l & enemies_not_on_promotion_dest;
+            const core::BitBoard capture_r                 = fwd_r & enemies_not_on_promotion_dest;
+            const core::BitBoard ep_target_bb              = (pos.epTarget() != Square::NO_SQ)
+                                                             ? ((1ULL << pos.epTarget()) & ep_target_rank)
+                                                             : 0ULL;
             const core::BitBoard capture_ep_l              = fwd_l & ep_target_bb;
             const core::BitBoard capture_ep_r              = fwd_r & ep_target_bb;
             const core::BitBoard quite_promo               = pawns_fwd & promo_dest & empty;
@@ -577,7 +576,7 @@ namespace sagittar {
         static void generatePseudolegalMovesPiece(containers::ArrayList<move::Move>* moves,
                                                   const core::Position&              pos,
                                                   const MovegenType                  type) {
-            const Color    active_color = pos.getActiveColor();
+            const Color    active_color = pos.stm();
             const Piece    piece        = pieceCreate(PieceTypeName, active_color);
             core::BitBoard bb           = pos.getBitboard(piece);
             core::BitBoard occupancy    = 0ULL;
@@ -605,7 +604,7 @@ namespace sagittar {
                 while (attacks)
                 {
                     const Square to       = static_cast<Square>(utils::bitScanForward(&attacks));
-                    const Piece  captured = pos.getPiece(to);
+                    const Piece  captured = pos.pieceOn(to);
                     switch (type)
                     {
                         case MovegenType::ALL :
@@ -634,17 +633,17 @@ namespace sagittar {
                 return;
             }
 
-            const Color active_color     = pos.getActiveColor();
-            const u8    casteling_rights = pos.getCastelingRights();
+            const Color active_color     = pos.stm();
+            const u8    casteling_rights = pos.caRights();
 
             if (active_color == Color::WHITE)
             {
                 if (casteling_rights & core::CastleFlag::WKCA)
                 {
-                    if (pos.getPiece(Square::E1) == Piece::WHITE_KING
-                        && pos.getPiece(Square::F1) == Piece::NO_PIECE
-                        && pos.getPiece(Square::G1) == Piece::NO_PIECE
-                        && pos.getPiece(Square::H1) == Piece::WHITE_ROOK
+                    if (pos.pieceOn(Square::E1) == Piece::WHITE_KING
+                        && pos.pieceOn(Square::F1) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::G1) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::H1) == Piece::WHITE_ROOK
                         && !getSquareAttackers(pos, Square::F1, Color::BLACK))
                     {
                         moves->emplace_back(Square::E1, Square::G1,
@@ -653,11 +652,11 @@ namespace sagittar {
                 }
                 if (casteling_rights & core::CastleFlag::WQCA)
                 {
-                    if (pos.getPiece(Square::E1) == Piece::WHITE_KING
-                        && pos.getPiece(Square::D1) == Piece::NO_PIECE
-                        && pos.getPiece(Square::C1) == Piece::NO_PIECE
-                        && pos.getPiece(Square::B1) == Piece::NO_PIECE
-                        && pos.getPiece(Square::A1) == Piece::WHITE_ROOK
+                    if (pos.pieceOn(Square::E1) == Piece::WHITE_KING
+                        && pos.pieceOn(Square::D1) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::C1) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::B1) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::A1) == Piece::WHITE_ROOK
                         && !getSquareAttackers(pos, Square::D1, Color::BLACK))
                     {
                         moves->emplace_back(Square::E1, Square::C1,
@@ -669,10 +668,10 @@ namespace sagittar {
             {
                 if (casteling_rights & core::CastleFlag::BKCA)
                 {
-                    if (pos.getPiece(Square::E8) == Piece::BLACK_KING
-                        && pos.getPiece(Square::F8) == Piece::NO_PIECE
-                        && pos.getPiece(Square::G8) == Piece::NO_PIECE
-                        && pos.getPiece(Square::H8) == Piece::BLACK_ROOK
+                    if (pos.pieceOn(Square::E8) == Piece::BLACK_KING
+                        && pos.pieceOn(Square::F8) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::G8) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::H8) == Piece::BLACK_ROOK
                         && !getSquareAttackers(pos, Square::F8, Color::WHITE))
                     {
                         moves->emplace_back(Square::E8, Square::G8,
@@ -681,11 +680,11 @@ namespace sagittar {
                 }
                 if (casteling_rights & core::CastleFlag::BQCA)
                 {
-                    if (pos.getPiece(Square::E8) == Piece::BLACK_KING
-                        && pos.getPiece(Square::D8) == Piece::NO_PIECE
-                        && pos.getPiece(Square::C8) == Piece::NO_PIECE
-                        && pos.getPiece(Square::B8) == Piece::NO_PIECE
-                        && pos.getPiece(Square::A8) == Piece::BLACK_ROOK
+                    if (pos.pieceOn(Square::E8) == Piece::BLACK_KING
+                        && pos.pieceOn(Square::D8) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::C8) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::B8) == Piece::NO_PIECE
+                        && pos.pieceOn(Square::A8) == Piece::BLACK_ROOK
                         && !getSquareAttackers(pos, Square::D8, Color::WHITE))
                     {
                         moves->emplace_back(Square::E8, Square::C8,
@@ -734,7 +733,7 @@ namespace sagittar {
         template<MovegenType T>
         void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
                                       const core::Position&              pos) {
-            if (pos.getActiveColor() == Color::WHITE)
+            if (pos.stm() == Color::WHITE)
             {
                 generatePseudolegalMovesPawn<WHITE, T>(moves, pos);
             }

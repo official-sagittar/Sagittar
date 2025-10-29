@@ -37,12 +37,12 @@ namespace sagittar {
 
         core::DoMoveResult Searcher::ThreadData::doMove(core::Position&   pos,
                                                         const move::Move& move) {
-            key_history.push_back(pos.getHash());
+            key_history.push_back(pos.key());
             return pos.doMove(move);
         }
 
         void Searcher::ThreadData::doNullMove(core::Position& pos) {
-            key_history.push_back(pos.getHash());
+            key_history.push_back(pos.key());
             pos.doNullMove();
         }
 
@@ -203,8 +203,7 @@ namespace sagittar {
                     return eval::evaluate(pos);
                 }
 
-                if ((do_null && pos.hasPositionRepeated(thread.key_history))
-                    || (pos.getHalfmoveClock() >= 100))
+                if ((do_null && pos.isDrawn(thread.key_history)) || (pos.halfmoves() >= 100))
                 {
                     return 0;
                 }
@@ -225,7 +224,7 @@ namespace sagittar {
             const bool is_critical_node = is_pv_node || is_in_check;
 
             tt::TTData ttdata;
-            const bool tthit = tt.probe(&ttdata, pos.getHash());
+            const bool tthit = tt.probe(&ttdata, pos.key());
 
             // TT cutoff
             if (!is_pv_node && tthit && ttdata.depth >= depth)
@@ -323,7 +322,7 @@ namespace sagittar {
                     continue;
                 }
 
-                const Piece     move_piece      = pos.getPiece(move.from());
+                const Piece     move_piece      = pos.pieceOn(move.from());
                 const PieceType move_piece_type = pieceTypeOf(move_piece);
                 const bool      move_is_capture = move.isCapture();
 
@@ -433,7 +432,7 @@ namespace sagittar {
 
             if (!stop.load(std::memory_order_relaxed))
             {
-                tt.store(pos.getHash(), ply, depth, ttflag, best_score, best_move_so_far);
+                tt.store(pos.key(), ply, depth, ttflag, best_score, best_move_so_far);
 
                 if constexpr (is_root_node)
                 {
@@ -475,7 +474,7 @@ namespace sagittar {
             }
 
             tt::TTData       ttdata;
-            const bool       tthit  = tt.probe(&ttdata, pos.getHash());
+            const bool       tthit  = tt.probe(&ttdata, pos.key());
             const move::Move ttmove = tthit ? ttdata.move : move::Move();
 
             std::array<move::ExtMove, MOVES_MAX>       buffer{};
