@@ -30,9 +30,7 @@ namespace sagittar {
 
         void setTranspositionTableSize(const std::size_t);
 
-        void setStartpos();
-
-        void setPositionFromFEN(std::string);
+        void setPosition(std::string);
 
         core::DoMoveResult doMove(const std::string&);
 

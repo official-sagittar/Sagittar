@@ -110,7 +110,7 @@ namespace sagittar {
 
             for (u8 sq = A1; sq <= H8; sq++)
             {
-                const Piece piece = pos.getPiece(static_cast<Square>(sq));
+                const Piece piece = pos.pieceOn(static_cast<Square>(sq));
                 if (piece == Piece::NO_PIECE)
                 {
                     continue;
@@ -138,9 +138,9 @@ namespace sagittar {
 
             Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
-            const i8 stm = 1 - (2 * pos.getActiveColor());
+            const i8 stm = 1 - (2 * pos.stm());
 #ifdef DEBUG
-            if (pos.getActiveColor() == Color::WHITE)
+            if (pos.stm() == Color::WHITE)
             {
                 assert(stm == 1);
             }
@@ -161,17 +161,17 @@ namespace sagittar {
         }
 
         bool isEndGame(const core::Position& pos) {
-            const u8 wQ = pos.getPieceCount(Piece::WHITE_QUEEN);
-            const u8 bQ = pos.getPieceCount(Piece::BLACK_QUEEN);
+            const u8 wQ = pos.pieceCount(Piece::WHITE_QUEEN);
+            const u8 bQ = pos.pieceCount(Piece::BLACK_QUEEN);
 
-            const u8 wR = pos.getPieceCount(Piece::WHITE_ROOK);
-            const u8 bR = pos.getPieceCount(Piece::BLACK_ROOK);
+            const u8 wR = pos.pieceCount(Piece::WHITE_ROOK);
+            const u8 bR = pos.pieceCount(Piece::BLACK_ROOK);
 
-            const u8 wB = pos.getPieceCount(Piece::WHITE_BISHOP);
-            const u8 bB = pos.getPieceCount(Piece::BLACK_BISHOP);
+            const u8 wB = pos.pieceCount(Piece::WHITE_BISHOP);
+            const u8 bB = pos.pieceCount(Piece::BLACK_BISHOP);
 
-            const u8 wN = pos.getPieceCount(Piece::WHITE_KNIGHT);
-            const u8 bN = pos.getPieceCount(Piece::BLACK_KNIGHT);
+            const u8 wN = pos.pieceCount(Piece::WHITE_KNIGHT);
+            const u8 bN = pos.pieceCount(Piece::BLACK_KNIGHT);
 
             bool is_end_game = false;
 

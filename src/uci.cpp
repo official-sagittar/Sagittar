@@ -73,7 +73,7 @@ namespace sagittar {
             ss >> segment;
             if (segment == "startpos")
             {
-                engine.setStartpos();
+                engine.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             }
             else if (segment == "fen")
             {
@@ -83,7 +83,7 @@ namespace sagittar {
                 // clang-format off
                 try
                 {
-                    engine.setPositionFromFEN(segment);
+                    engine.setPosition(segment);
                 }
                 catch (const std::invalid_argument& e)
                 {

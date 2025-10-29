@@ -40,12 +40,10 @@ namespace sagittar {
         searcher.setTranspositionTableSize(size);
     }
 
-    void Engine::setStartpos() { pos.setStartpos(); }
-
-    void Engine::setPositionFromFEN(std::string fen) { pos.setFen(fen); }
+    void Engine::setPosition(std::string fen) { pos.setFen(fen); }
 
     core::DoMoveResult Engine::doMove(const std::string& move) {
-        const auto     curr_key = pos.getHash();
+        const auto     curr_key = pos.key();
         core::Position pos_copy = pos;
         const auto     result   = pos_copy.doMove(move);
         if (result == core::DoMoveResult::LEGAL)
@@ -128,7 +126,7 @@ namespace sagittar {
         const u64 starttime = utils::currtimeInMilliseconds();
         for (const auto& fen : positions)
         {
-            setPositionFromFEN(fen);
+            setPosition(fen);
 
             search::SearchInfo info;
             info.depth = 4;

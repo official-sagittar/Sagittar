@@ -19,7 +19,7 @@ namespace sagittar {
                 }
                 else if (!info->infinite)
                 {
-                    if (pos.getActiveColor() == Color::WHITE)
+                    if (pos.stm() == Color::WHITE)
                     {
                         time = info->wtime;
                         inc  = info->winc;
