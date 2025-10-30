@@ -439,9 +439,9 @@ namespace sagittar {
             constexpr core::BitBoard ep_target_rank =
               (US == Color::WHITE) ? core::MASK_RANK_6 : core::MASK_RANK_3;
 
-            const core::BitBoard pawns   = pos.getBitboard(PieceType::PAWN, US);
-            const core::BitBoard enemies = pos.getBitboard(core::bitboardColorSlot(them));
-            const core::BitBoard empty   = pos.getBitboard(Piece::NO_PIECE);
+            const core::BitBoard pawns   = pos.pieces(US, PieceType::PAWN);
+            const core::BitBoard enemies = pos.pieces(them);
+            const core::BitBoard empty   = ~pos.occupied();
 
             core::BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
 
@@ -577,8 +577,7 @@ namespace sagittar {
                                                   const core::Position&              pos,
                                                   const MovegenType                  type) {
             const Color    active_color = pos.stm();
-            const Piece    piece        = pieceCreate(PieceTypeName, active_color);
-            core::BitBoard bb           = pos.getBitboard(piece);
+            core::BitBoard bb           = pos.pieces(active_color, PieceTypeName);
             core::BitBoard occupancy    = 0ULL;
             const auto     attackFn     = attackFunctions.at(PieceTypeName - 2);
 
@@ -586,14 +585,13 @@ namespace sagittar {
             {
                 case PieceType::KNIGHT :
                 case PieceType::KING :
-                    occupancy = pos.getBitboard(core::bitboardColorSlot(colorFlip(active_color)))
-                              | pos.getBitboard(Piece::NO_PIECE);
+                    occupancy = pos.pieces(colorFlip(active_color)) | ~pos.occupied();
                     break;
 
                 case PieceType::BISHOP :
                 case PieceType::ROOK :
                 case PieceType::QUEEN :
-                    occupancy = ~pos.getBitboard(Piece::NO_PIECE);
+                    occupancy = pos.occupied();
                     break;
             }
 
@@ -713,14 +711,14 @@ namespace sagittar {
 
         core::BitBoard
         getSquareAttackers(const core::Position& pos, const Square sq, const Color attacked_by) {
-            const core::BitBoard occupied = ~(pos.getBitboard(Piece::NO_PIECE));
+            const core::BitBoard occupied = pos.occupied();
             core::BitBoard       opPawns, opKnights, opRQ, opBQ, opKing;
-            opPawns   = pos.getBitboard(pieceCreate(PieceType::PAWN, attacked_by));
-            opKnights = pos.getBitboard(pieceCreate(PieceType::KNIGHT, attacked_by));
-            opRQ = opBQ = pos.getBitboard(pieceCreate(PieceType::QUEEN, attacked_by));
-            opRQ |= pos.getBitboard(pieceCreate(PieceType::ROOK, attacked_by));
-            opBQ |= pos.getBitboard(pieceCreate(PieceType::BISHOP, attacked_by));
-            opKing = pos.getBitboard(pieceCreate(PieceType::KING, attacked_by));
+            opPawns   = pos.pieces(attacked_by, PieceType::PAWN);
+            opKnights = pos.pieces(attacked_by, PieceType::KNIGHT);
+            opRQ = opBQ = pos.pieces(attacked_by, PieceType::QUEEN);
+            opRQ |= pos.pieces(attacked_by, PieceType::ROOK);
+            opBQ |= pos.pieces(attacked_by, PieceType::BISHOP);
+            opKing = pos.pieces(attacked_by, PieceType::KING);
             // clang-format off
             return (getBishopAttacks(sq, occupied) & opBQ)
                  | (getRookAttacks(sq, occupied) & opRQ)

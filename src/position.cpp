@@ -25,6 +25,9 @@ namespace sagittar {
         static u64 ZOBRIST_CA[16];
         static u64 ZOBRIST_SIDE;
 
+        static constexpr u8 bitboardColorSlot(const Piece p) { return (7 + pieceColorOf(p)); }
+        static constexpr u8 bitboardColorSlot(const Color c) { return (7 + c); }
+
         void Position::initialize() {
 
             for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
@@ -674,11 +677,13 @@ namespace sagittar {
             m_key ^= ZOBRIST_SIDE;
         }
 
-        BitBoard Position::getBitboard(const u8 index) const { return m_bitboards[index]; }
+        BitBoard Position::pieces(const Color c) const { return m_bitboards[bitboardColorSlot(c)]; }
 
-        BitBoard Position::getBitboard(const PieceType pt, const Color c) const {
+        BitBoard Position::pieces(const Color c, const PieceType pt) const {
             return m_bitboards[pieceCreate(pt, c)];
         }
+
+        BitBoard Position::occupied() const { return ~m_bitboards[Piece::NO_PIECE]; }
 
         Piece Position::pieceOn(const Square square) const { return m_board[square]; }
 
