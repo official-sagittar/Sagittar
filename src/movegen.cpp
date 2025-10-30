@@ -441,7 +441,7 @@ namespace sagittar {
 
             const core::BitBoard pawns   = pos.pieces(US, PieceType::PAWN);
             const core::BitBoard enemies = pos.pieces(them);
-            const core::BitBoard empty   = ~pos.occupied();
+            const core::BitBoard empty   = pos.empty();
 
             core::BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
 
@@ -585,7 +585,7 @@ namespace sagittar {
             {
                 case PieceType::KNIGHT :
                 case PieceType::KING :
-                    occupancy = pos.pieces(colorFlip(active_color)) | ~pos.occupied();
+                    occupancy = pos.pieces(colorFlip(active_color)) | pos.empty();
                     break;
 
                 case PieceType::BISHOP :
