@@ -1,11 +1,11 @@
 #pragma once
 
-#include "move.h"
-#include "pch.h"
-#include "position.h"
-#include "search.h"
-#include "searchtypes.h"
-#include "types.h"
+#include "commons/pch.h"
+#include "core/move.h"
+#include "core/position.h"
+#include "core/types.h"
+#include "search/search.h"
+#include "search/searchtypes.h"
 
 namespace sagittar {
 

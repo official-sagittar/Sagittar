@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
-#include "position.h"
-#include "types.h"
+#include "commons/pch.h"
+#include "core/position.h"
+#include "core/types.h"
 
 namespace sagittar {
 

@@ -1,6 +1,6 @@
+#include "commons/pch.h"
+#include "comms/uci.h"
 #include "engine.h"
-#include "pch.h"
-#include "uci.h"
 
 int main(int argc, char* argv[]) {
     sagittar::Engine engine;

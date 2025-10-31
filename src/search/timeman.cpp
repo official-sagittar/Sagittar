@@ -1,7 +1,7 @@
 #include "timeman.h"
-#include "search.h"
-#include "types.h"
-#include "utils.h"
+#include "commons/utils.h"
+#include "core/types.h"
+#include "search/search.h"
 
 namespace sagittar {
 

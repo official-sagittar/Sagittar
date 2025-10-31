@@ -1,6 +1,6 @@
+#include "core/move.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "move.h"
-#include "types.h"
 
 using namespace sagittar;
 

@@ -1,5 +1,5 @@
 #include "movegen.h"
-#include "utils.h"
+#include "commons/utils.h"
 
 namespace sagittar {
 

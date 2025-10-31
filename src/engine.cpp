@@ -1,8 +1,7 @@
 #include "engine.h"
-#include "eval.h"
-
-#include "params.h"
-#include "utils.h"
+#include "commons/utils.h"
+#include "eval/hce/eval.h"
+#include "search/params.h"
 
 namespace sagittar {
 
