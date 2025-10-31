@@ -33,9 +33,6 @@ namespace sagittar {
         constexpr BitBoard southWest(const BitBoard b) { return (b & MASK_NOT_A_FILE) >> 9; }
         constexpr BitBoard northWest(const BitBoard b) { return (b & MASK_NOT_A_FILE) << 7; }
 
-        constexpr u8 bitboardColorSlot(const Piece p) { return (7 + pieceColorOf(p)); }
-        constexpr u8 bitboardColorSlot(const Color c) { return (7 + c); }
-
         enum CastleFlag : u8 {
             NOCA = 0,
             WKCA = 1,
@@ -82,8 +79,10 @@ namespace sagittar {
             [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
             void                       doNullMove();
 
-            BitBoard getBitboard(const u8 index) const;
-            BitBoard getBitboard(const PieceType, const Color) const;
+            BitBoard pieces(const Color) const;
+            BitBoard pieces(const Color, const PieceType) const;
+            BitBoard occupied() const;
+            BitBoard empty() const;
             Piece    pieceOn(const Square) const;
             u8       pieceCount(const Piece) const;
 
