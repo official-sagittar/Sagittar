@@ -1,6 +1,6 @@
+#include "commons/utils.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "types.h"
-#include "utils.h"
 
 using namespace sagittar;
 

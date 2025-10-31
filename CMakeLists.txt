@@ -48,7 +48,7 @@ option(ENABLE_SAN "Enable Address and Undefined sanitizers" OFF)
 # Only affect this target (avoid global flag pollution)
 add_executable(${EXE_NAME})
 target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic -march=native)
-target_precompile_headers(${EXE_NAME} PRIVATE src/pch.h)
+target_precompile_headers(${EXE_NAME} PRIVATE src/commons/pch.h)
 target_include_directories(${EXE_NAME} PRIVATE src)
 
 set_target_properties(${EXE_NAME} PROPERTIES
@@ -59,8 +59,8 @@ set_target_properties(${EXE_NAME} PROPERTIES
 # ----------------------------------------------------------
 # Source files
 # ----------------------------------------------------------
-file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/*.cpp src/*.h)
-list(FILTER CORE_SRC EXCLUDE REGEX "src/pch.cpp")
+file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/**.cpp src/**.h)
+list(FILTER CORE_SRC EXCLUDE REGEX "src/commons/pch.cpp")
 
 file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)
 

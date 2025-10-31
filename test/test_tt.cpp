@@ -1,8 +1,8 @@
+#include "core/move.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "move.h"
-#include "position.h"
-#include "tt.h"
-#include "types.h"
+#include "search/tt.h"
 
 using namespace sagittar;
 

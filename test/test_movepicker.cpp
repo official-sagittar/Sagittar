@@ -1,12 +1,12 @@
-#include "containers.h"
+#include "commons/containers.h"
+#include "commons/pch.h"
+#include "core/move.h"
+#include "core/movegen.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "move.h"
-#include "movegen.h"
-#include "movepicker.h"
-#include "pch.h"
-#include "position.h"
-#include "search.h"
-#include "types.h"
+#include "search/movepicker.h"
+#include "search/search.h"
 
 using namespace sagittar;
 

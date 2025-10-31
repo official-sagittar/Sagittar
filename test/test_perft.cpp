@@ -1,8 +1,8 @@
+#include "commons/pch.h"
+#include "core/perft.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "pch.h"
-#include "perft.h"
-#include "position.h"
-#include "types.h"
 
 using namespace sagittar;
 using pair_type = std::pair<std::string, std::vector<u64>>;

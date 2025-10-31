@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT
+#include "core/position.h"
 #include "doctest/doctest.h"
-#include "position.h"
 
 int main(int argc, char** argv) {
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pch.h"
-#include "types.h"
+#include "commons/pch.h"
+#include "core/types.h"
 
 namespace sagittar {
 

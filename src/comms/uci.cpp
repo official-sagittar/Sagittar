@@ -1,8 +1,8 @@
 #include "uci.h"
-#include "params.h"
-#include "position.h"
-#include "searchtypes.h"
-#include "utils.h"
+#include "commons/utils.h"
+#include "core/position.h"
+#include "search/params.h"
+#include "search/searchtypes.h"
 
 namespace sagittar {
 

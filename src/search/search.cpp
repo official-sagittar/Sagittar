@@ -1,11 +1,11 @@
 #include "search.h"
-#include "containers.h"
-#include "eval.h"
-#include "movegen.h"
-#include "movepicker.h"
-#include "params.h"
-#include "timeman.h"
-#include "utils.h"
+#include "commons/containers.h"
+#include "commons/utils.h"
+#include "core/movegen.h"
+#include "eval/hce/eval.h"
+#include "search/movepicker.h"
+#include "search/params.h"
+#include "search/timeman.h"
 
 namespace sagittar {
 

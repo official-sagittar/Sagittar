@@ -1,9 +1,9 @@
 #pragma once
 
-#include "containers.h"
-#include "move.h"
-#include "pch.h"
-#include "types.h"
+#include "commons/containers.h"
+#include "commons/pch.h"
+#include "core/move.h"
+#include "core/types.h"
 
 namespace sagittar {
 

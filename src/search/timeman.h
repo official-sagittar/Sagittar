@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
-#include "position.h"
-#include "searchtypes.h"
+#include "commons/pch.h"
+#include "core/position.h"
+#include "search/searchtypes.h"
 
 namespace sagittar {
 

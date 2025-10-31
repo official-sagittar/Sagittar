@@ -1,8 +1,8 @@
+#include "commons/pch.h"
+#include "core/move.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "doctest/doctest.h"
-#include "move.h"
-#include "pch.h"
-#include "position.h"
-#include "types.h"
 
 using namespace sagittar;
 

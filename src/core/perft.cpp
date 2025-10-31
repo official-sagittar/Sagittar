@@ -1,7 +1,7 @@
 #include "perft.h"
-#include "containers.h"
-#include "move.h"
-#include "movegen.h"
+#include "commons/containers.h"
+#include "core/move.h"
+#include "core/movegen.h"
 
 namespace sagittar {
 

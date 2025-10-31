@@ -1,6 +1,6 @@
+#include "commons/pch.h"
 #include "doctest/doctest.h"
-#include "params.h"
-#include "pch.h"
+#include "search/params.h"
 
 using namespace sagittar;
 
