@@ -2,18 +2,10 @@
 
 #include "commons/pch.h"
 #include "core/position.h"
-#include "search/searchtypes.h"
+#include "search/types.h"
 
-namespace sagittar {
+namespace sagittar::search {
 
-    namespace search {
-
-        namespace timeman {
-
-            void setSearchHardBoundTime(SearchInfo* info, const core::Position& pos);
-
-        }
-
-    }
+    void setSearchHardBoundTime(SearchInfo* info, const Position& pos);
 
 }

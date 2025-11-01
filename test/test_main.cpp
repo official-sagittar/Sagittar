@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv) {
 
-    sagittar::core::Position::initialize();
+    sagittar::Position::initialize();
 
     doctest::Context context;
     context.applyCommandLine(argc, argv);

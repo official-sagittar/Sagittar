@@ -4,13 +4,9 @@
 #include "core/position.h"
 #include "core/types.h"
 
-namespace sagittar {
+namespace sagittar::perft {
 
-    namespace perft {
-
-        u64 perft(const core::Position& pos, const Depth depth);
-        u64 divide(const core::Position& pos, const Depth depth);
-
-    }
+    u64 perft(const Position& pos, const Depth depth);
+    u64 divide(const Position& pos, const Depth depth);
 
 }

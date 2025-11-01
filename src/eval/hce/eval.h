@@ -4,14 +4,10 @@
 #include "core/position.h"
 #include "core/types.h"
 
-namespace sagittar {
+namespace sagittar::eval::hce {
 
-    namespace eval {
-
-        void  initialize();
-        Score evaluate(const core::Position&);
-        bool  isEndGame(const core::Position&);
-
-    }
+    void  initialize();
+    Score evaluate(const Position&);
+    bool  isEndGame(const Position&);
 
 }

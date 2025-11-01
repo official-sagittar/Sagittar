@@ -5,15 +5,14 @@
 #include "core/position.h"
 #include "core/types.h"
 #include "search/search.h"
-#include "search/searchtypes.h"
+#include "search/types.h"
 
 namespace sagittar {
 
     class Engine {
        private:
         std::string      name;
-        std::string      version;
-        core::Position   pos;
+        Position         pos;
         search::Searcher searcher;
         std::vector<u64> key_history;
 
@@ -32,7 +31,7 @@ namespace sagittar {
 
         void setPosition(std::string);
 
-        core::DoMoveResult doMove(const std::string&);
+        DoMoveResult doMove(const std::string&);
 
         search::SearchResult search(search::SearchInfo);
 

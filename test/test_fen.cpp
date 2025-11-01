@@ -8,11 +8,11 @@ using namespace sagittar;
 TEST_SUITE("FEN") {
 
     TEST_CASE("fen::parseFEN") {
-        std::string    startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        core::Position startpos;
+        std::string startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        Position    startpos;
         startpos.setFen(startpos_fen);
 
-        core::Position pos;
+        Position pos;
         startpos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -";
         pos.setFen(startpos_fen);
         CHECK(pos == startpos);
@@ -100,10 +100,10 @@ TEST_SUITE("FEN") {
         REQUIRE(pos.pieceOn(Square::H8) == Piece::BLACK_ROOK);
 
         REQUIRE(pos.stm() == Color::WHITE);
-        REQUIRE((pos.caRights() & core::CastleFlag::WKCA) != 0);
-        REQUIRE((pos.caRights() & core::CastleFlag::WQCA) != 0);
-        REQUIRE((pos.caRights() & core::CastleFlag::BKCA) != 0);
-        REQUIRE((pos.caRights() & core::CastleFlag::BQCA) != 0);
+        REQUIRE((pos.caRights() & CastleFlag::WKCA) != 0);
+        REQUIRE((pos.caRights() & CastleFlag::WQCA) != 0);
+        REQUIRE((pos.caRights() & CastleFlag::BKCA) != 0);
+        REQUIRE((pos.caRights() & CastleFlag::BQCA) != 0);
         REQUIRE(pos.epTarget() == Square::NO_SQ);
         REQUIRE(pos.halfmoves() == 0);
         REQUIRE(pos.fullmoves() == 1);
