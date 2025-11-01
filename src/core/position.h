@@ -39,24 +39,18 @@ namespace sagittar {
         BQCA = 8
     };
 
-    enum class DoMoveResult : u8 {
-        INVALID,  // Incorrect Move
-        ILLEGAL,  // Move is correct, but results in check or invalid pos
-        LEGAL     // Move is correct and move is legal
-    };
-
     class Position {
        private:
-        void         resetHash();
-        void         setPiece(const Piece, const Square);
-        void         clearPiece(const Piece, const Square);
-        void         movePiece(const Piece  piece,
-                               const Square from,
-                               const Square to,
-                               const bool   is_capture   = false,
-                               const bool   is_promotion = false,
-                               const Piece  promoted     = Piece::NO_PIECE);
-        DoMoveResult doMoveComplete();
+        void resetHash();
+        void setPiece(const Piece, const Square);
+        void clearPiece(const Piece, const Square);
+        void movePiece(const Piece  piece,
+                       const Square from,
+                       const Square to,
+                       const bool   is_capture   = false,
+                       const bool   is_promotion = false,
+                       const Piece  promoted     = Piece::NO_PIECE);
+        bool doMoveComplete();
 
        public:
         static void initialize();
@@ -73,9 +67,9 @@ namespace sagittar {
         void        setFen(std::string, const bool full = true);
         std::string toFen() const;
 
-        [[nodiscard]] DoMoveResult doMove(const Move&) noexcept;
-        [[nodiscard]] DoMoveResult doMove(const std::string&) noexcept;
-        void                       doNullMove();
+        [[nodiscard]] bool doMove(const Move&) noexcept;
+        [[nodiscard]] bool doMove(const std::string&) noexcept;
+        void               doNullMove();
 
         BitBoard pieces(const Color) const;
         BitBoard pieces(const Color, const PieceType) const;

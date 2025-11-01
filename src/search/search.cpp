@@ -33,7 +33,7 @@ namespace sagittar::search {
         key_history.clear();
     }
 
-    DoMoveResult Searcher::ThreadData::doMove(Position& pos, const Move& move) {
+    bool Searcher::ThreadData::doMove(Position& pos, const Move& move) {
         key_history.push_back(pos.key());
         return pos.doMove(move);
     }
@@ -307,9 +307,8 @@ namespace sagittar::search {
         {
             const Move move = move_picker.next();
 
-            Position           pos_copy       = pos;
-            const DoMoveResult do_move_result = thread.doMove(pos_copy, move);
-            if (do_move_result == DoMoveResult::ILLEGAL)
+            Position pos_copy = pos;
+            if (!thread.doMove(pos_copy, move))
             {
                 thread.undoMove();
                 continue;
@@ -476,10 +475,8 @@ namespace sagittar::search {
         {
             const Move move = move_picker.next();
 
-            Position           pos_copy       = pos;
-            const DoMoveResult do_move_result = thread.doMove(pos_copy, move);
-
-            if (do_move_result == DoMoveResult::ILLEGAL)
+            Position pos_copy = pos;
+            if (!thread.doMove(pos_copy, move))
             {
                 thread.undoMove();
                 continue;

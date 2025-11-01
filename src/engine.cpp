@@ -40,16 +40,16 @@ namespace sagittar {
 
     void Engine::setPosition(std::string fen) { pos.setFen(fen); }
 
-    DoMoveResult Engine::doMove(const std::string& move) {
-        const auto curr_key = pos.key();
-        Position   pos_copy = pos;
-        const auto result   = pos_copy.doMove(move);
-        if (result == DoMoveResult::LEGAL)
+    bool Engine::doMove(const std::string& move) {
+        const auto curr_key      = pos.key();
+        Position   pos_copy      = pos;
+        const bool is_legal_move = pos_copy.doMove(move);
+        if (is_legal_move)
         {
             key_history.push_back(curr_key);
             pos = pos_copy;
         }
-        return result;
+        return is_legal_move;
     }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
