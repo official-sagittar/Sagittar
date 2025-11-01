@@ -6,11 +6,10 @@
 namespace sagittar {
 
     Engine::Engine() {
-        name    = "Sagittar";
-        version = "0.1.0";
-        core::Position::initialize();
-        eval::initialize();
-        params::init();
+        name = "Sagittar v0.1.0";
+        Position::initialize();
+        eval::hce::initialize();
+        search::params::init();
         key_history.reserve(1024);
         key_history.shrink_to_fit();
         key_history.clear();
@@ -18,7 +17,7 @@ namespace sagittar {
 
     Engine::~Engine() {}
 
-    std::string Engine::getName() const { return name + " " + version; }
+    std::string Engine::getName() const { return name; }
 
     void Engine::reset() {
         pos.reset();
@@ -41,11 +40,11 @@ namespace sagittar {
 
     void Engine::setPosition(std::string fen) { pos.setFen(fen); }
 
-    core::DoMoveResult Engine::doMove(const std::string& move) {
-        const auto     curr_key = pos.key();
-        core::Position pos_copy = pos;
-        const auto     result   = pos_copy.doMove(move);
-        if (result == core::DoMoveResult::LEGAL)
+    DoMoveResult Engine::doMove(const std::string& move) {
+        const auto curr_key = pos.key();
+        Position   pos_copy = pos;
+        const auto result   = pos_copy.doMove(move);
+        if (result == DoMoveResult::LEGAL)
         {
             key_history.push_back(curr_key);
             pos = pos_copy;

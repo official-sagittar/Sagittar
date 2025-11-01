@@ -10,7 +10,7 @@ using pair_type = std::pair<std::string, std::vector<u64>>;
 TEST_SUITE("Perft") {
 
     TEST_CASE("Perft - startpos") {
-        core::Position pos;
+        Position pos;
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         u64 nodes = perft::perft(pos, 6);
@@ -29,7 +29,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -57,7 +57,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -77,7 +77,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -95,7 +95,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -116,7 +116,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -134,7 +134,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -164,7 +164,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -192,7 +192,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -233,7 +233,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -251,7 +251,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -273,7 +273,7 @@ TEST_SUITE("Perft") {
 
         for (const auto& [fen, nodes] : positions)
         {
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
@@ -317,7 +317,7 @@ TEST_SUITE("Perft Full") {
                 depth_perft_part = match.suffix().str();
             }
 
-            core::Position pos;
+            Position pos;
             pos.setFen(fen);
 
             for (const auto& [key, value] : extracted_perft_values)

@@ -8,22 +8,16 @@
 
 namespace sagittar {
 
-    namespace movegen {
+    enum class MovegenType {
+        ALL,
+        CAPTURES
+    };
 
-        enum class MovegenType {
-            ALL,
-            CAPTURES
-        };
+    void movegen_initialize();
 
-        void initialize();
+    BitBoard getSquareAttackers(const Position& pos, const Square sq, const Color attacked_by);
 
-        core::BitBoard
-        getSquareAttackers(const core::Position& pos, const Square sq, const Color attacked_by);
-
-        template<MovegenType T>
-        void generatePseudolegalMoves(containers::ArrayList<move::Move>* moves,
-                                      const core::Position&              pos);
-
-    }
+    template<MovegenType T>
+    void generatePseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos);
 
 }

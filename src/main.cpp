@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
     sagittar::Engine engine;
     if (argc == 1)
     {
-        sagittar::uci::UCIHandler ucihandler(engine);
+        sagittar::comms::uci::UCIHandler ucihandler(engine);
         ucihandler.start();
     }
     else if (argc == 2)

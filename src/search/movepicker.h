@@ -8,63 +8,59 @@
 #include "core/types.h"
 #include "search/search.h"
 
-namespace sagittar {
+namespace sagittar::search {
 
-    namespace search {
+    enum class MovePickerPhase {
+        TT_MOVE,
+        CAPTURES,
+        KILLERS,
+        QUIETS,
+        DONE
+    };
 
-        enum class MovePickerPhase {
-            TT_MOVE,
-            CAPTURES,
-            KILLERS,
-            QUIETS,
-            DONE
-        };
+    template<MovegenType T>
+    class MovePicker final {
+       public:
+        MovePicker() = delete;
+        explicit MovePicker(ExtMove*            buffer,
+                            const Position&     pos,
+                            const Move&         ttmove,
+                            const SearcherData& data,
+                            const i32           ply);
+        MovePicker(const MovePicker&)                = delete;
+        MovePicker(MovePicker&&) noexcept            = delete;
+        MovePicker& operator=(const MovePicker&)     = delete;
+        MovePicker& operator=(MovePicker&&) noexcept = delete;
+        void*       operator new(std::size_t)        = delete;
+        void*       operator new[](std::size_t)      = delete;
+        ~MovePicker() noexcept                       = default;
 
-        template<movegen::MovegenType T>
-        class MovePicker final {
-           public:
-            MovePicker() = delete;
-            explicit MovePicker(move::ExtMove*        buffer,
-                                const core::Position& pos,
-                                const move::Move&     ttmove,
-                                const SearcherData&   data,
-                                const i32             ply);
-            MovePicker(const MovePicker&)                = delete;
-            MovePicker(MovePicker&&) noexcept            = delete;
-            MovePicker& operator=(const MovePicker&)     = delete;
-            MovePicker& operator=(MovePicker&&) noexcept = delete;
-            void*       operator new(std::size_t)        = delete;
-            void*       operator new[](std::size_t)      = delete;
-            ~MovePicker() noexcept                       = default;
+        size_t          size() const;
+        MovePickerPhase phase() const;
+        bool            hasNext() const;
+        Move            next();
 
-            size_t          size() const;
-            MovePickerPhase phase() const;
-            bool            hasNext() const;
-            move::Move      next();
+       private:
+        void process(ExtMove*            buffer,
+                     const Position&     pos,
+                     const Move&         ttmove,
+                     const SearcherData& data,
+                     const i32           ply);
 
-           private:
-            void process(move::ExtMove*        buffer,
-                         const core::Position& pos,
-                         const move::Move&     ttmove,
-                         const SearcherData&   data,
-                         const i32             ply);
+        size_t m_moves_count{0};
 
-            size_t m_moves_count{0};
+        std::span<ExtMove> m_captures;
+        std::span<ExtMove> m_quiets;
+        ExtMove*           m_it_caps;
+        ExtMove*           m_it_quiets;
 
-            std::span<move::ExtMove> m_captures;
-            std::span<move::ExtMove> m_quiets;
-            move::ExtMove*           m_it_caps;
-            move::ExtMove*           m_it_quiets;
+        Move                m_tt_move{};
+        std::array<Move, 2> m_killers{};
 
-            move::Move                m_tt_move{};
-            std::array<move::Move, 2> m_killers{};
+        MovePickerPhase m_phase{MovePickerPhase::TT_MOVE};
 
-            MovePickerPhase m_phase{MovePickerPhase::TT_MOVE};
-
-            size_t m_index{0};
-            u8     m_index_killers{0};
-        };
-
-    }
+        size_t m_index{0};
+        u8     m_index_killers{0};
+    };
 
 }
