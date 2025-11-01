@@ -31,7 +31,7 @@ namespace sagittar {
 
         void setPosition(std::string);
 
-        DoMoveResult doMove(const std::string&);
+        bool doMove(const std::string&);
 
         search::SearchResult search(search::SearchInfo);
 

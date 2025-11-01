@@ -97,7 +97,7 @@ namespace sagittar::comms::uci {
             std::string       move;
             while (movesss >> move)
             {
-                if (engine.doMove(move) != DoMoveResult::LEGAL) [[unlikely]]
+                if (!engine.doMove(move)) [[unlikely]]
                 {
                     std::cerr << "Invalid Move!" << std::endl;
                 }

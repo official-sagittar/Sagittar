@@ -15,9 +15,8 @@ namespace sagittar::perft {
         generatePseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
-            Position           pos_copy = pos;
-            const DoMoveResult result   = pos_copy.doMove(move);
-            if (result == DoMoveResult::LEGAL)
+            Position pos_copy = pos;
+            if (pos_copy.doMove(move))
             {
                 nodes += perft(pos_copy, depth - 1);
             }
@@ -36,9 +35,8 @@ namespace sagittar::perft {
         generatePseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
-            Position           pos_copy = pos;
-            const DoMoveResult result   = pos_copy.doMove(move);
-            if (result == DoMoveResult::LEGAL)
+            Position pos_copy = pos;
+            if (pos_copy.doMove(move))
             {
                 nodes = perft(pos_copy, depth - 1);
                 total_nodes += nodes;

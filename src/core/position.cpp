@@ -391,7 +391,7 @@ namespace sagittar {
         }
     }
 
-    DoMoveResult Position::doMoveComplete() {
+    bool Position::doMoveComplete() {
         const Color them = colorFlip(m_stm);
 
         // Check if move does not leave our King in check and pos is valid
@@ -415,10 +415,10 @@ namespace sagittar {
         resetHash();
         assert(currhash == m_key);
 #endif
-        return is_valid_move ? DoMoveResult::LEGAL : DoMoveResult::ILLEGAL;
+        return is_valid_move;
     }
 
-    [[nodiscard]] DoMoveResult Position::doMove(const Move& move) noexcept {
+    [[nodiscard]] bool Position::doMove(const Move& move) noexcept {
         const Square   from  = move.from();
         const Square   to    = move.to();
         const MoveFlag flag  = move.flag();
@@ -426,7 +426,7 @@ namespace sagittar {
 
         if (pieceColorOf(piece) == colorFlip(m_stm)) [[unlikely]]
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
 
         m_ep_target = Square::NO_SQ;
@@ -514,11 +514,11 @@ namespace sagittar {
         return doMoveComplete();
     }
 
-    [[nodiscard]] DoMoveResult Position::doMove(const std::string& move_str) noexcept {
+    [[nodiscard]] bool Position::doMove(const std::string& move_str) noexcept {
         const std::size_t len = move_str.length();
         if (len < 4 || len > 5)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
 
         const u8 from_file = move_str[0] - 'a';
@@ -528,19 +528,19 @@ namespace sagittar {
 
         if (from_file < File::FILE_A || from_file > File::FILE_H)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
         if (to_file < File::FILE_A || to_file > File::FILE_H)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
         if (from_rank < Rank::RANK_1 || from_rank > Rank::RANK_8)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
         if (to_rank < Rank::RANK_1 || to_rank > Rank::RANK_8)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
 
         const bool is_promotion = (len == 5);
@@ -548,7 +548,7 @@ namespace sagittar {
         if (is_promotion
             && (from_rank != promotionRankSrcOf(m_stm) || to_rank != promotionRankDestOf(m_stm)))
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
 
         const Square from       = rf2sq(from_rank, from_file);
@@ -560,7 +560,7 @@ namespace sagittar {
 
         if (piece == Piece::NO_PIECE)
         {
-            return DoMoveResult::INVALID;
+            return false;
         }
 
         if (pieceTypeOf(piece) == PieceType::PAWN)
@@ -614,7 +614,7 @@ namespace sagittar {
                                           : MoveFlag::MOVE_PROMOTION_QUEEN;
                         break;
                     default :
-                        return DoMoveResult::INVALID;
+                        return false;
                 }
             }
         }
