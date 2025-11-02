@@ -9,18 +9,22 @@ namespace sagittar {
 
     using BitBoard = u64;
 
-    constexpr BitBoard MASK_RANK_1      = 0xFF;
-    constexpr BitBoard MASK_RANK_2      = MASK_RANK_1 << (8 * 1);
-    constexpr BitBoard MASK_RANK_3      = MASK_RANK_1 << (8 * 2);
-    constexpr BitBoard MASK_RANK_4      = MASK_RANK_1 << (8 * 3);
-    constexpr BitBoard MASK_RANK_5      = MASK_RANK_1 << (8 * 4);
-    constexpr BitBoard MASK_RANK_6      = MASK_RANK_1 << (8 * 5);
-    constexpr BitBoard MASK_RANK_7      = MASK_RANK_1 << (8 * 6);
-    constexpr BitBoard MASK_RANK_8      = MASK_RANK_1 << (8 * 7);
-    constexpr BitBoard MASK_NOT_A_FILE  = 0xFEFEFEFEFEFEFEFE;
-    constexpr BitBoard MASK_NOT_H_FILE  = 0x7F7F7F7F7F7F7F7F;
-    constexpr BitBoard MASK_NOT_AB_FILE = 0xFCFCFCFCFCFCFCFC;
-    constexpr BitBoard MASK_NOT_GH_FILE = 0x3F3F3F3F3F3F3F3F;
+    constexpr BitBoard BB(const Square sq) { return static_cast<BitBoard>(1ULL << sq); }
+    constexpr BitBoard BB(const int sq) { return static_cast<BitBoard>(1ULL << sq); }
+
+    constexpr BitBoard MASK_RANK_1       = 0xFF;
+    constexpr BitBoard MASK_RANK_2       = MASK_RANK_1 << (8 * 1);
+    constexpr BitBoard MASK_RANK_3       = MASK_RANK_1 << (8 * 2);
+    constexpr BitBoard MASK_RANK_4       = MASK_RANK_1 << (8 * 3);
+    constexpr BitBoard MASK_RANK_5       = MASK_RANK_1 << (8 * 4);
+    constexpr BitBoard MASK_RANK_6       = MASK_RANK_1 << (8 * 5);
+    constexpr BitBoard MASK_RANK_7       = MASK_RANK_1 << (8 * 6);
+    constexpr BitBoard MASK_RANK_8       = MASK_RANK_1 << (8 * 7);
+    constexpr BitBoard MASK_RANK_1_AND_8 = MASK_RANK_1 & MASK_RANK_8;
+    constexpr BitBoard MASK_NOT_A_FILE   = 0xFEFEFEFEFEFEFEFE;
+    constexpr BitBoard MASK_NOT_H_FILE   = 0x7F7F7F7F7F7F7F7F;
+    constexpr BitBoard MASK_NOT_AB_FILE  = 0xFCFCFCFCFCFCFCFC;
+    constexpr BitBoard MASK_NOT_GH_FILE  = 0x3F3F3F3F3F3F3F3F;
 
     constexpr BitBoard north(const BitBoard b) { return b << 8; }
     constexpr BitBoard south(const BitBoard b) { return b >> 8; }
@@ -40,18 +44,6 @@ namespace sagittar {
     };
 
     class Position {
-       private:
-        void resetHash();
-        void setPiece(const Piece, const Square);
-        void clearPiece(const Piece, const Square);
-        void movePiece(const Piece  piece,
-                       const Square from,
-                       const Square to,
-                       const bool   is_capture   = false,
-                       const bool   is_promotion = false,
-                       const Piece  promoted     = Piece::NO_PIECE);
-        bool doMoveComplete();
-
        public:
         static void initialize();
 
@@ -72,6 +64,7 @@ namespace sagittar {
         void               doNullMove();
 
         BitBoard pieces(const Color) const;
+        BitBoard pieces(const PieceType) const;
         BitBoard pieces(const Color, const PieceType) const;
         BitBoard occupied() const;
         BitBoard empty() const;
@@ -94,16 +87,51 @@ namespace sagittar {
         bool operator==(Position const& rhs) const;
 
        private:
-        std::array<BitBoard, 15> m_bitboards;
-        std::array<Piece, 64>    m_board;
-        BitBoard                 m_checkers;
-        Color                    m_stm;
-        u8                       m_ca_rights;
-        Square                   m_ep_target;
-        u8                       m_halfmoves;
-        u8                       m_fullmoves;
-        i32                      m_ply_count;
-        u64                      m_key;
+        void resetHash();
+
+        template<Color US, MoveFlag F>
+        bool applyMove(const Move& move) noexcept;
+
+        template<Color US>
+        using ApplyMoveFn = bool (Position::*)(const Move&);
+
+        template<Color US>
+        static constexpr std::array<ApplyMoveFn<US>, 16> apply_move_dispatch_table = []() {
+            std::array<ApplyMoveFn<US>, 16> table{};
+
+            table[MOVE_QUIET]               = &Position::applyMove<US, MOVE_QUIET>;
+            table[MOVE_QUIET_PAWN_DBL_PUSH] = &Position::applyMove<US, MOVE_QUIET_PAWN_DBL_PUSH>;
+            table[MOVE_CASTLE_KING_SIDE]    = &Position::applyMove<US, MOVE_CASTLE_KING_SIDE>;
+            table[MOVE_CASTLE_QUEEN_SIDE]   = &Position::applyMove<US, MOVE_CASTLE_QUEEN_SIDE>;
+            table[MOVE_CAPTURE]             = &Position::applyMove<US, MOVE_CAPTURE>;
+            table[MOVE_CAPTURE_EP]          = &Position::applyMove<US, MOVE_CAPTURE_EP>;
+            table[MOVE_PROMOTION_KNIGHT]    = &Position::applyMove<US, MOVE_PROMOTION_KNIGHT>;
+            table[MOVE_PROMOTION_BISHOP]    = &Position::applyMove<US, MOVE_PROMOTION_BISHOP>;
+            table[MOVE_PROMOTION_ROOK]      = &Position::applyMove<US, MOVE_PROMOTION_ROOK>;
+            table[MOVE_PROMOTION_QUEEN]     = &Position::applyMove<US, MOVE_PROMOTION_QUEEN>;
+            table[MOVE_CAPTURE_PROMOTION_KNIGHT] =
+              &Position::applyMove<US, MOVE_CAPTURE_PROMOTION_KNIGHT>;
+            table[MOVE_CAPTURE_PROMOTION_BISHOP] =
+              &Position::applyMove<US, MOVE_CAPTURE_PROMOTION_BISHOP>;
+            table[MOVE_CAPTURE_PROMOTION_ROOK] =
+              &Position::applyMove<US, MOVE_CAPTURE_PROMOTION_ROOK>;
+            table[MOVE_CAPTURE_PROMOTION_QUEEN] =
+              &Position::applyMove<US, MOVE_CAPTURE_PROMOTION_QUEEN>;
+
+            return table;
+        }();
+
+        std::array<BitBoard, 7> m_bb_pieces;
+        std::array<BitBoard, 2> m_bb_colors;
+        std::array<Piece, 64>   m_board;
+        BitBoard                m_checkers;
+        Color                   m_stm;
+        u8                      m_ca_rights;
+        Square                  m_ep_target;
+        u8                      m_halfmoves;
+        u8                      m_fullmoves;
+        i32                     m_ply_count;
+        u64                     m_key;
     };
 
 }

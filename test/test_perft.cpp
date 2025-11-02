@@ -17,6 +17,14 @@ TEST_SUITE("Perft") {
         CHECK(nodes == 119060324);
     }
 
+    TEST_CASE("Perft - kiwipete") {
+        Position pos;
+        pos.setFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+
+        u64 nodes = perft::perft(pos, 5);
+        CHECK(nodes == 193690690);
+    }
+
     TEST_CASE("Perft - Sanity") {
         const std::array<pair_type, 7> positions = {
           {{"8/4k3/8/8/8/8/4K3/8 w - - 0 1", {1, 8}},
