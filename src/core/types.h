@@ -24,7 +24,8 @@ namespace sagittar {
     };
 
     enum PieceType : u8 {
-        PAWN = 1,
+        PIECE_TYPE_INVALID,
+        PAWN,
         KNIGHT,
         BISHOP,
         ROOK,

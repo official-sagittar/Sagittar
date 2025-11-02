@@ -22,8 +22,6 @@ namespace sagittar {
     static u64 ZOBRIST_CA[16];
     static u64 ZOBRIST_SIDE;
 
-    static constexpr u8 bitboardColorSlot(const Piece p) { return (7 + pieceColorOf(p)); }
-
     void Position::initialize() {
 
         for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
@@ -45,7 +43,8 @@ namespace sagittar {
     }
 
     Position::Position() :
-        m_bitboards({}),
+        m_bb_pieces({}),
+        m_bb_colors({}),
         m_board({}),
         m_checkers(0ULL),
         m_stm(Color::WHITE),
@@ -54,9 +53,7 @@ namespace sagittar {
         m_halfmoves(0),
         m_fullmoves(0),
         m_ply_count(0),
-        m_key(0ULL) {
-        m_bitboards[Piece::NO_PIECE] = 0xFFFFFFFFFFFFFFFF;
-    }
+        m_key(0ULL) {}
 
     void Position::reset() { *this = Position{}; }
 
@@ -112,13 +109,33 @@ namespace sagittar {
             }
             else if (isalpha(ch))
             {
-                std::size_t piece_id = PIECES_STR.find(ch);
-                if (piece_id == std::string::npos) [[unlikely]]
+                const PieceType pt = (ch == 'P' || ch == 'p') ? PieceType::PAWN
+                                   : (ch == 'N' || ch == 'n') ? PieceType::KNIGHT
+                                   : (ch == 'B' || ch == 'b') ? PieceType::BISHOP
+                                   : (ch == 'R' || ch == 'r') ? PieceType::ROOK
+                                   : (ch == 'Q' || ch == 'q') ? PieceType::QUEEN
+                                   : (ch == 'K' || ch == 'k') ? PieceType::KING
+                                                              : PieceType::PIECE_TYPE_INVALID;
+                if (pt == PieceType::PIECE_TYPE_INVALID) [[unlikely]]
                 {
                     throw std::invalid_argument("Invalid FEN!");
                 }
-                setPiece(static_cast<Piece>(piece_id), rf2sq(rank, file++));
+                const Color    c     = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
+                                                          || (ch == 'r') || (ch == 'q') || (ch == 'k'));
+                const Square   sq    = rf2sq(rank, file);
+                const BitBoard sq_bb = BB(sq);
+                m_bb_pieces[pt] |= sq_bb;
+                m_bb_colors[c] |= sq_bb;
+                m_board[sq] = pieceCreate(pt, c);
+                ++file;
             }
+        }
+
+        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID] == 0ULL);
+
+        if (!isValid()) [[unlikely]]
+        {
+            throw std::invalid_argument("Invalid FEN!");
         }
 
         // Parse Active color
@@ -212,10 +229,9 @@ namespace sagittar {
         }
 
         // Set checkers
-        const Piece  king = pieceCreate(PieceType::KING, m_stm);
-        BitBoard     bb   = m_bitboards[king];
-        const Square sq   = static_cast<Square>(utils::bitScanForward(&bb));
-        m_checkers        = getSquareAttackers(*this, sq, colorFlip(m_stm));
+        const BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
+        const Square   king_sq = static_cast<Square>(__builtin_ctzll(king_bb));
+        m_checkers             = getSquareAttackers(*this, king_sq, colorFlip(m_stm));
 
         // Reset Hash
         resetHash();
@@ -316,202 +332,157 @@ namespace sagittar {
         return oss.str();
     }
 
-    void Position::setPiece(const Piece piece, const Square square) {
-#ifdef DEBUG
-        assert(piece != Piece::NO_PIECE);
-        assert(square != Square::NO_SQ);
-#endif
-        const BitBoard bit          = 1ULL << square;
-        const BitBoard bit_inverted = ~(bit);
-        m_bitboards[piece] |= bit;
-        m_bitboards[Piece::NO_PIECE] &= bit_inverted;
-        m_bitboards[bitboardColorSlot(piece)] |= bit;
-        m_board[square] = piece;
-        m_key ^= ZOBRIST_TABLE[piece][square];
-    }
+    template<Color US, MoveFlag F>
+    bool Position::applyMove(const Move& move) noexcept {
+        constexpr bool  is_capture   = MOVE_IS_CAPTURE(F);
+        constexpr bool  is_promotion = MOVE_IS_PROMOTION(F);
+        constexpr Color them         = colorFlip(US);
 
-    void Position::clearPiece(const Piece piece, const Square square) {
-#ifdef DEBUG
-        assert(piece != Piece::NO_PIECE);
-        assert(square != Square::NO_SQ);
-#endif
-        const BitBoard bit          = 1ULL << square;
-        const BitBoard bit_inverted = ~(bit);
-        m_bitboards[piece] &= bit_inverted;
-        m_bitboards[Piece::NO_PIECE] |= bit;
-        m_bitboards[bitboardColorSlot(piece)] &= bit_inverted;
-        m_board[square] = Piece::NO_PIECE;
-        m_key ^= ZOBRIST_TABLE[piece][square];
-    }
+        u64 key_local = m_key;
 
-    void Position::movePiece(const Piece  piece,
-                             const Square from,
-                             const Square to,
-                             const bool   is_capture,
-                             const bool   is_promotion,
-                             const Piece  promoted) {
-#ifdef DEBUG
-        assert(piece != Piece::NO_PIECE);
-        assert(from != Square::NO_SQ);
-        assert(to != Square::NO_SQ);
-#endif
+        m_ep_target = Square::NO_SQ;
+        ++m_halfmoves;
+        m_fullmoves += (m_stm == Color::BLACK);
+        ++m_ply_count;
 
-        clearPiece(piece, from);
+        const Square from = move.from();
+        const Square to   = move.to();
 
-        if (is_capture)
+        const Piece     move_p  = m_board[from];
+        const PieceType move_pt = pieceTypeOf(move_p);
+
+        const Piece captured_p = m_board[to];
+
+        const BitBoard move_mask_to = BB(to);
+        const BitBoard move_mask    = BB(from) | move_mask_to;
+
+        m_bb_pieces[move_pt] ^= move_mask;
+        m_bb_colors[US] ^= move_mask;
+        m_board[from] = Piece::NO_PIECE;
+        m_board[to]   = move_p;
+        key_local ^= ZOBRIST_TABLE[move_p][from];
+        key_local ^= ZOBRIST_TABLE[move_p][to];
+
+        if constexpr ((F == MoveFlag::MOVE_CASTLE_KING_SIDE)
+                      || (F == MoveFlag::MOVE_CASTLE_QUEEN_SIDE))
         {
-            const Piece captured = m_board[to];
-#ifdef DEBUG
-            assert(captured != Piece::NO_PIECE);
-            assert(pieceColorOf(piece) == colorFlip(pieceColorOf(captured)));
-#endif
-            clearPiece(captured, to);
+            assert(move_pt == PieceType::KING);
+            constexpr Piece rook = pieceCreate(PieceType::ROOK, US);
+            constexpr Rank  rank = (US == Color::WHITE) ? Rank::RANK_1 : Rank::RANK_8;
+            constexpr File  from_file =
+              (F == MoveFlag::MOVE_CASTLE_KING_SIDE) ? File::FILE_H : File::FILE_A;
+            constexpr File to_file =
+              (F == MoveFlag::MOVE_CASTLE_KING_SIDE) ? File::FILE_F : File::FILE_D;
+            constexpr Square   ca_r_from_sq   = rf2sq(rank, from_file);
+            constexpr Square   ca_r_to_sq     = rf2sq(rank, to_file);
+            constexpr BitBoard move_mask_ca_r = (BB(ca_r_from_sq) | BB(ca_r_to_sq));
+            m_bb_pieces[PieceType::ROOK] ^= move_mask_ca_r;
+            m_bb_colors[US] ^= move_mask_ca_r;
+            m_board[ca_r_from_sq] = Piece::NO_PIECE;
+            m_board[ca_r_to_sq]   = rook;
+            key_local ^= ZOBRIST_TABLE[rook][ca_r_from_sq];
+            key_local ^= ZOBRIST_TABLE[rook][ca_r_to_sq];
+        }
+        else if constexpr (F == MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH)
+        {
+            assert(move_pt == PieceType::PAWN);
+            constexpr i8 dir = (US == Color::WHITE) ? 8 : -8;
+            m_ep_target      = static_cast<Square>(from + dir);
+        }
+        else if constexpr (is_capture || is_promotion)
+        {
+            if constexpr (is_capture)
+            {
+                if constexpr (F == MoveFlag::MOVE_CAPTURE_EP)
+                {
+                    assert(move_pt == PieceType::PAWN);
+                    assert(captured_p == Piece::NO_PIECE);
+                    constexpr Piece ep_victim       = pieceCreate(PieceType::PAWN, them);
+                    constexpr i8    dir             = (US == Color::WHITE) ? 8 : -8;
+                    const Square    ep_victim_sq    = static_cast<Square>(to - dir);
+                    const BitBoard  ep_victim_sq_bb = BB(ep_victim_sq);
+                    m_bb_pieces[PieceType::PAWN] ^= ep_victim_sq_bb;
+                    m_bb_colors[them] ^= ep_victim_sq_bb;
+                    m_board[ep_victim_sq] = Piece::NO_PIECE;
+                    key_local ^= ZOBRIST_TABLE[ep_victim][ep_victim_sq];
+                }
+                else
+                {
+                    assert(captured_p != Piece::NO_PIECE);
+                    const PieceType captured_pt = pieceTypeOf(captured_p);
+                    m_bb_pieces[captured_pt] ^= move_mask_to;
+                    m_bb_colors[them] ^= move_mask_to;
+                    key_local ^= ZOBRIST_TABLE[captured_p][to];
+                }
+            }
+
+            if constexpr (is_promotion)
+            {
+                assert(move_pt == PieceType::PAWN);
+                constexpr PieceType promoted_pt =
+                  ((F == MoveFlag::MOVE_PROMOTION_KNIGHT)
+                   || (F == MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT))
+                    ? PieceType::KNIGHT
+                  : ((F == MoveFlag::MOVE_PROMOTION_BISHOP)
+                     || (F == MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP))
+                    ? PieceType::BISHOP
+                  : ((F == MoveFlag::MOVE_PROMOTION_ROOK)
+                     || (F == MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK))
+                    ? PieceType::ROOK
+                  : ((F == MoveFlag::MOVE_PROMOTION_QUEEN)
+                     || (F == MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN))
+                    ? PieceType::QUEEN
+                    : PieceType::PIECE_TYPE_INVALID;
+                assert((promoted_pt != PieceType::PAWN) || (promoted_pt != PieceType::KING)
+                       || (promoted_pt != PieceType::PIECE_TYPE_INVALID));
+                constexpr Piece promoted = pieceCreate(promoted_pt, US);
+                m_bb_pieces[PieceType::PAWN] ^= move_mask_to;
+                m_bb_pieces[promoted_pt] ^= move_mask_to;
+                m_board[to] = promoted;
+                key_local ^= ZOBRIST_TABLE[move_p][to];
+                key_local ^= ZOBRIST_TABLE[promoted][to];
+            }
         }
 
-        if (is_promotion)
-        {
+        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID] == 0ULL);
+
+        m_halfmoves *= !(is_capture || (move_pt == PieceType::PAWN));
+
+        key_local ^= ZOBRIST_CA[m_ca_rights];
+        m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
+        key_local ^= ZOBRIST_CA[m_ca_rights];
+
+        const BitBoard k_bb = m_bb_pieces[PieceType::KING];
+
+        const BitBoard king_bb_us  = k_bb & m_bb_colors[US];
+        const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
+        const BitBoard checkers_us = getSquareAttackers(*this, king_sq_us, them);
+
+        const bool is_valid_move = (checkers_us == 0ULL) && isValid();
+
+        const BitBoard king_bb_them = k_bb & m_bb_colors[them];
+        const Square   king_sq_them = static_cast<Square>(__builtin_ctzll(king_bb_them));
+        m_checkers                  = getSquareAttackers(*this, king_sq_them, US);
+
+        m_stm = colorFlip(m_stm);
+        key_local ^= ZOBRIST_SIDE;
+
+        m_key = key_local;
+
 #ifdef DEBUG
-            assert(pieceTypeOf(piece) == PieceType::PAWN);
-            assert(sq2rank(from) == promotionRankSrcOf(pieceColorOf(piece)));
-            assert(sq2rank(to) == promotionRankDestOf(pieceColorOf(piece)));
-            assert(promoted != Piece::NO_PIECE);
-            assert(pieceTypeOf(promoted) != PieceType::PAWN);
-            assert(pieceTypeOf(promoted) != PieceType::KING);
-            assert(pieceColorOf(piece) == pieceColorOf(promoted));
-            assert(m_board[to] == Piece::NO_PIECE);
-#endif
-            setPiece(promoted, to);
-        }
-        else
-        {
-#ifdef DEBUG
-            assert(m_board[to] == Piece::NO_PIECE);
-#endif
-            setPiece(piece, to);
-        }
-    }
-
-    bool Position::doMoveComplete() {
-        const Color them = colorFlip(m_stm);
-
-        // Check if move does not leave our King in check and pos is valid
-        Piece          king          = pieceCreate(PieceType::KING, m_stm);
-        BitBoard       bb            = m_bitboards[king];
-        Square         sq            = static_cast<Square>(utils::bitScanForward(&bb));
-        const BitBoard checkers_us   = getSquareAttackers(*this, sq, them);
-        const bool     is_valid_move = (checkers_us == 0ULL) && isValid();
-
-        // Set checkers
-        king       = pieceCreate(PieceType::KING, them);
-        bb         = m_bitboards[king];
-        sq         = static_cast<Square>(utils::bitScanForward(&bb));
-        m_checkers = getSquareAttackers(*this, sq, m_stm);
-
-        // Switch sides
-        m_stm = them;
-        m_key ^= ZOBRIST_SIDE;
-#ifdef DEBUG
-        const u64 currhash = m_key;
+        const u64 curr_key = m_key;
         resetHash();
-        assert(currhash == m_key);
+        assert(m_key == curr_key);
 #endif
+
         return is_valid_move;
     }
 
     [[nodiscard]] bool Position::doMove(const Move& move) noexcept {
-        const Square   from  = move.from();
-        const Square   to    = move.to();
-        const MoveFlag flag  = move.flag();
-        const Piece    piece = m_board[from];
-
-        if (pieceColorOf(piece) == colorFlip(m_stm)) [[unlikely]]
-        {
-            return false;
-        }
-
-        m_ep_target = Square::NO_SQ;
-        m_halfmoves++;
-        if (m_stm == Color::BLACK)
-        {
-            m_fullmoves++;
-        }
-        m_ply_count++;
-
-        if (flag == MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH)
-        {
-            movePiece(piece, from, to);
-            const i8 stm = 1 - (2 * m_stm);  // WHITE = 1; BLACK = -1
-            m_ep_target  = static_cast<Square>(from + (8 * stm));
-            m_halfmoves  = 0;
-            return doMoveComplete();
-        }
-        else if (flag == MoveFlag::MOVE_CAPTURE_EP)
-        {
-            movePiece(piece, from, to);
-            const i8     stm         = -1 + (2 * m_stm);  // WHITE = -1; BLACK = 1
-            const Square captured_sq = static_cast<Square>(to + (8 * stm));
-            const Piece  captured    = pieceCreate(PieceType::PAWN, colorFlip(m_stm));
-            clearPiece(captured, captured_sq);
-            m_halfmoves = 0;
-            return doMoveComplete();
-        }
-        else if (flag == MoveFlag::MOVE_CASTLE_KING_SIDE)
-        {
-            movePiece(piece, from, to);
-            const Piece rook = pieceCreate(PieceType::ROOK, m_stm);
-            movePiece(rook, static_cast<Square>(to + 1), static_cast<Square>(to - 1));
-            m_key ^= ZOBRIST_CA[m_ca_rights];
-            m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-            m_key ^= ZOBRIST_CA[m_ca_rights];
-            return doMoveComplete();
-        }
-        else if (flag == MoveFlag::MOVE_CASTLE_QUEEN_SIDE)
-        {
-            movePiece(piece, from, to);
-            const Piece rook = pieceCreate(PieceType::ROOK, m_stm);
-            movePiece(rook, static_cast<Square>(to - 2), static_cast<Square>(to + 1));
-            m_key ^= ZOBRIST_CA[m_ca_rights];
-            m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-            m_key ^= ZOBRIST_CA[m_ca_rights];
-            return doMoveComplete();
-        }
-
-        Piece promoted;
-
-        switch (flag)
-        {
-            case MoveFlag::MOVE_PROMOTION_KNIGHT :
-            case MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT :
-                promoted = pieceCreate(PieceType::KNIGHT, m_stm);
-                break;
-            case MoveFlag::MOVE_PROMOTION_BISHOP :
-            case MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP :
-                promoted = pieceCreate(PieceType::BISHOP, m_stm);
-                break;
-            case MoveFlag::MOVE_PROMOTION_ROOK :
-            case MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK :
-                promoted = pieceCreate(PieceType::ROOK, m_stm);
-                break;
-            case MoveFlag::MOVE_PROMOTION_QUEEN :
-            case MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN :
-                promoted = pieceCreate(PieceType::QUEEN, m_stm);
-                break;
-            default :
-                promoted = Piece::NO_PIECE;
-        }
-
-        movePiece(piece, from, to, move.isCapture(), move.isPromotion(), promoted);
-
-        if ((pieceTypeOf(piece) == PieceType::PAWN) || move.isCapture())
-        {
-            m_halfmoves = 0;
-        }
-
-        m_key ^= ZOBRIST_CA[m_ca_rights];
-        m_ca_rights &= (CASTLE_RIGHTS_MODIFIERS[from] & CASTLE_RIGHTS_MODIFIERS[to]);
-        m_key ^= ZOBRIST_CA[m_ca_rights];
-
-        return doMoveComplete();
+        const bool is_valid = (pieceColorOf(pieceOn(move.from())) == m_stm);
+        return (m_stm == Color::WHITE)
+               ? is_valid && (this->*apply_move_dispatch_table<Color::WHITE>[move.flag()])(move)
+               : is_valid && (this->*apply_move_dispatch_table<Color::BLACK>[move.flag()])(move);
     }
 
     [[nodiscard]] bool Position::doMove(const std::string& move_str) noexcept {
@@ -668,20 +639,27 @@ namespace sagittar {
         m_key ^= ZOBRIST_SIDE;
     }
 
-    BitBoard Position::pieces(const Color c) const { return m_bitboards[(7 + c)]; }
+    BitBoard Position::pieces(const Color c) const { return m_bb_colors[c]; }
+
+    BitBoard Position::pieces(const PieceType pt) const { return m_bb_pieces[pt]; }
 
     BitBoard Position::pieces(const Color c, const PieceType pt) const {
-        return m_bitboards[pieceCreate(pt, c)];
+        return m_bb_pieces[pt] & m_bb_colors[c];
     }
 
-    BitBoard Position::occupied() const { return ~m_bitboards[Piece::NO_PIECE]; }
+    BitBoard Position::occupied() const {
+        return (m_bb_colors[Color::WHITE] | m_bb_colors[Color::BLACK]);
+    }
 
-    BitBoard Position::empty() const { return m_bitboards[Piece::NO_PIECE]; }
+    BitBoard Position::empty() const {
+        return ~(m_bb_colors[Color::WHITE] | m_bb_colors[Color::BLACK]);
+    }
 
     Piece Position::pieceOn(const Square square) const { return m_board[square]; }
 
     u8 Position::pieceCount(const Piece piece) const {
-        return utils::bitCount1s(m_bitboards[piece]);
+        return utils::bitCount1s(m_bb_pieces[pieceTypeOf(piece)]
+                                 & m_bb_colors[pieceColorOf(piece)]);
     }
 
     Color Position::stm() const { return m_stm; }
@@ -697,21 +675,15 @@ namespace sagittar {
     u64 Position::key() const { return m_key; }
 
     bool Position::isValid() const {
-        const bool check = (pieceCount(Piece::WHITE_KING) == 1)
-                        && (pieceCount(Piece::BLACK_KING) == 1)
-                        && (!(m_bitboards[Piece::WHITE_PAWN] & MASK_RANK_1))
-                        && (!(m_bitboards[Piece::WHITE_PAWN] & MASK_RANK_8))
-                        && (!(m_bitboards[Piece::BLACK_PAWN] & MASK_RANK_1))
-                        && (!(m_bitboards[Piece::BLACK_PAWN] & MASK_RANK_8));
-        return check;
+        return (utils::bitCount1s(m_bb_pieces[PieceType::KING]) == 2)
+            && ((m_bb_pieces[PieceType::PAWN] & MASK_RANK_1_AND_8) == 0ULL);
     }
 
     bool Position::isInCheck() const { return (m_checkers != 0ULL); }
 
     bool Position::isDrawn(std::span<u64> key_history) const {
-#ifdef DEBUG
         assert(key_history.size() == static_cast<size_t>(m_ply_count));
-#endif
+
         for (i32 i = std::max(m_ply_count - m_halfmoves, 0); i < m_ply_count - 1; ++i)
         {
             if (m_key == key_history[i])

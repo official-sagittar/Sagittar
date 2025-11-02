@@ -262,9 +262,7 @@ namespace sagittar {
             MAGICTABLE_BISHOP[sq].mask  = bishopMask(square);
             MAGICTABLE_BISHOP[sq].shift = utils::bitCount1s(MAGICTABLE_BISHOP[sq].mask);
             MAGICTABLE_BISHOP[sq].magic = findMagic(square, MAGICTABLE_BISHOP[sq].shift, true);
-#ifdef DEBUG
             assert(MAGICTABLE_BISHOP[sq].magic != 0ULL);
-#endif
         }
     }
 
@@ -275,9 +273,7 @@ namespace sagittar {
             MAGICTABLE_ROOK[sq].mask  = rookMask(square);
             MAGICTABLE_ROOK[sq].shift = utils::bitCount1s(MAGICTABLE_ROOK[sq].mask);
             MAGICTABLE_ROOK[sq].magic = findMagic(square, MAGICTABLE_ROOK[sq].shift, false);
-#ifdef DEBUG
             assert(MAGICTABLE_ROOK[sq].magic != 0ULL);
-#endif
         }
     }
 

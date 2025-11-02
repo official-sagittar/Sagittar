@@ -136,16 +136,6 @@ namespace sagittar::eval::hce {
         Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
 
         const i8 stm = 1 - (2 * pos.stm());
-#ifdef DEBUG
-        if (pos.stm() == Color::WHITE)
-        {
-            assert(stm == 1);
-        }
-        else
-        {
-            assert(stm == -1);
-        }
-#endif
 
         // Tempo Bonus
         const Score tempo_bonus =

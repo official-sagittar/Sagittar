@@ -22,6 +22,9 @@ namespace sagittar {
         MOVE_CAPTURE_PROMOTION_QUEEN,
     };
 
+    inline constexpr bool MOVE_IS_CAPTURE(const MoveFlag f) { return static_cast<bool>(f & 0x4); }
+    inline constexpr bool MOVE_IS_PROMOTION(const MoveFlag f) { return static_cast<bool>(f & 0x8); }
+
     class Move final {
        public:
         Move();
