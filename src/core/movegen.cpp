@@ -427,9 +427,10 @@ namespace sagittar {
         constexpr BitBoard not_promo_dest = ~promo_dest;
         constexpr BitBoard ep_target_rank = (US == Color::WHITE) ? MASK_RANK_6 : MASK_RANK_3;
 
-        const BitBoard pawns   = pos.pieces(US, PieceType::PAWN);
-        const BitBoard enemies = pos.pieces(them);
-        const BitBoard empty   = pos.empty();
+        const BitBoard pawns     = pos.pieces(US, PieceType::PAWN);
+        const BitBoard king_them = pos.pieces(them, PieceType::KING);
+        const BitBoard enemies   = pos.pieces(them) ^ king_them;
+        const BitBoard empty     = pos.empty();
 
         BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
 
@@ -559,51 +560,62 @@ namespace sagittar {
         }
     }
 
-    template<PieceType PieceTypeName>
+    template<PieceType PT, Color US, MovegenType T>
     static void generatePseudolegalMovesPiece(containers::ArrayList<Move>* moves,
-                                              const Position&              pos,
-                                              const MovegenType            type) {
-        const Color active_color = pos.stm();
-        BitBoard    bb           = pos.pieces(active_color, PieceTypeName);
-        BitBoard    occupancy    = 0ULL;
-        const auto  attackFn     = attackFunctions.at(PieceTypeName - 2);
+                                              const Position&              pos) {
+        constexpr Color them      = colorFlip(US);
+        const BitBoard  king_them = pos.pieces(them, PieceType::KING);
+        const BitBoard  enemies   = pos.pieces(them) ^ king_them;
+        const BitBoard  occupied  = pos.occupied();
+        const BitBoard  empty     = ~occupied;
 
-        switch (PieceTypeName)
+        BitBoard occupancy = occupied;
+        if constexpr ((PT == PieceType::KNIGHT) || (PT == PieceType::KING))
         {
-            case PieceType::KNIGHT :
-            case PieceType::KING :
-                occupancy = pos.pieces(colorFlip(active_color)) | pos.empty();
-                break;
-
-            case PieceType::BISHOP :
-            case PieceType::ROOK :
-            case PieceType::QUEEN :
-                occupancy = pos.occupied();
-                break;
+            occupancy = (enemies | empty);
         }
 
+        BitBoard bb = pos.pieces(US, PT);
         while (bb)
         {
-            const Square from    = static_cast<Square>(utils::bitScanForward(&bb));
-            BitBoard     attacks = attackFn(from, occupancy);
-            while (attacks)
+            const Square from = static_cast<Square>(utils::bitScanForward(&bb));
+
+            BitBoard attacks = 0ULL;
+            if constexpr (PT == PieceType::KNIGHT)
             {
-                const Square to       = static_cast<Square>(utils::bitScanForward(&attacks));
-                const Piece  captured = pos.pieceOn(to);
-                switch (type)
+                attacks = ATTACK_TABLE_KNIGHT[from] & occupancy;
+            }
+            else if constexpr (PT == PieceType::BISHOP)
+            {
+                attacks = getBishopAttacks(from, occupancy);
+            }
+            else if constexpr (PT == PieceType::ROOK)
+            {
+                attacks = getRookAttacks(from, occupancy);
+            }
+            else if constexpr (PT == PieceType::QUEEN)
+            {
+                attacks = getBishopAttacks(from, occupancy) | getRookAttacks(from, occupancy);
+            }
+            else if constexpr (PT == PieceType::KING)
+            {
+                attacks = ATTACK_TABLE_KING[from] & occupancy;
+            }
+
+            BitBoard captures = attacks & enemies;
+            while (captures)
+            {
+                const Square to = static_cast<Square>(utils::bitScanForward(&captures));
+                moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
+            }
+
+            if constexpr (T == MovegenType::ALL)
+            {
+                BitBoard quites = attacks & empty;
+                while (quites)
                 {
-                    case MovegenType::ALL :
-                        if (captured == Piece::NO_PIECE)
-                        {
-                            moves->emplace_back(from, to, MoveFlag::MOVE_QUIET);
-                        }
-                        [[fallthrough]];
-                    case MovegenType::CAPTURES :
-                        if (captured != Piece::NO_PIECE && pieceColorOf(captured) != active_color)
-                        {
-                            moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
-                        }
-                        break;
+                    const Square to = static_cast<Square>(utils::bitScanForward(&quites));
+                    moves->emplace_back(from, to, MoveFlag::MOVE_QUIET);
                 }
             }
         }
@@ -713,17 +725,22 @@ namespace sagittar {
     void generatePseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos) {
         if (pos.stm() == Color::WHITE)
         {
-            generatePseudolegalMovesPawn<WHITE, T>(moves, pos);
+            generatePseudolegalMovesPawn<Color::WHITE, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::QUEEN, Color::WHITE, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::ROOK, Color::WHITE, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::BISHOP, Color::WHITE, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::WHITE, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::KING, Color::WHITE, T>(moves, pos);
         }
         else
         {
-            generatePseudolegalMovesPawn<BLACK, T>(moves, pos);
+            generatePseudolegalMovesPawn<Color::BLACK, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::QUEEN, Color::BLACK, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::ROOK, Color::BLACK, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::BISHOP, Color::BLACK, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::BLACK, T>(moves, pos);
+            generatePseudolegalMovesPiece<PieceType::KING, Color::BLACK, T>(moves, pos);
         }
-        generatePseudolegalMovesPiece<PieceType::KNIGHT>(moves, pos, T);
-        generatePseudolegalMovesPiece<PieceType::BISHOP>(moves, pos, T);
-        generatePseudolegalMovesPiece<PieceType::ROOK>(moves, pos, T);
-        generatePseudolegalMovesPiece<PieceType::QUEEN>(moves, pos, T);
-        generatePseudolegalMovesPiece<PieceType::KING>(moves, pos, T);
         if constexpr (T == MovegenType::ALL)
         {
             generatePseudolegalMovesCastle(moves, pos);

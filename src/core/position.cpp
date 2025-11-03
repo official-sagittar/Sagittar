@@ -458,7 +458,7 @@ namespace sagittar {
         const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
         const BitBoard checkers_us = getSquareAttackers(*this, king_sq_us, them);
 
-        const bool is_valid_move = (checkers_us == 0ULL) && isValid();
+        const bool is_valid_move = (checkers_us == 0ULL);
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
         const Square   king_sq_them = static_cast<Square>(__builtin_ctzll(king_bb_them));
