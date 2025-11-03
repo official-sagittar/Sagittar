@@ -65,3 +65,6 @@ leaks.txt
 # PGO data
 *.profraw
 *.profdata
+
+# Fastchess
+config.json
