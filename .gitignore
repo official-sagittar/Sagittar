@@ -61,3 +61,7 @@ dkms.conf
 bin/
 build/
 leaks.txt
+
+# PGO data
+*.profraw
+*.profdata

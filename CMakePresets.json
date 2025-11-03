@@ -40,6 +40,29 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "ENABLE_SAN": "OFF"
             }
+        },
+        {
+            "name": "pgo-generate",
+            "inherits": "base",
+            "displayName": "PGO Instrumentation Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_SAN": "OFF",
+                "ENABLE_PGO_GENERATE": "ON",
+                "ENABLE_PGO_USE": "OFF"
+            }
+        },
+        {
+            "name": "pgo-use",
+            "inherits": "base",
+            "displayName": "PGO Optimized Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_SAN": "OFF",
+                "ENABLE_PGO_GENERATE": "OFF",
+                "ENABLE_PGO_USE": "ON",
+                "PGO_PROFDATA_FILE": "${sourceDir}/merged.profdata"
+            }
         }
     ],
     "buildPresets": [
@@ -54,6 +77,14 @@
         {
             "name": "build-release",
             "configurePreset": "release"
+        },
+        {
+            "name": "build-pgo-generate",
+            "configurePreset": "pgo-generate"
+        },
+        {
+            "name": "build-pgo-use",
+            "configurePreset": "pgo-use"
         }
     ]
 }
