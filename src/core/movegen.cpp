@@ -621,68 +621,58 @@ namespace sagittar {
         }
     }
 
+    template<Color US>
     static void generatePseudolegalMovesCastle(containers::ArrayList<Move>* moves,
                                                const Position&              pos) {
+        constexpr CastleFlag rights_k = (US == Color::WHITE) ? CastleFlag::WKCA : CastleFlag::BKCA;
+        constexpr CastleFlag rights_q = (US == Color::WHITE) ? CastleFlag::WQCA : CastleFlag::BQCA;
+        constexpr auto       ca_flags = rights_k | rights_q;
 
-        if (pos.isInCheck())
+        const auto pos_ca_rights = pos.caRights();
+
+        if (!(pos_ca_rights & ca_flags) || pos.isInCheck())
         {
             return;
         }
 
-        const Color active_color     = pos.stm();
-        const u8    casteling_rights = pos.caRights();
+        constexpr Color  them   = colorFlip(US);
+        constexpr Rank   rank   = (US == Color::WHITE) ? Rank::RANK_1 : Rank::RANK_8;
+        constexpr Square k_sq   = rf2sq(rank, File::FILE_E);
+        constexpr Square k_sq_r = static_cast<Square>(k_sq + 1);
+        constexpr Square k_sq_l = static_cast<Square>(k_sq - 1);
 
-        if (active_color == Color::WHITE)
+        const BitBoard occ = pos.occupied();
+
+        const bool rights_k_ok = (pos_ca_rights & rights_k);
+        const bool rights_q_ok = (pos_ca_rights & rights_q);
+
+        const BitBoard rook_bb   = pos.pieces(US, PieceType::ROOK);
+        const BitBoard king_bb   = pos.pieces(US, PieceType::KING);
+        const bool     rook_k_ok = (rook_bb & BB(rf2sq(rank, File::FILE_H)));
+        const bool     rook_q_ok = (rook_bb & BB(rf2sq(rank, File::FILE_A)));
+        const bool     king_ok   = (king_bb & BB(rf2sq(rank, File::FILE_E)));
+
+        constexpr BitBoard mask_path_k  = (US == Color::WHITE) ? MASK_WKCA_PATH : MASK_BKCA_PATH;
+        const bool         path_k_empty = ((occ & mask_path_k) == 0ULL);
+
+        constexpr BitBoard mask_path_q  = (US == Color::WHITE) ? MASK_WQCA_PATH : MASK_BQCA_PATH;
+        const bool         path_q_empty = ((occ & mask_path_q) == 0ULL);
+
+        const bool safe_k_ok = (getSquareAttackers(pos, k_sq_r, them) == 0ULL);
+        const bool safe_q_ok = (getSquareAttackers(pos, k_sq_l, them) == 0ULL);
+
+        if (rights_k_ok && king_ok && rook_k_ok && path_k_empty && safe_k_ok)
         {
-            if (casteling_rights & CastleFlag::WKCA)
-            {
-                if (pos.pieceOn(Square::E1) == Piece::WHITE_KING
-                    && pos.pieceOn(Square::F1) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::G1) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::H1) == Piece::WHITE_ROOK
-                    && !getSquareAttackers(pos, Square::F1, Color::BLACK))
-                {
-                    moves->emplace_back(Square::E1, Square::G1, MoveFlag::MOVE_CASTLE_KING_SIDE);
-                }
-            }
-            if (casteling_rights & CastleFlag::WQCA)
-            {
-                if (pos.pieceOn(Square::E1) == Piece::WHITE_KING
-                    && pos.pieceOn(Square::D1) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::C1) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::B1) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::A1) == Piece::WHITE_ROOK
-                    && !getSquareAttackers(pos, Square::D1, Color::BLACK))
-                {
-                    moves->emplace_back(Square::E1, Square::C1, MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
-                }
-            }
+            constexpr Square from = rf2sq(rank, File::FILE_E);
+            constexpr Square to   = rf2sq(rank, File::FILE_G);
+            moves->emplace_back(from, to, MoveFlag::MOVE_CASTLE_KING_SIDE);
         }
-        else
+
+        if (rights_q_ok && king_ok && rook_q_ok && path_q_empty && safe_q_ok)
         {
-            if (casteling_rights & CastleFlag::BKCA)
-            {
-                if (pos.pieceOn(Square::E8) == Piece::BLACK_KING
-                    && pos.pieceOn(Square::F8) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::G8) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::H8) == Piece::BLACK_ROOK
-                    && !getSquareAttackers(pos, Square::F8, Color::WHITE))
-                {
-                    moves->emplace_back(Square::E8, Square::G8, MoveFlag::MOVE_CASTLE_KING_SIDE);
-                }
-            }
-            if (casteling_rights & CastleFlag::BQCA)
-            {
-                if (pos.pieceOn(Square::E8) == Piece::BLACK_KING
-                    && pos.pieceOn(Square::D8) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::C8) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::B8) == Piece::NO_PIECE
-                    && pos.pieceOn(Square::A8) == Piece::BLACK_ROOK
-                    && !getSquareAttackers(pos, Square::D8, Color::WHITE))
-                {
-                    moves->emplace_back(Square::E8, Square::C8, MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
-                }
-            }
+            constexpr Square from = rf2sq(rank, File::FILE_E);
+            constexpr Square to   = rf2sq(rank, File::FILE_C);
+            moves->emplace_back(from, to, MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
         }
     }
 
@@ -731,6 +721,10 @@ namespace sagittar {
             generatePseudolegalMovesPiece<PieceType::BISHOP, Color::WHITE, T>(moves, pos);
             generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::WHITE, T>(moves, pos);
             generatePseudolegalMovesPiece<PieceType::KING, Color::WHITE, T>(moves, pos);
+            if constexpr (T == MovegenType::ALL)
+            {
+                generatePseudolegalMovesCastle<Color::WHITE>(moves, pos);
+            }
         }
         else
         {
@@ -740,10 +734,10 @@ namespace sagittar {
             generatePseudolegalMovesPiece<PieceType::BISHOP, Color::BLACK, T>(moves, pos);
             generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::BLACK, T>(moves, pos);
             generatePseudolegalMovesPiece<PieceType::KING, Color::BLACK, T>(moves, pos);
-        }
-        if constexpr (T == MovegenType::ALL)
-        {
-            generatePseudolegalMovesCastle(moves, pos);
+            if constexpr (T == MovegenType::ALL)
+            {
+                generatePseudolegalMovesCastle<Color::BLACK>(moves, pos);
+            }
         }
     }
 
