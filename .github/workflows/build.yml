@@ -1,0 +1,122 @@
+name: Build Sagittar
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # ----------------------------
+      # Toolchain setup
+      # ----------------------------
+      - name: Setup LLVM + CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt update
+          sudo apt install -y clang lld cmake ninja-build curl tar
+
+      - name: Setup LLVM + CMake (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install llvm cmake ninja
+          echo "export PATH=\"$(brew --prefix llvm)/bin:$PATH\"" >> $GITHUB_ENV
+
+      - name: Setup LLVM + CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          choco install llvm cmake ninja -y
+          echo "C:\Program Files\LLVM\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # ----------------------------
+      # Download Fast-Chess
+      # ----------------------------
+      - name: Download Fast-Chess (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          curl -L -o fastchess-linux.tar https://github.com/Disservin/fastchess/releases/download/v1.6.0-alpha/fastchess-linux-x86-64.tar
+          mkdir -p fast-chess
+          tar -xf fastchess-linux.tar -C fast-chess
+          chmod +x fast-chess/fastchess
+
+      - name: Download Fast-Chess (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          curl -L -o fastchess-mac.tar https://github.com/Disservin/fastchess/releases/download/v1.6.0-alpha/fastchess-mac-x86-64.tar
+          mkdir -p fast-chess
+          tar -xf fastchess-mac.tar -C fast-chess
+          chmod +x fast-chess/fastchess
+
+      - name: Download Fast-Chess (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/Disservin/fastchess/releases/download/v1.6.0-alpha/fastchess-windows-x86-64.zip" -OutFile "fast-chess.zip"
+          Expand-Archive -Path "fast-chess.zip" -DestinationPath "fast-chess" -Force
+
+      # ----------------------------
+      # 1️⃣ Build instrumented binary (PGO Generate)
+      # ----------------------------
+      - name: Configure CMake (PGO Generate)
+        run: cmake --preset pgo-generate -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build Sagittar (Instrumented)
+        run: cmake --build --preset build-pgo-generate
+
+      # ----------------------------
+      # 2️⃣ Run Fast-Chess self-play
+      # ----------------------------
+      - name: Run Fast-Chess self-play
+        shell: bash
+        run: |
+          FAST_CHESS="./fast-chess/fastchess"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            FAST_CHESS="fast-chess\\fastchess.exe"
+          fi
+          $FAST_CHESS \
+            -engine cmd=./bin/Release/Sagittar \
+            -engine cmd=./bin/Release/Sagittar \
+            -rounds 50 \
+            -concurrency 4 \
+            -each tc=3+0.03 proto=uci
+          echo "Self-play completed on $RUNNER_OS."
+
+      # ----------------------------
+      # 3️⃣ Merge .profraw → .profdata
+      # ----------------------------
+      - name: Merge Profile Data
+        run: |
+          llvm-profdata merge -output=merged.profdata build/build-pgo-generate/pgo-data || \
+          echo "Warning: Some .profraw files may be empty."
+
+      # ----------------------------
+      # 4️⃣ Rebuild optimized binary (PGO Use)
+      # ----------------------------
+      - name: Configure CMake (PGO Use)
+        run: cmake --preset pgo-use -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build Sagittar (Optimized)
+        run: cmake --build --preset build-pgo-uses
+
+      # ----------------------------
+      # 5️⃣ Upload per-OS binary
+      # ----------------------------
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sagittar-${{ runner.os }}
+          path: Release/Sagittar*
