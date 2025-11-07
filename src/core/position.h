@@ -12,6 +12,8 @@ namespace sagittar {
     constexpr BitBoard BB(const Square sq) { return static_cast<BitBoard>(1ULL << sq); }
     constexpr BitBoard BB(const int sq) { return static_cast<BitBoard>(1ULL << sq); }
 
+    constexpr BitBoard MASK64(const bool x) { return -static_cast<BitBoard>(x); }
+
     constexpr BitBoard MASK_RANK_1       = 0xFF;
     constexpr BitBoard MASK_RANK_2       = MASK_RANK_1 << (8 * 1);
     constexpr BitBoard MASK_RANK_3       = MASK_RANK_1 << (8 * 2);
@@ -25,6 +27,10 @@ namespace sagittar {
     constexpr BitBoard MASK_NOT_H_FILE   = 0x7F7F7F7F7F7F7F7F;
     constexpr BitBoard MASK_NOT_AB_FILE  = 0xFCFCFCFCFCFCFCFC;
     constexpr BitBoard MASK_NOT_GH_FILE  = 0x3F3F3F3F3F3F3F3F;
+    constexpr BitBoard MASK_WKCA_PATH    = 0x60;
+    constexpr BitBoard MASK_WQCA_PATH    = 0xE;
+    constexpr BitBoard MASK_BKCA_PATH    = 0x6000000000000000;
+    constexpr BitBoard MASK_BQCA_PATH    = 0xE00000000000000;
 
     constexpr BitBoard north(const BitBoard b) { return b << 8; }
     constexpr BitBoard south(const BitBoard b) { return b >> 8; }
