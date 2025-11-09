@@ -10,14 +10,14 @@ using namespace sagittar;
 
 TEST_SUITE("Movegen") {
 
-    TEST_CASE("isSquareAttacked") {
+    TEST_CASE("squareAttackers") {
         Position pos;
 
         std::string fen = "4k3/8/8/4p3/8/8/8/4K3 w - - 0 1";
         pos.setFen(fen);
 
-        REQUIRE(getSquareAttackers(pos, Square::D4, Color::BLACK));
-        REQUIRE(getSquareAttackers(pos, Square::F4, Color::BLACK));
+        REQUIRE(squareAttackers(pos, Square::D4, Color::BLACK));
+        REQUIRE(squareAttackers(pos, Square::F4, Color::BLACK));
     }
 
     TEST_CASE("isInCheck") {
@@ -29,12 +29,12 @@ TEST_SUITE("Movegen") {
         REQUIRE(pos.isInCheck());
     }
 
-    TEST_CASE("generatePseudolegalMoves") {
+    TEST_CASE("pseudolegalMoves") {
         Position pos;
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
         containers::ArrayList<Move> moves;
-        generatePseudolegalMoves<MovegenType::ALL>(&moves, pos);
+        pseudolegalMoves<MovegenType::ALL>(&moves, pos);
 
         CHECK(moves.size() == 20);
     }
