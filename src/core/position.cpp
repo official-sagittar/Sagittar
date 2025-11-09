@@ -231,7 +231,7 @@ namespace sagittar {
         // Set checkers
         const BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
         const Square   king_sq = static_cast<Square>(__builtin_ctzll(king_bb));
-        m_checkers             = getSquareAttackers(*this, king_sq, colorFlip(m_stm));
+        m_checkers             = squareAttackers(*this, king_sq, colorFlip(m_stm));
 
         // Reset Hash
         resetHash();
@@ -456,13 +456,13 @@ namespace sagittar {
 
         const BitBoard king_bb_us  = k_bb & m_bb_colors[US];
         const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
-        const BitBoard checkers_us = getSquareAttackers(*this, king_sq_us, them);
+        const BitBoard checkers_us = squareAttackers(*this, king_sq_us, them);
 
         const bool is_valid_move = (checkers_us == 0ULL);
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
         const Square   king_sq_them = static_cast<Square>(__builtin_ctzll(king_bb_them));
-        m_checkers                  = getSquareAttackers(*this, king_sq_them, US);
+        m_checkers                  = squareAttackers(*this, king_sq_them, US);
 
         m_stm = colorFlip(m_stm);
         key_local ^= ZOBRIST_SIDE;

@@ -12,7 +12,7 @@ namespace sagittar::perft {
         }
         u64                         nodes = 0ULL;
         containers::ArrayList<Move> moves;
-        generatePseudolegalMoves<MovegenType::ALL>(&moves, pos);
+        pseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
             Position pos_copy = pos;
@@ -32,7 +32,7 @@ namespace sagittar::perft {
         u64                         nodes       = 0ULL;
         u64                         total_nodes = 0ULL;
         containers::ArrayList<Move> moves;
-        generatePseudolegalMoves<MovegenType::ALL>(&moves, pos);
+        pseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
             Position pos_copy = pos;

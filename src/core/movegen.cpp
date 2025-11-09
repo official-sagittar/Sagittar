@@ -3,24 +3,105 @@
 
 namespace sagittar {
 
-    static constexpr unsigned int MAGIC_MAX_TRIES = 500000;
-
     struct Magic {
         BitBoard mask;
         u64      magic;
         u8       shift;
+
+        unsigned index(BitBoard occ) const {
+#if defined(IS_32_BIT)
+            const u32 lo = unsigned(occ) & unsigned(mask);
+            const u32 hi = unsigned(occ >> 32) & unsigned(mask >> 32);
+            return ((lo * unsigned(magic)) ^ (hi * unsigned(magic >> 32))) >> shift;
+#else
+            return unsigned(((occ & mask) * magic) >> shift);
+#endif
+        }
     };
 
-    static Magic MAGICTABLE_BISHOP[64];
-    static Magic MAGICTABLE_ROOK[64];
+    static std::array<Magic, 64> MAGICTABLE_BISHOP;
+    static std::array<Magic, 64> MAGICTABLE_ROOK;
 
-    static BitBoard ATTACK_TABLE_PAWN[2][64];
-    static BitBoard ATTACK_TABLE_KNIGHT[64];
-    static BitBoard ATTACK_TABLE_BISHOP[64][512];
-    static BitBoard ATTACK_TABLE_ROOK[64][4096];
-    static BitBoard ATTACK_TABLE_KING[64];
+    using AttackTable = std::array<BitBoard, 64>;
 
-    static std::vector<std::function<BitBoard(const Square, BitBoard)>> attackFunctions;
+    static const std::array<AttackTable, 2> ATTACK_TABLE_PAWN = []() {
+        std::array<AttackTable, 2> table;
+
+        // White pawn attacks
+        for (int r = Rank::RANK_1; r <= Rank::RANK_8; r++)
+        {
+            for (int f = File::FILE_A; f <= File::FILE_H; f++)
+            {
+                const Square   sq       = rf2sq(r, f);
+                const BitBoard b        = BB(sq);
+                const BitBoard attacks  = northEast(b) | northWest(b);
+                table[Color::WHITE][sq] = attacks;
+            }
+        }
+
+        // Black pawn attacks
+        for (int r = Rank::RANK_8; r >= Rank::RANK_1; r--)
+        {
+            for (int f = File::FILE_A; f <= File::FILE_H; f++)
+            {
+                const Square   sq       = rf2sq(r, f);
+                const BitBoard b        = BB(sq);
+                const BitBoard attacks  = southEast(b) | southWest(b);
+                table[Color::BLACK][sq] = attacks;
+            }
+        }
+
+        return table;
+    }();
+
+    static const AttackTable ATTACK_TABLE_KNIGHT = []() {
+        AttackTable table;
+
+        for (int sq = Square::A1; sq <= Square::H8; sq++)
+        {
+            const BitBoard b = BB(sq);
+
+            BitBoard attacks = 0ULL;
+            attacks |= (b & MASK_NOT_H_FILE) << 17;
+            attacks |= (b & MASK_NOT_GH_FILE) << 10;
+            attacks |= (b & MASK_NOT_GH_FILE) >> 6;
+            attacks |= (b & MASK_NOT_H_FILE) >> 15;
+            attacks |= (b & MASK_NOT_A_FILE) << 15;
+            attacks |= (b & MASK_NOT_AB_FILE) << 6;
+            attacks |= (b & MASK_NOT_AB_FILE) >> 10;
+            attacks |= (b & MASK_NOT_A_FILE) >> 17;
+
+            table[sq] = attacks;
+        }
+
+        return table;
+    }();
+
+    static const AttackTable ATTACK_TABLE_KING = []() {
+        AttackTable table;
+
+        for (int sq = Square::A1; sq <= Square::H8; sq++)
+        {
+            const BitBoard b = BB(sq);
+
+            BitBoard attacks = 0ULL;
+            attacks |= north(b);
+            attacks |= south(b);
+            attacks |= east(b);
+            attacks |= west(b);
+            attacks |= northEast(b);
+            attacks |= southEast(b);
+            attacks |= southWest(b);
+            attacks |= northWest(b);
+
+            table[sq] = attacks;
+        }
+
+        return table;
+    }();
+
+    static std::array<AttackTable, 512>  ATTACK_TABLE_BISHOP;
+    static std::array<AttackTable, 4096> ATTACK_TABLE_ROOK;
 
     template<Color US>
     static constexpr int BITBOARD_FWD_DIR = (US == WHITE) ? 8 : -8;
@@ -31,150 +112,92 @@ namespace sagittar {
     template<Color US>
     static constexpr int BITBOARD_CAPTURE_RIGHT_DIR = (US == WHITE) ? 9 : -9;
 
-    static BitBoard bishopMask(const Square sq) {
-        i8 r, f;
-
-        const u8 tr = sq2rank(sq);
-        const u8 tf = sq2file(sq);
-
-        BitBoard attack_mask = 0ULL;
-
-        for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++)
-        {
-            attack_mask |= (1ULL << rf2sq(r, f));
-        }
-        for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--)
-        {
-            attack_mask |= (1ULL << rf2sq(r, f));
-        }
-        for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++)
-        {
-            attack_mask |= (1ULL << rf2sq(r, f));
-        }
-        for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--)
-        {
-            attack_mask |= (1ULL << rf2sq(r, f));
-        }
-
-        return attack_mask;
-    }
-
     static BitBoard bishopAttacks(const Square sq, const BitBoard blockers) {
-        i8 r, f;
-
-        const u8 tr = sq2rank(sq);
-        const u8 tf = sq2file(sq);
-
-        BitBoard attack_mask = 0ULL;
-        BitBoard sqb;
-
-        for (r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++)
-        {
-            sqb = 1ULL << rf2sq(r, f);
-            attack_mask |= sqb;
-            if (blockers & sqb)
-            {
-                break;
-            }
-        }
-        for (r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--)
-        {
-            sqb = 1ULL << rf2sq(r, f);
-            attack_mask |= sqb;
-            if (blockers & sqb)
-            {
-                break;
-            }
-        }
-        for (r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++)
-        {
-            sqb = 1ULL << rf2sq(r, f);
-            attack_mask |= sqb;
-            if (blockers & sqb)
-            {
-                break;
-            }
-        }
-        for (r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--)
-        {
-            sqb = 1ULL << rf2sq(r, f);
-            attack_mask |= sqb;
-            if (blockers & sqb)
-            {
-                break;
-            }
-        }
-
-        return attack_mask;
-    }
-
-    static BitBoard rookMask(const Square sq) {
-        i8 r, f;
+        int r, f;
 
         const u8 tr = sq2rank(sq);
         const u8 tf = sq2file(sq);
 
         BitBoard attack_mask = 0ULL;
 
-        for (r = tr + 1; r <= 6; r++)
+        for (r = tr + 1, f = tf + 1; r <= Rank::RANK_8 && f <= File::FILE_H; r++, f++)
         {
-            attack_mask |= (1ULL << rf2sq(r, tf));
+            const BitBoard sqb = BB(rf2sq(r, f));
+            attack_mask |= sqb;
+            if (blockers & sqb)
+            {
+                break;
+            }
         }
-        for (r = tr - 1; r >= 1; r--)
+        for (r = tr + 1, f = tf - 1; r <= Rank::RANK_8 && f >= File::FILE_A; r++, f--)
         {
-            attack_mask |= (1ULL << rf2sq(r, tf));
+            const BitBoard sqb = BB(rf2sq(r, f));
+            attack_mask |= sqb;
+            if (blockers & sqb)
+            {
+                break;
+            }
         }
-        for (f = tf + 1; f <= 6; f++)
+        for (r = tr - 1, f = tf + 1; r >= Rank::RANK_1 && f <= File::FILE_H; r--, f++)
         {
-            attack_mask |= (1ULL << rf2sq(tr, f));
+            const BitBoard sqb = BB(rf2sq(r, f));
+            attack_mask |= sqb;
+            if (blockers & sqb)
+            {
+                break;
+            }
         }
-        for (f = tf - 1; f >= 1; f--)
+        for (r = tr - 1, f = tf - 1; r >= Rank::RANK_1 && f >= File::FILE_A; r--, f--)
         {
-            attack_mask |= (1ULL << rf2sq(tr, f));
+            const BitBoard sqb = BB(rf2sq(r, f));
+            attack_mask |= sqb;
+            if (blockers & sqb)
+            {
+                break;
+            }
         }
 
         return attack_mask;
     }
 
     static BitBoard rookAttacks(const Square sq, const BitBoard blockers) {
-        i8 r, f;
+        int r, f;
 
         const u8 tr = sq2rank(sq);
         const u8 tf = sq2file(sq);
 
         BitBoard attack_mask = 0ULL;
-        BitBoard sqb;
 
-        for (r = tr + 1; r <= 7; r++)
+        for (r = tr + 1; r <= Rank::RANK_8; r++)
         {
-            sqb = 1ULL << rf2sq(r, tf);
+            const BitBoard sqb = BB(rf2sq(r, tf));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
                 break;
             }
         }
-        for (r = tr - 1; r >= 0; r--)
+        for (r = tr - 1; r >= Rank::RANK_1; r--)
         {
-            sqb = 1ULL << rf2sq(r, tf);
+            const BitBoard sqb = BB(rf2sq(r, tf));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
                 break;
             }
         }
-        for (f = tf + 1; f <= 7; f++)
+        for (f = tf + 1; f <= File::FILE_H; f++)
         {
-            sqb = 1ULL << rf2sq(tr, f);
+            const BitBoard sqb = BB(rf2sq(tr, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
                 break;
             }
         }
-        for (f = tf - 1; f >= 0; f--)
+        for (f = tf - 1; f >= File::FILE_A; f--)
         {
-            sqb = 1ULL << rf2sq(tr, f);
+            const BitBoard sqb = BB(rf2sq(tr, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -185,243 +208,95 @@ namespace sagittar {
         return attack_mask;
     }
 
-    static BitBoard getVariant(const u32 index, const u8 bits, BitBoard mask) {
-        i32      i, j;
-        BitBoard result = 0ULL;
-        for (i = 0; i < bits; i++)
-        {
-            j = utils::bitScanForward(&mask);
-            if (index & (1 << i))
-            {
-                result |= (1ULL << j);
-            }
-        }
-        return result;
-    }
+    template<PieceType PT>
+    static void initSliderAttackTable(std::array<Magic, 64>& magic_table,
+                                      std::span<AttackTable> attack_table) {
+        static constexpr size_t MAGIC_MAX_TRIES = 500000;
 
-    static u32 transform(const BitBoard b, const BitBoard magic, const u8 bits) {
-#if defined(USE_32_BIT_MULTIPLICATIONS)
-        return (u32) ((i32) b * (i32) magic ^ (i32) (b >> 32) * (i32) (magic >> 32)) >> (32 - bits);
+        const auto occupancy = [](const i32 index, const i32 bits, BitBoard mask) -> BitBoard {
+            BitBoard result = 0ULL;
+
+            for (i32 i = 0; i < bits; i++)
+            {
+                const i32 j = utils::bitScanForward(&mask);
+                if (index & (1 << i))
+                {
+                    result |= BB(j);
+                }
+            }
+
+            return result;
+        };
+
+        for (int sq = Square::A1; sq <= Square::H8; sq++)
+        {
+            const Square square = static_cast<Square>(sq);
+
+            const BitBoard edges = ((MASK_RANK_1 | MASK_RANK_8) & ~MASK_RANK(sq2rank(sq)))
+                                 | ((MASK_FILE_A | MASK_FILE_H) & ~MASK_FILE(sq2file(sq)));
+
+            Magic& m = magic_table[sq];
+
+            m.mask          = (PT == PieceType::BISHOP) ? (bishopAttacks(square, 0ULL) & ~edges)
+                            : (PT == PieceType::ROOK)   ? (rookAttacks(square, 0ULL) & ~edges)
+                                                        : 0ULL;
+            const auto bits = utils::bitCount1s(m.mask);
+#if defined(IS_32_BIT)
+            m.shift = 32 - bits;
 #else
-        return (u32) ((b * magic) >> (64 - bits));
+            m.shift = 64 - bits;
 #endif
-    }
 
-    static u64 generateMagic() { return utils::prng() & utils::prng() & utils::prng(); }
+            BitBoard occupancies[4096];
+            BitBoard attacks[4096];
 
-    static u64 findMagic(const Square sq, const u8 bits, const bool bishop) {
-        const BitBoard mask = bishop ? bishopMask(sq) : rookMask(sq);
-        const u8       n    = utils::bitCount1s(mask);
-
-        BitBoard attacks[4096];
-        BitBoard variants[4096];
-
-        for (i32 i = 0; i < (1 << n); i++)
-        {
-            variants[i] = getVariant(i, n, mask);
-            attacks[i]  = bishop ? bishopAttacks(sq, variants[i]) : rookAttacks(sq, variants[i]);
-        }
-
-        for (u32 tries = 0; tries < MAGIC_MAX_TRIES; tries++)
-        {
-            const u64 magic = generateMagic();
-            if (utils::bitCount1s((mask * magic) & 0xFF00000000000000ULL) >= 6)
+            for (size_t i = 0; i < (1 << bits); i++)
             {
-                continue;
+                occupancies[i] = occupancy(i, bits, m.mask);
+                attacks[i]     = (PT == PieceType::BISHOP) ? bishopAttacks(square, occupancies[i])
+                               : (PT == PieceType::ROOK)   ? rookAttacks(square, occupancies[i])
+                                                           : 0ULL;
             }
 
-            BitBoard used[4096] = {};
-            bool     fail       = false;
-
-            for (i32 i = 0; !fail && i < (1 << n); i++)
+            for (size_t tries = 0; tries < MAGIC_MAX_TRIES; ++tries)
             {
-                const u32 index = transform(variants[i], magic, bits);
-                if (used[index] == 0ULL)
+                for (m.magic = 0ULL; utils::bitCount1s((m.magic * m.magic) >> 56) < 6;)
                 {
-                    used[index] = attacks[i];
+                    m.magic = utils::prng() & utils::prng() & utils::prng();
                 }
-                else if (used[index] != attacks[i])
+
+                BitBoard used[4096] = {};
+                bool     fail       = false;
+
+                for (size_t i = 0; !fail && i < (1 << bits); i++)
                 {
-                    // Collision
-                    fail = true;
+                    const auto index = m.index(occupancies[i]);
+                    if (used[index] == 0ULL)
+                    {
+                        used[index] = attacks[i];
+                    }
+                    else if (used[index] != attacks[i])
+                    {
+                        // Collision
+                        fail = true;
+                    }
+                }
+                if (!fail)
+                {
+                    break;
                 }
             }
-            if (!fail)
+
+            for (size_t i = 0; i < (1 << bits); i++)
             {
-                return magic;
+                const auto index        = m.index(occupancies[i]);
+                attack_table[index][sq] = attacks[i];
             }
         }
-
-        return 0ULL;
-    }
-
-    static void initMagicTableBishop() {
-        for (u8 sq = Square::A1; sq <= Square::H8; sq++)
-        {
-            const Square square         = static_cast<Square>(sq);
-            MAGICTABLE_BISHOP[sq].mask  = bishopMask(square);
-            MAGICTABLE_BISHOP[sq].shift = utils::bitCount1s(MAGICTABLE_BISHOP[sq].mask);
-            MAGICTABLE_BISHOP[sq].magic = findMagic(square, MAGICTABLE_BISHOP[sq].shift, true);
-            assert(MAGICTABLE_BISHOP[sq].magic != 0ULL);
-        }
-    }
-
-    static void initMagicTableRook() {
-        for (u8 sq = Square::A1; sq <= Square::H8; sq++)
-        {
-            const Square square       = static_cast<Square>(sq);
-            MAGICTABLE_ROOK[sq].mask  = rookMask(square);
-            MAGICTABLE_ROOK[sq].shift = utils::bitCount1s(MAGICTABLE_ROOK[sq].mask);
-            MAGICTABLE_ROOK[sq].magic = findMagic(square, MAGICTABLE_ROOK[sq].shift, false);
-            assert(MAGICTABLE_ROOK[sq].magic != 0ULL);
-        }
-    }
-
-    static void initAttackTablePawn() {
-        Square   sq;
-        BitBoard b;
-        BitBoard attacks;
-
-        // White pawn attacks
-        for (u8 r = RANK_1; r <= RANK_8; r++)
-        {
-            for (u8 f = FILE_A; f <= FILE_H; f++)
-            {
-                sq                           = rf2sq(r, f);
-                b                            = 1ULL << sq;
-                attacks                      = northEast(b) | northWest(b);
-                ATTACK_TABLE_PAWN[WHITE][sq] = attacks;
-            }
-        }
-
-        // Black pawn attacks
-        for (i8 r = RANK_8; r >= RANK_1; r--)
-        {
-            for (u8 f = FILE_A; f <= FILE_H; f++)
-            {
-                sq                           = rf2sq(r, f);
-                b                            = 1ULL << sq;
-                attacks                      = southEast(b) | southWest(b);
-                ATTACK_TABLE_PAWN[BLACK][sq] = attacks;
-            }
-        }
-    }
-
-    static void initAttackTableKnight() {
-        BitBoard attacks = 0ULL;
-        BitBoard b;
-
-        for (u8 sq = 0; sq < 64; sq++)
-        {
-            b = 1ULL << sq;
-
-            attacks = 0ULL;
-            attacks |= (b & MASK_NOT_H_FILE) << 17;
-            attacks |= (b & MASK_NOT_GH_FILE) << 10;
-            attacks |= (b & MASK_NOT_GH_FILE) >> 6;
-            attacks |= (b & MASK_NOT_H_FILE) >> 15;
-            attacks |= (b & MASK_NOT_A_FILE) << 15;
-            attacks |= (b & MASK_NOT_AB_FILE) << 6;
-            attacks |= (b & MASK_NOT_AB_FILE) >> 10;
-            attacks |= (b & MASK_NOT_A_FILE) >> 17;
-
-            ATTACK_TABLE_KNIGHT[sq] = attacks;
-        }
-    }
-
-    static void initAttackTableBishop() {
-        BitBoard mask, b;
-        u8       n;
-        u32      magic_index;
-
-        for (u8 sq = 0; sq < 64; sq++)
-        {
-            mask = MAGICTABLE_BISHOP[sq].mask;
-            n    = MAGICTABLE_BISHOP[sq].shift;
-
-            for (i32 i = 0; i < (1 << n); i++)
-            {
-                b                                    = getVariant(i, n, mask);
-                magic_index                          = transform(b, MAGICTABLE_BISHOP[sq].magic, n);
-                ATTACK_TABLE_BISHOP[sq][magic_index] = bishopAttacks(static_cast<Square>(sq), b);
-            }
-        }
-    }
-
-    static void initAttackTableRook() {
-        BitBoard mask, b;
-        u8       n;
-        u32      magic_index;
-
-        for (u8 sq = 0; sq < 64; sq++)
-        {
-            mask = MAGICTABLE_ROOK[sq].mask;
-            n    = MAGICTABLE_ROOK[sq].shift;
-
-            for (i32 i = 0; i < (1 << n); i++)
-            {
-                b                                  = getVariant(i, n, mask);
-                magic_index                        = transform(b, MAGICTABLE_ROOK[sq].magic, n);
-                ATTACK_TABLE_ROOK[sq][magic_index] = rookAttacks(static_cast<Square>(sq), b);
-            }
-        }
-    }
-
-    static void initAttackTableKing() {
-        BitBoard attacks = 0ULL;
-        BitBoard b;
-
-        for (u8 sq = 0; sq < 64; sq++)
-        {
-            b = 1ULL << sq;
-
-            attacks = 0ULL;
-            attacks |= north(b);
-            attacks |= south(b);
-            attacks |= east(b);
-            attacks |= west(b);
-            attacks |= northEast(b);
-            attacks |= southEast(b);
-            attacks |= southWest(b);
-            attacks |= northWest(b);
-
-            ATTACK_TABLE_KING[sq] = attacks;
-        }
-    }
-
-    static BitBoard getPawnAttacks(const Square sq, const Color c, const BitBoard occupancy) {
-        return ATTACK_TABLE_PAWN[c][sq] & occupancy;
-    }
-
-    static BitBoard getKnightAttacks(const Square sq, const BitBoard occupancy) {
-        return ATTACK_TABLE_KNIGHT[sq] & occupancy;
-    }
-
-    static BitBoard getBishopAttacks(const Square sq, BitBoard occupancy) {
-        occupancy = occupancy & MAGICTABLE_BISHOP[sq].mask;
-        const u32 index =
-          transform(occupancy, MAGICTABLE_BISHOP[sq].magic, MAGICTABLE_BISHOP[sq].shift);
-        return ATTACK_TABLE_BISHOP[sq][index];
-    }
-
-    static BitBoard getRookAttacks(const Square sq, BitBoard occupancy) {
-        occupancy = occupancy & MAGICTABLE_ROOK[sq].mask;
-        const u32 index =
-          transform(occupancy, MAGICTABLE_ROOK[sq].magic, MAGICTABLE_ROOK[sq].shift);
-        return ATTACK_TABLE_ROOK[sq][index];
-    }
-
-    static BitBoard getQueenAttacks(const Square sq, BitBoard occupancy) {
-        return getBishopAttacks(sq, occupancy) | getRookAttacks(sq, occupancy);
-    }
-
-    static BitBoard getKingAttacks(const Square sq, const BitBoard occupancy) {
-        return ATTACK_TABLE_KING[sq] & occupancy;
     }
 
     template<Color US, MovegenType T>
-    static void generatePseudolegalMovesPawn(containers::ArrayList<Move>* moves,
-                                             const Position&              pos) {
+    static void pseudolegalMovesPawn(containers::ArrayList<Move>* moves, const Position& pos) {
         constexpr Color    them           = colorFlip(US);
         constexpr BitBoard promo_dest     = (US == Color::WHITE) ? MASK_RANK_8 : MASK_RANK_1;
         constexpr BitBoard not_promo_dest = ~promo_dest;
@@ -561,48 +436,23 @@ namespace sagittar {
     }
 
     template<PieceType PT, Color US, MovegenType T>
-    static void generatePseudolegalMovesPiece(containers::ArrayList<Move>* moves,
-                                              const Position&              pos) {
+    static void pseudolegalMovesPiece(containers::ArrayList<Move>* moves, const Position& pos) {
         constexpr Color them      = colorFlip(US);
         const BitBoard  king_them = pos.pieces(them, PieceType::KING);
         const BitBoard  enemies   = pos.pieces(them) ^ king_them;
         const BitBoard  occupied  = pos.occupied();
         const BitBoard  empty     = ~occupied;
 
-        BitBoard occupancy = occupied;
-        if constexpr ((PT == PieceType::KNIGHT) || (PT == PieceType::KING))
-        {
-            occupancy = (enemies | empty);
-        }
+        const BitBoard occ =
+          ((PT == PieceType::KNIGHT) || (PT == PieceType::KING)) ? (enemies | empty) : occupied;
 
         BitBoard bb = pos.pieces(US, PT);
         while (bb)
         {
-            const Square from = static_cast<Square>(utils::bitScanForward(&bb));
+            const Square   from  = static_cast<Square>(utils::bitScanForward(&bb));
+            const BitBoard attks = attacks<PT>(from, occ);
 
-            BitBoard attacks = 0ULL;
-            if constexpr (PT == PieceType::KNIGHT)
-            {
-                attacks = ATTACK_TABLE_KNIGHT[from] & occupancy;
-            }
-            else if constexpr (PT == PieceType::BISHOP)
-            {
-                attacks = getBishopAttacks(from, occupancy);
-            }
-            else if constexpr (PT == PieceType::ROOK)
-            {
-                attacks = getRookAttacks(from, occupancy);
-            }
-            else if constexpr (PT == PieceType::QUEEN)
-            {
-                attacks = getBishopAttacks(from, occupancy) | getRookAttacks(from, occupancy);
-            }
-            else if constexpr (PT == PieceType::KING)
-            {
-                attacks = ATTACK_TABLE_KING[from] & occupancy;
-            }
-
-            BitBoard captures = attacks & enemies;
+            BitBoard captures = attks & enemies;
             while (captures)
             {
                 const Square to = static_cast<Square>(utils::bitScanForward(&captures));
@@ -611,7 +461,7 @@ namespace sagittar {
 
             if constexpr (T == MovegenType::ALL)
             {
-                BitBoard quites = attacks & empty;
+                BitBoard quites = attks & empty;
                 while (quites)
                 {
                     const Square to = static_cast<Square>(utils::bitScanForward(&quites));
@@ -622,8 +472,7 @@ namespace sagittar {
     }
 
     template<Color US>
-    static void generatePseudolegalMovesCastle(containers::ArrayList<Move>* moves,
-                                               const Position&              pos) {
+    static void pseudolegalMovesCastle(containers::ArrayList<Move>* moves, const Position& pos) {
         constexpr CastleFlag rights_k = (US == Color::WHITE) ? CastleFlag::WKCA : CastleFlag::BKCA;
         constexpr CastleFlag rights_q = (US == Color::WHITE) ? CastleFlag::WQCA : CastleFlag::BQCA;
         constexpr auto       ca_flags = rights_k | rights_q;
@@ -658,8 +507,8 @@ namespace sagittar {
         constexpr BitBoard mask_path_q  = (US == Color::WHITE) ? MASK_WQCA_PATH : MASK_BQCA_PATH;
         const bool         path_q_empty = ((occ & mask_path_q) == 0ULL);
 
-        const bool safe_k_ok = (getSquareAttackers(pos, k_sq_r, them) == 0ULL);
-        const bool safe_q_ok = (getSquareAttackers(pos, k_sq_l, them) == 0ULL);
+        const bool safe_k_ok = (squareAttackers(pos, k_sq_r, them) == 0ULL);
+        const bool safe_q_ok = (squareAttackers(pos, k_sq_l, them) == 0ULL);
 
         if (rights_k_ok && king_ok && rook_k_ok && path_k_empty && safe_k_ok)
         {
@@ -677,74 +526,98 @@ namespace sagittar {
     }
 
     void movegen_initialize() {
-        initMagicTableBishop();
-        initMagicTableRook();
-
-        initAttackTablePawn();
-        initAttackTableKnight();
-        initAttackTableBishop();
-        initAttackTableRook();
-        initAttackTableKing();
-
-        attackFunctions.push_back(getKnightAttacks);
-        attackFunctions.push_back(getBishopAttacks);
-        attackFunctions.push_back(getRookAttacks);
-        attackFunctions.push_back(getQueenAttacks);
-        attackFunctions.push_back(getKingAttacks);
+        initSliderAttackTable<PieceType::BISHOP>(MAGICTABLE_BISHOP, std::span(ATTACK_TABLE_BISHOP));
+        initSliderAttackTable<PieceType::ROOK>(MAGICTABLE_ROOK, std::span(ATTACK_TABLE_ROOK));
     }
 
-    BitBoard getSquareAttackers(const Position& pos, const Square sq, const Color attacked_by) {
-        const BitBoard occupied = pos.occupied();
-        BitBoard       opPawns, opKnights, opRQ, opBQ, opKing;
-        opPawns   = pos.pieces(attacked_by, PieceType::PAWN);
-        opKnights = pos.pieces(attacked_by, PieceType::KNIGHT);
-        opRQ = opBQ = pos.pieces(attacked_by, PieceType::QUEEN);
-        opRQ |= pos.pieces(attacked_by, PieceType::ROOK);
-        opBQ |= pos.pieces(attacked_by, PieceType::BISHOP);
-        opKing = pos.pieces(attacked_by, PieceType::KING);
+    template<PieceType PT>
+    BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c) {
+        switch (PT)
+        {
+            case PieceType::PAWN :
+                return ATTACK_TABLE_PAWN[c][sq] & occupancy;
+
+            case PieceType::KNIGHT :
+                return ATTACK_TABLE_KNIGHT[sq] & occupancy;
+
+            case PieceType::BISHOP : {
+                const auto index = MAGICTABLE_BISHOP[sq].index(occupancy);
+                return ATTACK_TABLE_BISHOP[index][sq];
+            }
+
+            case PieceType::ROOK : {
+                const auto index = MAGICTABLE_ROOK[sq].index(occupancy);
+                return ATTACK_TABLE_ROOK[index][sq];
+            }
+
+            case PieceType::QUEEN : {
+                const auto b_index = MAGICTABLE_BISHOP[sq].index(occupancy);
+                const auto r_index = MAGICTABLE_ROOK[sq].index(occupancy);
+                return (ATTACK_TABLE_BISHOP[b_index][sq] | ATTACK_TABLE_ROOK[r_index][sq]);
+            }
+
+            case PieceType::KING :
+                return ATTACK_TABLE_KING[sq] & occupancy;
+
+            default :
+                assert(false);
+                break;
+        }
+
+        return 0ULL;
+    }
+
+    BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by) {
+        const BitBoard occ  = pos.occupied();
+        const BitBoard op_P = pos.pieces(attacked_by, PieceType::PAWN);
+        const BitBoard op_N = pos.pieces(attacked_by, PieceType::KNIGHT);
+        BitBoard       op_RQ, op_BQ;
+        op_RQ = op_BQ = pos.pieces(attacked_by, PieceType::QUEEN);
+        op_RQ |= pos.pieces(attacked_by, PieceType::ROOK);
+        op_BQ |= pos.pieces(attacked_by, PieceType::BISHOP);
+        const BitBoard op_K = pos.pieces(attacked_by, PieceType::KING);
         // clang-format off
-            return (getBishopAttacks(sq, occupied) & opBQ)
-                 | (getRookAttacks(sq, occupied) & opRQ)
-                 | (ATTACK_TABLE_KNIGHT[sq] & opKnights)
-                 | (ATTACK_TABLE_PAWN[colorFlip(attacked_by)][sq] & opPawns)
-                 | (ATTACK_TABLE_KING[sq] & opKing);
+        return attacks<PieceType::PAWN>(sq, op_P, colorFlip(attacked_by))
+             | attacks<PieceType::KNIGHT>(sq, op_N)
+             | (attacks<PieceType::BISHOP>(sq, occ) & op_BQ)
+             | (attacks<PieceType::ROOK>(sq, occ) & op_RQ)
+             | attacks<PieceType::KING>(sq, op_K);
         // clang-format on
     }
 
     template<MovegenType T>
-    void generatePseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos) {
+    void pseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos) {
         if (pos.stm() == Color::WHITE)
         {
-            generatePseudolegalMovesPawn<Color::WHITE, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::QUEEN, Color::WHITE, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::ROOK, Color::WHITE, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::BISHOP, Color::WHITE, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::WHITE, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::KING, Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPawn<Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::QUEEN, Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::ROOK, Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::BISHOP, Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::KNIGHT, Color::WHITE, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::KING, Color::WHITE, T>(moves, pos);
             if constexpr (T == MovegenType::ALL)
             {
-                generatePseudolegalMovesCastle<Color::WHITE>(moves, pos);
+                pseudolegalMovesCastle<Color::WHITE>(moves, pos);
             }
         }
         else
         {
-            generatePseudolegalMovesPawn<Color::BLACK, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::QUEEN, Color::BLACK, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::ROOK, Color::BLACK, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::BISHOP, Color::BLACK, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::KNIGHT, Color::BLACK, T>(moves, pos);
-            generatePseudolegalMovesPiece<PieceType::KING, Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPawn<Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::QUEEN, Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::ROOK, Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::BISHOP, Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::KNIGHT, Color::BLACK, T>(moves, pos);
+            pseudolegalMovesPiece<PieceType::KING, Color::BLACK, T>(moves, pos);
             if constexpr (T == MovegenType::ALL)
             {
-                generatePseudolegalMovesCastle<Color::BLACK>(moves, pos);
+                pseudolegalMovesCastle<Color::BLACK>(moves, pos);
             }
         }
     }
 
-    template void generatePseudolegalMoves<MovegenType::ALL>(containers::ArrayList<Move>* moves,
-                                                             const Position&              pos);
-    template void
-    generatePseudolegalMoves<MovegenType::CAPTURES>(containers::ArrayList<Move>* moves,
-                                                    const Position&              pos);
+    template void pseudolegalMoves<MovegenType::ALL>(containers::ArrayList<Move>* moves,
+                                                     const Position&              pos);
+    template void pseudolegalMoves<MovegenType::CAPTURES>(containers::ArrayList<Move>* moves,
+                                                          const Position&              pos);
 
 }

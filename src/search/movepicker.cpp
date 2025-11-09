@@ -54,7 +54,7 @@ namespace sagittar::search {
                                 const i32           ply) {
         // Generate pseudolegal moves
         containers::ArrayList<Move> moves;
-        generatePseudolegalMoves<T>(&moves, pos);
+        pseudolegalMoves<T>(&moves, pos);
 
         // Save number of moves
         m_moves_count = moves.size();
