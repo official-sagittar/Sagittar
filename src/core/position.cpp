@@ -676,7 +676,7 @@ namespace sagittar {
 
     bool Position::isValid() const {
         return (utils::bitCount1s(m_bb_pieces[PieceType::KING]) == 2)
-            && ((m_bb_pieces[PieceType::PAWN] & MASK_RANK_1_AND_8) == 0ULL);
+            && ((m_bb_pieces[PieceType::PAWN] & RANK_1_AND_8_BB) == 0ULL);
     }
 
     bool Position::isInCheck() const { return (m_checkers != 0ULL); }

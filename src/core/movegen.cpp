@@ -32,9 +32,10 @@ namespace sagittar {
         {
             for (int f = File::FILE_A; f <= File::FILE_H; f++)
             {
-                const Square   sq       = rf2sq(r, f);
-                const BitBoard b        = BB(sq);
-                const BitBoard attacks  = northEast(b) | northWest(b);
+                const Square   sq = rf2sq(r, f);
+                const BitBoard b  = BB(sq);
+                const BitBoard attacks =
+                  shift<Direction::NORTH_EAST>(b) | shift<Direction::NORTH_WEST>(b);
                 table[Color::WHITE][sq] = attacks;
             }
         }
@@ -44,9 +45,10 @@ namespace sagittar {
         {
             for (int f = File::FILE_A; f <= File::FILE_H; f++)
             {
-                const Square   sq       = rf2sq(r, f);
-                const BitBoard b        = BB(sq);
-                const BitBoard attacks  = southEast(b) | southWest(b);
+                const Square   sq = rf2sq(r, f);
+                const BitBoard b  = BB(sq);
+                const BitBoard attacks =
+                  shift<Direction::SOUTH_EAST>(b) | shift<Direction::SOUTH_WEST>(b);
                 table[Color::BLACK][sq] = attacks;
             }
         }
@@ -62,14 +64,14 @@ namespace sagittar {
             const BitBoard b = BB(sq);
 
             BitBoard attacks = 0ULL;
-            attacks |= (b & MASK_NOT_H_FILE) << 17;
-            attacks |= (b & MASK_NOT_GH_FILE) << 10;
-            attacks |= (b & MASK_NOT_GH_FILE) >> 6;
-            attacks |= (b & MASK_NOT_H_FILE) >> 15;
-            attacks |= (b & MASK_NOT_A_FILE) << 15;
-            attacks |= (b & MASK_NOT_AB_FILE) << 6;
-            attacks |= (b & MASK_NOT_AB_FILE) >> 10;
-            attacks |= (b & MASK_NOT_A_FILE) >> 17;
+            attacks |= (b & ~FILE_H_BB) << 17;
+            attacks |= (b & ~(FILE_G_BB | FILE_H_BB)) << 10;
+            attacks |= (b & ~(FILE_G_BB | FILE_H_BB)) >> 6;
+            attacks |= (b & ~FILE_H_BB) >> 15;
+            attacks |= (b & ~FILE_A_BB) << 15;
+            attacks |= (b & ~(FILE_A_BB | FILE_B_BB)) << 6;
+            attacks |= (b & ~(FILE_A_BB | FILE_B_BB)) >> 10;
+            attacks |= (b & ~FILE_A_BB) >> 17;
 
             table[sq] = attacks;
         }
@@ -85,14 +87,14 @@ namespace sagittar {
             const BitBoard b = BB(sq);
 
             BitBoard attacks = 0ULL;
-            attacks |= north(b);
-            attacks |= south(b);
-            attacks |= east(b);
-            attacks |= west(b);
-            attacks |= northEast(b);
-            attacks |= southEast(b);
-            attacks |= southWest(b);
-            attacks |= northWest(b);
+            attacks |= shift<Direction::NORTH>(b);
+            attacks |= shift<Direction::SOUTH>(b);
+            attacks |= shift<Direction::EAST>(b);
+            attacks |= shift<Direction::WEST>(b);
+            attacks |= shift<Direction::NORTH_EAST>(b);
+            attacks |= shift<Direction::SOUTH_EAST>(b);
+            attacks |= shift<Direction::SOUTH_WEST>(b);
+            attacks |= shift<Direction::NORTH_WEST>(b);
 
             table[sq] = attacks;
         }
@@ -102,15 +104,6 @@ namespace sagittar {
 
     static std::array<AttackTable, 512>  ATTACK_TABLE_BISHOP;
     static std::array<AttackTable, 4096> ATTACK_TABLE_ROOK;
-
-    template<Color US>
-    static constexpr int BITBOARD_FWD_DIR = (US == WHITE) ? 8 : -8;
-    template<Color US>
-    static constexpr int BITBOARD_FWD_DBL_DIR = (US == WHITE) ? 16 : -16;
-    template<Color US>
-    static constexpr int BITBOARD_CAPTURE_LEFT_DIR = (US == WHITE) ? 7 : -7;
-    template<Color US>
-    static constexpr int BITBOARD_CAPTURE_RIGHT_DIR = (US == WHITE) ? 9 : -9;
 
     static BitBoard bishopAttacks(const Square sq, const BitBoard blockers) {
         int r, f;
@@ -232,8 +225,8 @@ namespace sagittar {
         {
             const Square square = static_cast<Square>(sq);
 
-            const BitBoard edges = ((MASK_RANK_1 | MASK_RANK_8) & ~MASK_RANK(sq2rank(sq)))
-                                 | ((MASK_FILE_A | MASK_FILE_H) & ~MASK_FILE(sq2file(sq)));
+            const BitBoard edges = ((RANK_1_BB | RANK_8_BB) & ~RANK_BB(sq2rank(sq)))
+                                 | ((FILE_A_BB | FILE_H_BB) & ~FILE_BB(sq2file(sq)));
 
             Magic& m = magic_table[sq];
 
@@ -298,9 +291,9 @@ namespace sagittar {
     template<Color US, MovegenType T>
     static void pseudolegalMovesPawn(containers::ArrayList<Move>* moves, const Position& pos) {
         constexpr Color    them           = colorFlip(US);
-        constexpr BitBoard promo_dest     = (US == Color::WHITE) ? MASK_RANK_8 : MASK_RANK_1;
+        constexpr BitBoard promo_dest     = (US == Color::WHITE) ? RANK_8_BB : RANK_1_BB;
         constexpr BitBoard not_promo_dest = ~promo_dest;
-        constexpr BitBoard ep_target_rank = (US == Color::WHITE) ? MASK_RANK_6 : MASK_RANK_3;
+        constexpr BitBoard ep_target_rank = (US == Color::WHITE) ? RANK_6_BB : RANK_3_BB;
 
         const BitBoard pawns     = pos.pieces(US, PieceType::PAWN);
         const BitBoard king_them = pos.pieces(them, PieceType::KING);
@@ -311,26 +304,26 @@ namespace sagittar {
 
         if constexpr (US == Color::WHITE)
         {
-            pawns_fwd = north(pawns);
+            pawns_fwd = shift<Direction::NORTH>(pawns);
             sgl_push  = pawns_fwd & empty & not_promo_dest;
-            dbl_push  = north(sgl_push) & MASK_RANK_4 & empty;
-            fwd_l     = northWest(pawns);
-            fwd_r     = northEast(pawns);
+            dbl_push  = shift<Direction::NORTH>(sgl_push) & RANK_4_BB & empty;
+            fwd_l     = shift<Direction::NORTH_WEST>(pawns);
+            fwd_r     = shift<Direction::NORTH_EAST>(pawns);
         }
         else
         {
-            pawns_fwd = south(pawns);
+            pawns_fwd = shift<Direction::SOUTH>(pawns);
             sgl_push  = pawns_fwd & empty & not_promo_dest;
-            dbl_push  = south(sgl_push) & MASK_RANK_5 & empty;
-            fwd_l     = southEast(pawns);
-            fwd_r     = southWest(pawns);
+            dbl_push  = shift<Direction::SOUTH>(sgl_push) & RANK_5_BB & empty;
+            fwd_l     = shift<Direction::SOUTH_EAST>(pawns);
+            fwd_r     = shift<Direction::SOUTH_WEST>(pawns);
         }
 
         const BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
         const BitBoard capture_l                     = fwd_l & enemies_not_on_promotion_dest;
         const BitBoard capture_r                     = fwd_r & enemies_not_on_promotion_dest;
         const BitBoard ep_target_bb =
-          (pos.epTarget() != Square::NO_SQ) ? ((1ULL << pos.epTarget()) & ep_target_rank) : 0ULL;
+          (pos.epTarget() != Square::NO_SQ) ? (BB(pos.epTarget()) & ep_target_rank) : 0ULL;
         const BitBoard capture_ep_l              = fwd_l & ep_target_bb;
         const BitBoard capture_ep_r              = fwd_r & ep_target_bb;
         const BitBoard quite_promo               = pawns_fwd & promo_dest & empty;
@@ -342,7 +335,7 @@ namespace sagittar {
         int      dir;
 
         bb  = capture_promo_l;
-        dir = BITBOARD_CAPTURE_LEFT_DIR<US>;
+        dir = (US == Color::WHITE) ? Direction::NORTH_WEST : Direction::SOUTH_EAST;
         while (bb)
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
@@ -354,7 +347,7 @@ namespace sagittar {
         }
 
         bb  = capture_promo_r;
-        dir = BITBOARD_CAPTURE_RIGHT_DIR<US>;
+        dir = (US == Color::WHITE) ? Direction::NORTH_EAST : Direction::SOUTH_WEST;
         while (bb)
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
@@ -365,7 +358,7 @@ namespace sagittar {
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_KNIGHT);
         }
 
-        dir = BITBOARD_CAPTURE_LEFT_DIR<US>;
+        dir = (US == Color::WHITE) ? Direction::NORTH_WEST : Direction::SOUTH_EAST;
 
         bb = capture_l;
         while (bb)
@@ -383,7 +376,7 @@ namespace sagittar {
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
-        dir = BITBOARD_CAPTURE_RIGHT_DIR<US>;
+        dir = (US == Color::WHITE) ? Direction::NORTH_EAST : Direction::SOUTH_WEST;
 
         bb = capture_r;
         while (bb)
@@ -403,7 +396,7 @@ namespace sagittar {
 
         if constexpr (T == MovegenType::ALL)
         {
-            dir = BITBOARD_FWD_DIR<US>;
+            dir = (US == Color::WHITE) ? Direction::NORTH : Direction::SOUTH;
 
             bb = quite_promo;
             while (bb)
@@ -425,7 +418,7 @@ namespace sagittar {
             }
 
             bb  = dbl_push;
-            dir = BITBOARD_FWD_DBL_DIR<US>;
+            dir = (US == Color::WHITE) ? Direction::NORTH_2X : Direction::SOUTH_2X;
             while (bb)
             {
                 const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
@@ -473,6 +466,11 @@ namespace sagittar {
 
     template<Color US>
     static void pseudolegalMovesCastle(containers::ArrayList<Move>* moves, const Position& pos) {
+        static constexpr BitBoard MASK_WKCA_PATH = 0x60;
+        static constexpr BitBoard MASK_WQCA_PATH = 0xE;
+        static constexpr BitBoard MASK_BKCA_PATH = 0x6000000000000000;
+        static constexpr BitBoard MASK_BQCA_PATH = 0xE00000000000000;
+
         constexpr CastleFlag rights_k = (US == Color::WHITE) ? CastleFlag::WKCA : CastleFlag::BKCA;
         constexpr CastleFlag rights_q = (US == Color::WHITE) ? CastleFlag::WQCA : CastleFlag::BQCA;
         constexpr auto       ca_flags = rights_k | rights_q;
