@@ -36,6 +36,9 @@ namespace sagittar {
         Piece    pieceOn(const Square) const;
         u8       pieceCount(const Piece) const;
 
+        inline BitBoard checkers() const { return m_checkers; }
+        inline Square   kingSq() const { return m_king_sq; }
+
         Color  stm() const;
         u8     caRights() const;
         Square epTarget() const;
@@ -90,6 +93,7 @@ namespace sagittar {
         std::array<BitBoard, 2> m_bb_colors;
         std::array<Piece, 64>   m_board;
         BitBoard                m_checkers;
+        Square                  m_king_sq;
         Color                   m_stm;
         u8                      m_ca_rights;
         Square                  m_ep_target;

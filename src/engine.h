@@ -33,6 +33,8 @@ namespace sagittar {
 
         bool doMove(const std::string&);
 
+        void perft(const Depth) const;
+
         search::SearchResult search(search::SearchInfo);
 
         search::SearchResult

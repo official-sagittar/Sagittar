@@ -64,4 +64,13 @@ namespace sagittar {
                                           : 0ULL;
     }
 
+    inline constexpr bool isAligned(const Square x, const Square y) {
+        const int rx = sq2rank(x), ry = sq2rank(y);
+        const int fx = sq2file(x), fy = sq2file(y);
+        return (rx == ry) || (fx == fy) || (rx - fx == ry - fy) || (rx + fx == ry + fy);
+    }
+
+    BitBoard ray(const Square, const Square);
+    BitBoard line(const Square, const Square);
+    BitBoard between(const Square, const Square);
 }

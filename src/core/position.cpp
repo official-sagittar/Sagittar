@@ -47,6 +47,7 @@ namespace sagittar {
         m_bb_colors({}),
         m_board({}),
         m_checkers(0ULL),
+        m_king_sq(Square::NO_SQ),
         m_stm(Color::WHITE),
         m_ca_rights(0),
         m_ep_target(Square::NO_SQ),
@@ -228,10 +229,10 @@ namespace sagittar {
             m_fullmoves = std::stoi(segment);
         }
 
-        // Set checkers
+        // Set King Square & checkers
         const BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
-        const Square   king_sq = static_cast<Square>(__builtin_ctzll(king_bb));
-        m_checkers             = squareAttackers(*this, king_sq, colorFlip(m_stm));
+        m_king_sq              = static_cast<Square>(__builtin_ctzll(king_bb));
+        m_checkers             = squareAttackers(*this, m_king_sq, colorFlip(m_stm));
 
         // Reset Hash
         resetHash();
@@ -461,8 +462,8 @@ namespace sagittar {
         const bool is_valid_move = (checkers_us == 0ULL);
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
-        const Square   king_sq_them = static_cast<Square>(__builtin_ctzll(king_bb_them));
-        m_checkers                  = squareAttackers(*this, king_sq_them, US);
+        m_king_sq                   = static_cast<Square>(__builtin_ctzll(king_bb_them));
+        m_checkers                  = squareAttackers(*this, m_king_sq, US);
 
         m_stm = colorFlip(m_stm);
         key_local ^= ZOBRIST_SIDE;
