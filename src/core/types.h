@@ -97,6 +97,14 @@ namespace sagittar {
     };
     // clang-format on
 
+    enum CastleFlag : u8 {
+        NOCA = 0,
+        WKCA = 1,
+        WQCA = 2,
+        BKCA = 4,
+        BQCA = 8
+    };
+
     constexpr PieceType pieceTypeOf(const Piece p) { return static_cast<PieceType>(p & 0x7); }
 
     constexpr Color pieceColorOf(const Piece p) { return static_cast<Color>((p & 0x8) / 8); }
