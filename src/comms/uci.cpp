@@ -115,7 +115,17 @@ namespace sagittar::comms::uci {
 
         while (ss >> token)
         {
-            if (token == "infinite")
+            if (token == "perft")
+            {
+                int depth;
+                ss >> depth;
+
+                std::future<void> f =
+                  std::async(std::launch::async, [this, depth] { engine.perft(depth); });
+
+                return f;
+            }
+            else if (token == "infinite")
             {
                 info.infinite = true;
             }

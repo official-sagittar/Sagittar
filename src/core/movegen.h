@@ -11,7 +11,8 @@ namespace sagittar {
 
     enum class MovegenType {
         ALL,
-        CAPTURES
+        CAPTURES,
+        CHECK_EVASIONS
     };
 
     void movegen_initialize();

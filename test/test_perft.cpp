@@ -5,7 +5,7 @@
 #include "doctest/doctest.h"
 
 using namespace sagittar;
-using pair_type = std::pair<std::string, std::vector<u64>>;
+using pair_type = std::pair<std::string, std::vector<size_t>>;
 
 TEST_SUITE("Perft") {
 
@@ -13,7 +13,7 @@ TEST_SUITE("Perft") {
         Position pos;
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        u64 nodes = perft::perft(pos, 6);
+        size_t nodes = perft::perft(pos, 6);
         CHECK(nodes == 119060324);
     }
 
@@ -21,7 +21,7 @@ TEST_SUITE("Perft") {
         Position pos;
         pos.setFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
-        u64 nodes = perft::perft(pos, 5);
+        size_t nodes = perft::perft(pos, 5);
         CHECK(nodes == 193690690);
     }
 
@@ -41,7 +41,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -69,7 +69,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -89,7 +89,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -107,7 +107,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -128,7 +128,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -146,7 +146,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -176,7 +176,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -204,7 +204,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -245,7 +245,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i + 1);
+                const size_t result = perft::perft(pos, i + 1);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -263,7 +263,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -285,7 +285,7 @@ TEST_SUITE("Perft") {
             pos.setFen(fen);
             for (std::size_t i = 0; i < nodes.size(); ++i)
             {
-                const u64 result = perft::perft(pos, i);
+                const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
             }
         }
@@ -312,13 +312,13 @@ TEST_SUITE("Perft Full") {
             auto              first_semicolon_pos = line.find(';');
             const std::string fen                 = line.substr(0, first_semicolon_pos);
 
-            std::map<std::string, u64> extracted_perft_values;
+            std::map<std::string, size_t> extracted_perft_values;
 
             std::string depth_perft_part = line.substr(first_semicolon_pos);
             while (std::regex_search(depth_perft_part, match, depth_perft_regex))
             {
                 const std::string depth_str   = match[1].str();
-                const u64         perft_value = std::stoull(match[2].str());
+                const size_t      perft_value = std::stoull(match[2].str());
 
                 extracted_perft_values[depth_str] = perft_value;
 
@@ -331,8 +331,8 @@ TEST_SUITE("Perft Full") {
             for (const auto& [key, value] : extracted_perft_values)
             {
                 SUBCASE("Perft - Full - Standard - FEN") {
-                    const u8  depth  = std::stoi(key);
-                    const u64 result = perft::perft(pos, depth);
+                    const u8     depth  = std::stoi(key);
+                    const size_t result = perft::perft(pos, depth);
                     REQUIRE(result == value);
                 }
             }

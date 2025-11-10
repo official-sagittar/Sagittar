@@ -290,6 +290,8 @@ namespace sagittar {
 
     template<Color US, MovegenType T>
     static void pseudolegalMovesPawn(containers::ArrayList<Move>* moves, const Position& pos) {
+        assert(utils::bitCount1s(pos.checkers()) < 2);
+
         constexpr Color    them           = colorFlip(US);
         constexpr BitBoard promo_dest     = (US == Color::WHITE) ? RANK_8_BB : RANK_1_BB;
         constexpr BitBoard not_promo_dest = ~promo_dest;
@@ -299,6 +301,10 @@ namespace sagittar {
         const BitBoard king_them = pos.pieces(them, PieceType::KING);
         const BitBoard enemies   = pos.pieces(them) ^ king_them;
         const BitBoard empty     = pos.empty();
+
+        const Square   ep_target = pos.epTarget();
+        const BitBoard ep_target_bb =
+          (ep_target != Square::NO_SQ) ? (BB(ep_target) & ep_target_rank) : 0ULL;
 
         BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
 
@@ -319,17 +325,45 @@ namespace sagittar {
             fwd_r     = shift<Direction::SOUTH_WEST>(pawns);
         }
 
+        if constexpr (T == MovegenType::CHECK_EVASIONS)
+        {
+            BitBoard       checkers   = pos.checkers();
+            const Square   checker_sq = static_cast<Square>(__builtin_ctzll(checkers));
+            const BitBoard block_bb   = between(checker_sq, pos.kingSq());
+
+            pawns_fwd &= block_bb;
+            sgl_push &= block_bb;
+            dbl_push &= block_bb;
+
+            BitBoard fwd_mask_l = checkers;
+            BitBoard fwd_mask_r = checkers;
+
+            constexpr i8 ep_victim_dir = (US == Color::WHITE) ? 8 : -8;
+
+            if (ep_target != Square::NO_SQ)
+            {
+                if ((checkers & BB(ep_target - ep_victim_dir)) || (block_bb & ep_target_bb))
+                {
+                    // En passant Capture checker
+                    // Or, En passant Block check
+                    fwd_mask_l |= (fwd_l & ep_target_bb);
+                    fwd_mask_r |= (fwd_r & ep_target_bb);
+                }
+            }
+
+            fwd_l &= fwd_mask_l;
+            fwd_r &= fwd_mask_r;
+        }
+
         const BitBoard enemies_not_on_promotion_dest = enemies & not_promo_dest;
         const BitBoard capture_l                     = fwd_l & enemies_not_on_promotion_dest;
         const BitBoard capture_r                     = fwd_r & enemies_not_on_promotion_dest;
-        const BitBoard ep_target_bb =
-          (pos.epTarget() != Square::NO_SQ) ? (BB(pos.epTarget()) & ep_target_rank) : 0ULL;
-        const BitBoard capture_ep_l              = fwd_l & ep_target_bb;
-        const BitBoard capture_ep_r              = fwd_r & ep_target_bb;
-        const BitBoard quite_promo               = pawns_fwd & promo_dest & empty;
-        const BitBoard enemies_on_promotion_dest = enemies & promo_dest;
-        const BitBoard capture_promo_l           = fwd_l & enemies_on_promotion_dest;
-        const BitBoard capture_promo_r           = fwd_r & enemies_on_promotion_dest;
+        const BitBoard capture_ep_l                  = fwd_l & ep_target_bb;
+        const BitBoard capture_ep_r                  = fwd_r & ep_target_bb;
+        const BitBoard quite_promo                   = pawns_fwd & promo_dest & empty;
+        const BitBoard enemies_on_promotion_dest     = enemies & promo_dest;
+        const BitBoard capture_promo_l               = fwd_l & enemies_on_promotion_dest;
+        const BitBoard capture_promo_r               = fwd_r & enemies_on_promotion_dest;
 
         BitBoard bb;
         int      dir;
@@ -394,7 +428,7 @@ namespace sagittar {
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
-        if constexpr (T == MovegenType::ALL)
+        if constexpr (T != MovegenType::CAPTURES)
         {
             dir = (US == Color::WHITE) ? Direction::NORTH : Direction::SOUTH;
 
@@ -436,6 +470,15 @@ namespace sagittar {
         const BitBoard  occupied  = pos.occupied();
         const BitBoard  empty     = ~occupied;
 
+        BitBoard checkers = 0ULL;
+        BitBoard block_bb = 0ULL;
+        if constexpr (T == MovegenType::CHECK_EVASIONS)
+        {
+            checkers                = pos.checkers();
+            const Square checker_sq = static_cast<Square>(__builtin_ctzll(checkers));
+            block_bb                = between(checker_sq, pos.kingSq());
+        }
+
         const BitBoard occ =
           ((PT == PieceType::KNIGHT) || (PT == PieceType::KING)) ? (enemies | empty) : occupied;
 
@@ -446,15 +489,23 @@ namespace sagittar {
             const BitBoard attks = attacks<PT>(from, occ);
 
             BitBoard captures = attks & enemies;
+            if constexpr (T == MovegenType::CHECK_EVASIONS)
+            {
+                captures &= checkers;
+            }
             while (captures)
             {
                 const Square to = static_cast<Square>(utils::bitScanForward(&captures));
                 moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
             }
 
-            if constexpr (T == MovegenType::ALL)
+            if constexpr (T != MovegenType::CAPTURES)
             {
                 BitBoard quites = attks & empty;
+                if constexpr (T == MovegenType::CHECK_EVASIONS)
+                {
+                    quites &= block_bb;
+                }
                 while (quites)
                 {
                     const Square to = static_cast<Square>(utils::bitScanForward(&quites));
@@ -466,6 +517,8 @@ namespace sagittar {
 
     template<Color US>
     static void pseudolegalMovesCastle(containers::ArrayList<Move>* moves, const Position& pos) {
+        assert(!pos.isInCheck());
+
         static constexpr BitBoard MASK_WKCA_PATH = 0x60;
         static constexpr BitBoard MASK_WQCA_PATH = 0xE;
         static constexpr BitBoard MASK_BKCA_PATH = 0x6000000000000000;
@@ -477,7 +530,7 @@ namespace sagittar {
 
         const auto pos_ca_rights = pos.caRights();
 
-        if (!(pos_ca_rights & ca_flags) || pos.isInCheck())
+        if (!(pos_ca_rights & ca_flags))
         {
             return;
         }
@@ -583,33 +636,55 @@ namespace sagittar {
         // clang-format on
     }
 
+    template<Color US, MovegenType T>
+    static void pseudolegalMovesColor(containers::ArrayList<Move>* moves, const Position& pos) {
+        pseudolegalMovesPiece<PieceType::KING, US, T>(moves, pos);
+
+        if constexpr (T != MovegenType::CAPTURES)
+        {
+            const BitBoard checkers = pos.checkers();
+            if (checkers || (T == MovegenType::CHECK_EVASIONS))
+            {
+                if (checkers & (checkers - 1)) [[unlikely]]
+                {
+                    // Multiple checkers
+                    // Only King moves allowed
+                    return;
+                }
+
+                pseudolegalMovesPawn<US, MovegenType::CHECK_EVASIONS>(moves, pos);
+                pseudolegalMovesPiece<PieceType::QUEEN, US, MovegenType::CHECK_EVASIONS>(moves,
+                                                                                         pos);
+                pseudolegalMovesPiece<PieceType::ROOK, US, MovegenType::CHECK_EVASIONS>(moves, pos);
+                pseudolegalMovesPiece<PieceType::BISHOP, US, MovegenType::CHECK_EVASIONS>(moves,
+                                                                                          pos);
+                pseudolegalMovesPiece<PieceType::KNIGHT, US, MovegenType::CHECK_EVASIONS>(moves,
+                                                                                          pos);
+
+                return;
+            }
+        }
+
+        pseudolegalMovesPawn<US, T>(moves, pos);
+        pseudolegalMovesPiece<PieceType::QUEEN, US, T>(moves, pos);
+        pseudolegalMovesPiece<PieceType::ROOK, US, T>(moves, pos);
+        pseudolegalMovesPiece<PieceType::BISHOP, US, T>(moves, pos);
+        pseudolegalMovesPiece<PieceType::KNIGHT, US, T>(moves, pos);
+        if constexpr (T == MovegenType::ALL)
+        {
+            pseudolegalMovesCastle<US>(moves, pos);
+        }
+    }
+
     template<MovegenType T>
     void pseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos) {
         if (pos.stm() == Color::WHITE)
         {
-            pseudolegalMovesPawn<Color::WHITE, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::QUEEN, Color::WHITE, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::ROOK, Color::WHITE, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::BISHOP, Color::WHITE, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::KNIGHT, Color::WHITE, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::KING, Color::WHITE, T>(moves, pos);
-            if constexpr (T == MovegenType::ALL)
-            {
-                pseudolegalMovesCastle<Color::WHITE>(moves, pos);
-            }
+            pseudolegalMovesColor<Color::WHITE, T>(moves, pos);
         }
         else
         {
-            pseudolegalMovesPawn<Color::BLACK, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::QUEEN, Color::BLACK, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::ROOK, Color::BLACK, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::BISHOP, Color::BLACK, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::KNIGHT, Color::BLACK, T>(moves, pos);
-            pseudolegalMovesPiece<PieceType::KING, Color::BLACK, T>(moves, pos);
-            if constexpr (T == MovegenType::ALL)
-            {
-                pseudolegalMovesCastle<Color::BLACK>(moves, pos);
-            }
+            pseudolegalMovesColor<Color::BLACK, T>(moves, pos);
         }
     }
 
@@ -617,5 +692,6 @@ namespace sagittar {
                                                      const Position&              pos);
     template void pseudolegalMoves<MovegenType::CAPTURES>(containers::ArrayList<Move>* moves,
                                                           const Position&              pos);
-
+    template void pseudolegalMoves<MovegenType::CHECK_EVASIONS>(containers::ArrayList<Move>* moves,
+                                                                const Position&              pos);
 }

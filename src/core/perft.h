@@ -6,7 +6,7 @@
 
 namespace sagittar::perft {
 
-    u64 perft(const Position& pos, const Depth depth);
-    u64 divide(const Position& pos, const Depth depth);
+    size_t perft(const Position& pos, const Depth depth);
+    size_t divide(const Position& pos, const Depth depth);
 
 }
