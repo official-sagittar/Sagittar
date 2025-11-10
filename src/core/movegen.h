@@ -2,6 +2,7 @@
 
 #include "commons/containers.h"
 #include "commons/pch.h"
+#include "core/bitboard.h"
 #include "core/move.h"
 #include "core/position.h"
 #include "core/types.h"
