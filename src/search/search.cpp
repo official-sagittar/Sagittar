@@ -285,7 +285,7 @@ namespace sagittar::search {
             // clang-format on
 
             // Internal Iterative Reductions
-            if (depth >= 4 && (!tthit || (ttdata.move == Move())))
+            if (depth >= 4 && (!tthit || (ttdata.move == NULL_MOVE)))
             {
                 depth--;
             }
@@ -300,8 +300,8 @@ namespace sagittar::search {
         const Move ttmove = is_root_node ? thread.pvmove : tthit ? ttdata.move : Move{};
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker<MovegenType::ALL>   move_picker(buffer.data(), pos, ttmove, data, ply);
-        const auto                     n_moves = move_picker.size();
+        MovePicker move_picker(buffer.data(), pos, ttmove, data, ply, MovegenType::ALL);
+        const auto n_moves = move_picker.size();
 
         while (move_picker.hasNext())
         {
@@ -449,27 +449,44 @@ namespace sagittar::search {
             }
         }
 
+        const bool is_in_check = pos.isInCheck();
+
         if (ply >= MAX_DEPTH - 1)
         {
-            return eval::hce::evaluate(pos);
+            return is_in_check ? 0 : eval::hce::evaluate(pos);
         }
 
-        const Score stand_pat = eval::hce::evaluate(pos);
-        if (stand_pat >= beta)
+        Score eval;
+
+        if (is_in_check)
         {
-            return beta;
+            eval = -MATE_VALUE + ply;
         }
-        if (alpha < stand_pat)
+        else
         {
-            alpha = stand_pat;
+            eval = eval::hce::evaluate(pos);
+            if (eval >= beta)
+            {
+                return beta;
+            }
+            if (alpha < eval)
+            {
+                alpha = eval;
+            }
         }
+
+        Score best_score        = eval;
+        u32   legal_moves_count = 0;
 
         TTData     ttdata;
         const bool tthit  = tt.probe(&ttdata, pos.key());
         const Move ttmove = tthit ? ttdata.move : Move();
 
-        std::array<ExtMove, MOVES_MAX>    buffer{};
-        MovePicker<MovegenType::CAPTURES> move_picker(buffer.data(), pos, ttmove, data, ply);
+        const MovegenType movegen_type =
+          is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
+
+        std::array<ExtMove, MOVES_MAX> buffer{};
+        MovePicker move_picker(buffer.data(), pos, ttmove, data, ply, movegen_type);
 
         while (move_picker.hasNext())
         {
@@ -482,6 +499,7 @@ namespace sagittar::search {
                 continue;
             }
 
+            legal_moves_count++;
             thread.nodes++;
 
             const Score score = -quiescencesearch(pos_copy, -beta, -alpha, ply + 1, thread, info);
@@ -493,6 +511,8 @@ namespace sagittar::search {
                 return 0;
             }
 
+            best_score = std::max(best_score, score);
+
             if (score > alpha)
             {
                 alpha = score;
@@ -503,7 +523,12 @@ namespace sagittar::search {
             }
         }
 
-        return alpha;
+        if ((legal_moves_count == 0) && is_in_check)
+        {
+            return -MATE_VALUE + ply;
+        }
+
+        return best_score;
     }
 
 }

@@ -37,24 +37,41 @@ namespace sagittar::search {
     constexpr u32 HISTORY_SCORE_MIN   = 0;
     constexpr u32 HISTORY_SCORE_MAX   = 7000;
 
-    template<MovegenType T>
-    MovePicker<T>::MovePicker(ExtMove*            buffer,
-                              const Position&     pos,
-                              const Move&         ttmove,
-                              const SearcherData& data,
-                              const i32           ply) {
-        process(buffer, pos, ttmove, data, ply);
+    MovePicker::MovePicker(ExtMove*            buffer,
+                           const Position&     pos,
+                           const Move&         ttmove,
+                           const SearcherData& data,
+                           const i32           ply,
+                           const MovegenType   type) {
+        process(buffer, pos, ttmove, data, ply, type);
     }
 
-    template<MovegenType T>
-    void MovePicker<T>::process(ExtMove*            buffer,
-                                const Position&     pos,
-                                const Move&         ttmove,
-                                const SearcherData& data,
-                                const i32           ply) {
+    void MovePicker::process(ExtMove*            buffer,
+                             const Position&     pos,
+                             const Move&         ttmove,
+                             const SearcherData& data,
+                             const i32           ply,
+                             const MovegenType   type) {
         // Generate pseudolegal moves
         containers::ArrayList<Move> moves;
-        pseudolegalMoves<T>(&moves, pos);
+
+        switch (type)
+        {
+            case MovegenType::ALL :
+                pseudolegalMoves<MovegenType::ALL>(&moves, pos);
+                break;
+
+            case MovegenType::CAPTURES :
+                pseudolegalMoves<MovegenType::CAPTURES>(&moves, pos);
+                break;
+
+            case MovegenType::CHECK_EVASIONS :
+                pseudolegalMoves<MovegenType::CHECK_EVASIONS>(&moves, pos);
+                break;
+
+            default :
+                break;
+        }
 
         // Save number of moves
         m_moves_count = moves.size();
@@ -123,23 +140,13 @@ namespace sagittar::search {
         m_it_quiets = m_quiets.data();
     }
 
-    template<MovegenType T>
-    size_t MovePicker<T>::size() const {
-        return m_moves_count;
-    }
+    size_t MovePicker::size() const { return m_moves_count; }
 
-    template<MovegenType T>
-    MovePickerPhase MovePicker<T>::phase() const {
-        return m_phase;
-    }
+    MovePickerPhase MovePicker::phase() const { return m_phase; }
 
-    template<MovegenType T>
-    bool MovePicker<T>::hasNext() const {
-        return (m_index < m_moves_count);
-    }
+    bool MovePicker::hasNext() const { return (m_index < m_moves_count); }
 
-    template<MovegenType T>
-    Move MovePicker<T>::next() {
+    Move MovePicker::next() {
         switch (m_phase)
         {
             case MovePickerPhase::TT_MOVE : {
@@ -193,8 +200,5 @@ namespace sagittar::search {
                 return NULL_MOVE;
         }
     }
-
-    template class MovePicker<MovegenType::ALL>;
-    template class MovePicker<MovegenType::CAPTURES>;
 
 }
