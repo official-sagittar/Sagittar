@@ -18,7 +18,6 @@ namespace sagittar::search {
         DONE
     };
 
-    template<MovegenType T>
     class MovePicker final {
        public:
         MovePicker() = delete;
@@ -26,7 +25,8 @@ namespace sagittar::search {
                             const Position&     pos,
                             const Move&         ttmove,
                             const SearcherData& data,
-                            const i32           ply);
+                            const i32           ply,
+                            const MovegenType   type);
         MovePicker(const MovePicker&)                = delete;
         MovePicker(MovePicker&&) noexcept            = delete;
         MovePicker& operator=(const MovePicker&)     = delete;
@@ -45,7 +45,8 @@ namespace sagittar::search {
                      const Position&     pos,
                      const Move&         ttmove,
                      const SearcherData& data,
-                     const i32           ply);
+                     const i32           ply,
+                     const MovegenType   type);
 
         size_t m_moves_count{0};
 
