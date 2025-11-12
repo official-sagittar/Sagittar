@@ -351,8 +351,8 @@ namespace sagittar {
 
         u64 key_local = m_key;
 
-        key_local ^= utils::SEL(m_ep_target != Square::NO_SQ, 0ULL,
-                                ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
+        key_local ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
+                                     ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
 
         m_ep_target = Square::NO_SQ;
         ++m_halfmoves;
@@ -648,8 +648,8 @@ namespace sagittar {
     }
 
     void Position::doNullMove() {
-        m_key ^= utils::SEL(m_ep_target != Square::NO_SQ, 0ULL,
-                            ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
+        m_key ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
+                                 ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
         m_checkers  = 0ULL;
         m_ep_target = Square::NO_SQ;
         m_stm       = colorFlip(m_stm);
