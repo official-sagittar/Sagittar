@@ -447,7 +447,7 @@ namespace sagittar::search {
             shouldStopSearchNow(info);
             if (ply > 0 && stop.load(std::memory_order_relaxed))
             {
-                return alpha;
+                return 0;
             }
         }
 
@@ -532,7 +532,7 @@ namespace sagittar::search {
 
             if (stop.load(std::memory_order_relaxed))
             {
-                return alpha;
+                return 0;
             }
 
             best_score = std::max(best_score, score);
