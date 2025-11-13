@@ -18,9 +18,10 @@ namespace sagittar {
     };
     // clang-format on
 
-    static u64 ZOBRIST_TABLE[15][64];
-    static u64 ZOBRIST_CA[16];
-    static u64 ZOBRIST_SIDE;
+    static std::array<std::array<u64, 64>, 15> ZOBRIST_TABLE;  // [Piece][Square]
+    static std::array<u64, 16>                 ZOBRIST_CA;
+    static u64                                 ZOBRIST_SIDE;
+    static int constexpr ZOBRIST_EP_IDX = 0;
 
     void Position::initialize() {
 
@@ -61,13 +62,22 @@ namespace sagittar {
     void Position::resetHash() {
         m_key = 0ULL;
 
+        // Side to move
         if (m_stm == Color::WHITE)
         {
             m_key ^= ZOBRIST_SIDE;
         }
 
+        // Castling Rights
         m_key ^= ZOBRIST_CA[m_ca_rights];
 
+        // EP Target
+        if (m_ep_target != Square::NO_SQ)
+        {
+            m_key ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
+        }
+
+        // Piece placement
         for (u8 sq = Square::A1; sq <= Square::H8; sq++)
         {
             const Piece p = m_board[sq];
@@ -341,6 +351,9 @@ namespace sagittar {
 
         u64 key_local = m_key;
 
+        key_local ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
+                                     ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
+
         m_ep_target = Square::NO_SQ;
         ++m_halfmoves;
         m_fullmoves += (m_stm == Color::BLACK);
@@ -389,6 +402,7 @@ namespace sagittar {
             assert(move_pt == PieceType::PAWN);
             constexpr i8 dir = (US == Color::WHITE) ? 8 : -8;
             m_ep_target      = static_cast<Square>(from + dir);
+            key_local ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
         }
         else if constexpr (is_capture || is_promotion)
         {
@@ -634,6 +648,8 @@ namespace sagittar {
     }
 
     void Position::doNullMove() {
+        m_key ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
+                                 ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
         m_checkers  = 0ULL;
         m_ep_target = Square::NO_SQ;
         m_stm       = colorFlip(m_stm);
