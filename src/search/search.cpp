@@ -440,6 +440,8 @@ namespace sagittar::search {
                                      const i32         ply,
                                      ThreadData&       thread,
                                      const SearchInfo& info) {
+        const Score alpha_orig = alpha;
+
         if ((thread.nodes & 2047) == 0)
         {
             shouldStopSearchNow(info);
@@ -454,6 +456,30 @@ namespace sagittar::search {
         if (ply >= MAX_DEPTH - 1)
         {
             return is_in_check ? 0 : eval::hce::evaluate(pos);
+        }
+
+        TTData     ttdata;
+        const bool tthit = tt.probe(&ttdata, pos.key());
+
+        // TT cutoff
+        if (tthit)
+        {
+            Score ttscore = ttdata.score;
+            if (ttscore < -MATE_SCORE)
+            {
+                ttscore += ply;
+            }
+            else if (ttscore > MATE_SCORE)
+            {
+                ttscore -= ply;
+            }
+
+            if (ttdata.flag == TTFlag::EXACT
+                || (ttdata.flag == TTFlag::LOWERBOUND && ttscore >= beta)
+                || (ttdata.flag == TTFlag::UPPERBOUND && ttscore <= alpha))
+            {
+                return ttscore;
+            }
         }
 
         Score eval;
@@ -476,12 +502,10 @@ namespace sagittar::search {
         }
 
         Score best_score        = eval;
+        Move  best_move_so_far  = NULL_MOVE;
         u32   legal_moves_count = 0;
 
-        TTData     ttdata;
-        const bool tthit  = tt.probe(&ttdata, pos.key());
-        const Move ttmove = tthit ? ttdata.move : Move();
-
+        const Move        ttmove = tthit ? ttdata.move : NULL_MOVE;
         const MovegenType movegen_type =
           is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
 
@@ -515,9 +539,11 @@ namespace sagittar::search {
 
             if (score > alpha)
             {
-                alpha = score;
+                alpha            = score;
+                best_move_so_far = move;
                 if (score >= beta)
                 {
+                    tt.store(pos.key(), ply, 0, TTFlag::LOWERBOUND, beta, best_move_so_far);
                     return beta;
                 }
             }
@@ -526,6 +552,14 @@ namespace sagittar::search {
         if ((legal_moves_count == 0) && is_in_check)
         {
             return -MATE_VALUE + ply;
+        }
+
+        if (!stop.load(std::memory_order_relaxed))
+        {
+            const TTFlag flag = (best_score <= alpha_orig) ? TTFlag::UPPERBOUND
+                              : (best_score >= beta)       ? TTFlag::LOWERBOUND
+                                                           : TTFlag::EXACT;
+            tt.store(pos.key(), ply, 0, flag, best_score, best_move_so_far);
         }
 
         return best_score;
