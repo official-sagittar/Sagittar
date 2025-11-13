@@ -701,9 +701,12 @@ namespace sagittar {
     bool Position::isDrawn(std::span<u64> key_history) const {
         assert(key_history.size() == static_cast<size_t>(m_ply_count));
 
-        for (i32 i = std::max(m_ply_count - m_halfmoves, 0); i < m_ply_count - 1; ++i)
+        const u64 key   = m_key;
+        const i32 start = std::max(m_ply_count - m_halfmoves, 0);
+
+        for (i32 i = m_ply_count - 2; i >= start; i -= 2)
         {
-            if (m_key == key_history[i])
+            if (key == key_history[i])
             {
                 return true;
             }
