@@ -43,7 +43,7 @@ namespace sagittar::search {
             size_t           nodes;
 
             ThreadData();
-            bool doMove(Position& pos, const Move& move);
+            void doMove(Position& pos, const Move& move);
             void doNullMove(Position& pos);
             void undoMove();
             void undoNullMove();

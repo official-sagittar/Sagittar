@@ -10,17 +10,23 @@ namespace sagittar::perft {
         {
             return 1ULL;
         }
+
         size_t                      nodes = 0ULL;
         containers::ArrayList<Move> moves;
         pseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
-            Position pos_copy = pos;
-            if (pos_copy.doMove(move))
+            if (!pos.isLegalMove(move))
             {
-                nodes += perft(pos_copy, depth - 1);
+                continue;
             }
+
+            Position pos_copy = pos;
+            pos_copy.doMove(move);
+
+            nodes += perft(pos_copy, depth - 1);
         }
+
         return nodes;
     }
 
@@ -29,21 +35,28 @@ namespace sagittar::perft {
         {
             return 1ULL;
         }
-        size_t                      nodes       = 0ULL;
+
         size_t                      total_nodes = 0ULL;
         containers::ArrayList<Move> moves;
         pseudolegalMoves<MovegenType::ALL>(&moves, pos);
         for (auto const& move : moves)
         {
-            Position pos_copy = pos;
-            if (pos_copy.doMove(move))
+            if (!pos.isLegalMove(move))
             {
-                nodes = perft(pos_copy, depth - 1);
-                total_nodes += nodes;
-                move.display();
-                std::cout << " " << (size_t) nodes << std::endl;
+                continue;
             }
+
+            Position pos_copy = pos;
+            pos_copy.doMove(move);
+
+            const size_t nodes = perft(pos_copy, depth - 1);
+
+            total_nodes += nodes;
+
+            move.display();
+            std::cout << " " << (size_t) nodes << std::endl;
         }
+
         std::cout << std::endl << "Perft = " << (size_t) total_nodes << std::endl;
         return total_nodes;
     }

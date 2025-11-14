@@ -24,7 +24,9 @@ namespace sagittar {
         void        setFen(std::string, const bool full = true);
         std::string toFen() const;
 
-        [[nodiscard]] bool doMove(const Move&) noexcept;
+        template<bool Generated = true>
+        [[nodiscard]] bool isLegalMove(const Move&) const noexcept;
+        void               doMove(const Move&) noexcept;
         [[nodiscard]] bool doMove(const std::string&) noexcept;
         void               doNullMove();
 
@@ -37,6 +39,7 @@ namespace sagittar {
         u8       pieceCount(const Piece) const;
 
         inline BitBoard checkers() const { return m_checkers; }
+        inline BitBoard pinned() const { return m_pinned; }
         inline Square   kingSq() const { return m_king_sq; }
 
         Color  stm() const;
@@ -57,11 +60,13 @@ namespace sagittar {
        private:
         void resetHash();
 
+        void setPinned();
+
         template<Color US, MoveFlag F>
-        bool applyMove(const Move& move) noexcept;
+        void applyMove(const Move& move) noexcept;
 
         template<Color US>
-        using ApplyMoveFn = bool (Position::*)(const Move&);
+        using ApplyMoveFn = void (Position::*)(const Move&);
 
         template<Color US>
         static constexpr std::array<ApplyMoveFn<US>, 16> apply_move_dispatch_table = []() {
@@ -89,18 +94,23 @@ namespace sagittar {
             return table;
         }();
 
+        // Board
         std::array<BitBoard, 7> m_bb_pieces;
         std::array<BitBoard, 2> m_bb_colors;
         std::array<Piece, 64>   m_board;
-        BitBoard                m_checkers;
-        Square                  m_king_sq;
-        Color                   m_stm;
-        u8                      m_ca_rights;
-        Square                  m_ep_target;
-        u8                      m_halfmoves;
-        u8                      m_fullmoves;
-        i32                     m_ply_count;
-        u64                     m_key;
+        // Status
+        BitBoard m_checkers;
+        BitBoard m_pinned;
+        Square   m_king_sq;
+        // Position context
+        Color  m_stm;
+        u8     m_ca_rights;
+        Square m_ep_target;
+        u8     m_halfmoves;
+        u8     m_fullmoves;
+        i32    m_ply_count;
+        // Key
+        u64 m_key;
     };
 
 }

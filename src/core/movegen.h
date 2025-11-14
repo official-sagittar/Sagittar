@@ -20,6 +20,11 @@ namespace sagittar {
     template<PieceType PT>
     BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c = Color::WHITE);
 
+    BitBoard squareAttackers(const Position& pos,
+                             const Square    sq,
+                             const Color     attacked_by,
+                             const BitBoard  occ);
+
     BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by);
 
     template<MovegenType T>

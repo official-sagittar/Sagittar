@@ -33,9 +33,9 @@ namespace sagittar::search {
         key_history.clear();
     }
 
-    bool Searcher::ThreadData::doMove(Position& pos, const Move& move) {
+    void Searcher::ThreadData::doMove(Position& pos, const Move& move) {
         key_history.push_back(pos.key());
-        return pos.doMove(move);
+        pos.doMove(move);
     }
 
     void Searcher::ThreadData::doNullMove(Position& pos) {
@@ -48,8 +48,8 @@ namespace sagittar::search {
     void Searcher::ThreadData::undoNullMove() { key_history.pop_back(); }
 
     /*
-        * Searcher
-        */
+     * Searcher
+     */
 
     Searcher::Searcher() { reset(); }
 
@@ -276,12 +276,12 @@ namespace sagittar::search {
 
             // Futility Pruning Decision
             // clang-format off
-                if (depth <= 3
-                    && alpha < WIN_SCORE
-                    && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
-                {
-                    do_futility_pruning = true;
-                }
+            if (depth <= 3
+                && alpha < WIN_SCORE
+                && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
+            {
+                do_futility_pruning = true;
+            }
             // clang-format on
 
             // Internal Iterative Reductions
@@ -307,12 +307,13 @@ namespace sagittar::search {
         {
             const Move move = move_picker.next();
 
-            Position pos_copy = pos;
-            if (!thread.doMove(pos_copy, move))
+            if (!pos.isLegalMove(move))
             {
-                thread.undoMove();
                 continue;
             }
+
+            Position pos_copy = pos;
+            thread.doMove(pos_copy, move);
 
             const Piece     move_piece      = pos.pieceOn(move.from());
             const PieceType move_piece_type = pieceTypeOf(move_piece);
@@ -516,12 +517,13 @@ namespace sagittar::search {
         {
             const Move move = move_picker.next();
 
-            Position pos_copy = pos;
-            if (!thread.doMove(pos_copy, move))
+            if (!pos.isLegalMove(move))
             {
-                thread.undoMove();
                 continue;
             }
+
+            Position pos_copy = pos;
+            thread.doMove(pos_copy, move);
 
             legal_moves_count++;
             thread.nodes++;
