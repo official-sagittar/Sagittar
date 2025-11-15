@@ -44,12 +44,9 @@ namespace sagittar::search::params {
 #endif
 
     void init() {
-        updateLMPTresholdPct();
         updateLMRTable();
         updateFutilityMargin();
     }
-
-    void updateLMPTresholdPct() { lmp_treshold_pct = lmp_treshold / 10.0; }
 
     void updateLMRTable() {
         const float lmr_alpha_t = static_cast<float>(lmr_alpha_tactical) / 100.0f;

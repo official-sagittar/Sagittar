@@ -50,7 +50,8 @@ namespace sagittar::search::params {
 
     PARAM(rfp_margin, 50, 50, 300, 25);
 
-    PARAM_CALLBACK(lmp_treshold, 8, 2, 8, 1, updateLMPTresholdPct);
+    PARAM(lmp_base, 1000, 50, 5000, 100);
+    PARAM(lmp_depth, 1000, 50, 5000, 100);
 
     PARAM_CALLBACK(lmr_alpha_tactical, 68, 0, 300, 50, updateLMRTable);
     PARAM_CALLBACK(lmr_beta_tactical, 265, 50, 500, 25, updateLMRTable);

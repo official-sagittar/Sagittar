@@ -301,7 +301,6 @@ namespace sagittar::search {
 
         std::array<ExtMove, MOVES_MAX> buffer{};
         MovePicker move_picker(buffer.data(), pos, ttmove, data, ply, MovegenType::ALL);
-        const auto n_moves = move_picker.size();
 
         while (move_picker.hasNext())
         {
@@ -336,9 +335,9 @@ namespace sagittar::search {
                 // Late Move Pruning
                 if (depth <= 2 && move_piece_type != PieceType::PAWN)
                 {
-                    const u32 LMP_MOVE_CUTOFF =
-                      n_moves * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
-                    if (moves_searched >= LMP_MOVE_CUTOFF)
+                    const u32 lmp_margin = static_cast<u32>(
+                      (params::lmp_base + depth * depth * params::lmp_depth) / 256);
+                    if (moves_searched >= lmp_margin)
                     {
                         thread.undoMove();
                         continue;
