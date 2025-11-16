@@ -358,18 +358,11 @@ namespace sagittar {
         const BitBoard op_bq  = (m_bb_pieces[PieceType::BISHOP] | queens) & op_pieces;
         const BitBoard op_rq  = (m_bb_pieces[PieceType::ROOK] | queens) & op_pieces;
 
-        BitBoard diag_attackers = attacks<PieceType::BISHOP>(king_sq_us, op_pieces) & op_bq;
-        while (diag_attackers)
+        BitBoard attackers = attacks<PieceType::BISHOP>(king_sq_us, op_pieces) & op_bq;
+        attackers |= attacks<PieceType::ROOK>(king_sq_us, op_pieces) & op_rq;
+        while (attackers)
         {
-            const Square   from       = static_cast<Square>(utils::bitScanForward(&diag_attackers));
-            const BitBoard between_bb = between(king_sq_us, from) & our_pieces;
-            pinned |= (between_bb && ((between_bb & (between_bb - 1)) == 0)) ? between_bb : 0ULL;
-        }
-
-        BitBoard ortho_attackers = attacks<PieceType::ROOK>(king_sq_us, op_pieces) & op_rq;
-        while (ortho_attackers)
-        {
-            const Square   from = static_cast<Square>(utils::bitScanForward(&ortho_attackers));
+            const Square   from       = static_cast<Square>(utils::bitScanForward(&attackers));
             const BitBoard between_bb = between(king_sq_us, from) & our_pieces;
             pinned |= (between_bb && ((between_bb & (between_bb - 1)) == 0)) ? between_bb : 0ULL;
         }
