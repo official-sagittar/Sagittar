@@ -420,10 +420,13 @@ namespace sagittar {
                 && ((attacks<PieceType::ROOK>(m_king_sq, post_ep_occ) & op_rq) == 0ULL);
         }
 
-        // Pinned pieces can only move along the direction of the pin
-        if (BB(from) & m_pinned)
+        if constexpr (!Generated)
         {
-            return (BB(to) & line(m_king_sq, from));
+            // Pinned pieces can only move along the direction of the pin
+            if (BB(from) & m_pinned)
+            {
+                return (BB(to) & line(m_king_sq, from));
+            }
         }
 
         return true;

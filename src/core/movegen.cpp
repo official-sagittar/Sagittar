@@ -299,8 +299,10 @@ namespace sagittar {
         constexpr BitBoard ep_target_rank = (US == Color::WHITE) ? RANK_6_BB : RANK_3_BB;
 
         const BitBoard pawns   = pos.pieces(US, PieceType::PAWN);
+        const Square   king_us = pos.kingSq();
         const BitBoard enemies = pos.pieces(them) ^ pos.pieces(them, PieceType::KING);
         const BitBoard empty   = pos.empty();
+        const BitBoard pinned  = pos.pinned();
 
         const Square   ep_target = pos.epTarget();
         const BitBoard ep_target_bb =
@@ -374,6 +376,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
@@ -386,6 +392,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
@@ -399,6 +409,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
         }
 
@@ -407,6 +421,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
@@ -417,6 +435,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
         }
 
@@ -425,6 +447,10 @@ namespace sagittar {
         {
             const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
             const Square from = static_cast<Square>(to - dir);
+            if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+            {
+                continue;
+            }
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
@@ -437,6 +463,10 @@ namespace sagittar {
             {
                 const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
                 const Square from = static_cast<Square>(to - dir);
+                if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+                {
+                    continue;
+                }
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_QUEEN);
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_ROOK);
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_BISHOP);
@@ -448,6 +478,10 @@ namespace sagittar {
             {
                 const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
                 const Square from = static_cast<Square>(to - dir);
+                if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+                {
+                    continue;
+                }
                 moves->emplace_back(from, to, MoveFlag::MOVE_QUIET);
             }
 
@@ -457,6 +491,10 @@ namespace sagittar {
             {
                 const Square to   = static_cast<Square>(utils::bitScanForward(&bb));
                 const Square from = static_cast<Square>(to - dir);
+                if ((BB(from) & pinned) && !(BB(to) & line(king_us, from)))
+                {
+                    continue;
+                }
                 moves->emplace_back(from, to, MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
             }
         }
@@ -465,9 +503,11 @@ namespace sagittar {
     template<PieceType PT, Color US, MovegenType T>
     static void pseudolegalMovesPiece(containers::ArrayList<Move>* moves, const Position& pos) {
         constexpr Color them     = colorFlip(US);
+        const Square    king_us  = pos.kingSq();
         const BitBoard  enemies  = pos.pieces(them) ^ pos.pieces(them, PieceType::KING);
         const BitBoard  occupied = pos.occupied();
         const BitBoard  empty    = ~occupied;
+        const BitBoard  pinned   = pos.pinned();
 
         BitBoard checkers = 0ULL;
         BitBoard block_bb = 0ULL;
@@ -486,6 +526,21 @@ namespace sagittar {
         {
             const Square from  = static_cast<Square>(utils::bitScanForward(&bb));
             BitBoard     attks = attacks<PT>(from, occ);
+
+            if constexpr (PT != PieceType::KING)
+            {
+                if (BB(from) & pinned)
+                {
+                    if constexpr (PT == PieceType::KNIGHT)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        attks &= line(king_us, from);
+                    }
+                }
+            }
 
             BitBoard captures = attks & enemies;
             if constexpr (T == MovegenType::CHECK_EVASIONS)
