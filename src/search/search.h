@@ -24,7 +24,6 @@ namespace sagittar::search {
     };
 
     struct SearcherData {
-        u32  history[15][64];  // [piece][to]
         Move killer_moves[2][MAX_DEPTH];
 
         SearcherData();
@@ -32,24 +31,45 @@ namespace sagittar::search {
     };
 
     class Searcher {
-       private:
-        std::atomic_bool   stop;
-        TranspositionTable tt = TranspositionTable(DEFAULT_TT_SIZE_MB);
-        SearcherData       data;
-
+       public:
         struct ThreadData {
-            std::vector<u64> key_history;
-            Move             pvmove{};
-            size_t           nodes;
+            std::vector<u64>                    key_history;
+            Move                                pvmove{};
+            size_t                              nodes;
+            std::array<std::array<u32, 64>, 15> history{};  // [piece][to]
 
             ThreadData();
             bool doMove(Position& pos, const Move& move);
             void doNullMove(Position& pos);
             void undoMove();
             void undoNullMove();
+            void updateHistory(const Piece, const Square, const Depth);
         };
 
+        Searcher();
+
+        void reset();
+
+        void resetForSearch();
+
+        void setTranspositionTableSize(const std::size_t);
+
+        SearchResult
+        startSearch(const Position&                          pos,
+                    std::span<u64>                           key_history,
+                    SearchInfo                               info,
+                    std::function<void(const SearchResult&)> searchProgressReportHandler,
+                    std::function<void(const SearchResult&)> searchCompleteReportHander);
+
+        SearchResult startSearch(const Position& pos, std::span<u64> key_history, SearchInfo info);
+
+        void stopSearch();
+
        private:
+        std::atomic_bool   stop;
+        TranspositionTable tt = TranspositionTable(DEFAULT_TT_SIZE_MB);
+        SearcherData       data;
+
         void shouldStopSearchNow(const SearchInfo&);
 
         SearchResult
@@ -75,26 +95,6 @@ namespace sagittar::search {
                                const i32         ply,
                                ThreadData&       thread,
                                const SearchInfo& info);
-
-       public:
-        Searcher();
-
-        void reset();
-
-        void resetForSearch();
-
-        void setTranspositionTableSize(const std::size_t);
-
-        SearchResult
-        startSearch(const Position&                          pos,
-                    std::span<u64>                           key_history,
-                    SearchInfo                               info,
-                    std::function<void(const SearchResult&)> searchProgressReportHandler,
-                    std::function<void(const SearchResult&)> searchCompleteReportHander);
-
-        SearchResult startSearch(const Position& pos, std::span<u64> key_history, SearchInfo info);
-
-        void stopSearch();
     };
 
 }

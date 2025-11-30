@@ -21,12 +21,13 @@ namespace sagittar::search {
     class MovePicker final {
        public:
         MovePicker() = delete;
-        explicit MovePicker(ExtMove*            buffer,
-                            const Position&     pos,
-                            const Move&         ttmove,
-                            const SearcherData& data,
-                            const i32           ply,
-                            const MovegenType   type);
+        explicit MovePicker(ExtMove*                    buffer,
+                            const Position&             pos,
+                            const Move&                 ttmove,
+                            const SearcherData&         data,
+                            const Searcher::ThreadData& thread,
+                            const i32                   ply,
+                            const MovegenType           type);
         MovePicker(const MovePicker&)                = delete;
         MovePicker(MovePicker&&) noexcept            = delete;
         MovePicker& operator=(const MovePicker&)     = delete;
@@ -41,12 +42,13 @@ namespace sagittar::search {
         Move            next();
 
        private:
-        void process(ExtMove*            buffer,
-                     const Position&     pos,
-                     const Move&         ttmove,
-                     const SearcherData& data,
-                     const i32           ply,
-                     const MovegenType   type);
+        void process(ExtMove*                    buffer,
+                     const Position&             pos,
+                     const Move&                 ttmove,
+                     const SearcherData&         data,
+                     const Searcher::ThreadData& thread,
+                     const i32                   ply,
+                     const MovegenType           type);
 
         size_t m_moves_count{0};
 

@@ -12,13 +12,6 @@ namespace sagittar::search {
     SearcherData::SearcherData() { reset(); }
 
     void SearcherData::reset() {
-        for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
-        {
-            for (u8 sq = Square::A1; sq <= Square::H8; sq++)
-            {
-                history[p][sq] = 0;
-            }
-        }
         for (u8 i = 0; i < MAX_DEPTH; i++)
         {
             killer_moves[0][i] = Move();
@@ -46,6 +39,10 @@ namespace sagittar::search {
     void Searcher::ThreadData::undoMove() { key_history.pop_back(); }
 
     void Searcher::ThreadData::undoNullMove() { key_history.pop_back(); }
+
+    void Searcher::ThreadData::updateHistory(const Piece p, const Square to, const Depth d) {
+        history[p][to] += d;
+    }
 
     /*
         * Searcher
@@ -300,7 +297,7 @@ namespace sagittar::search {
         const Move ttmove = is_root_node ? thread.pvmove : tthit ? ttdata.move : Move{};
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, data, ply, MovegenType::ALL);
+        MovePicker move_picker(buffer.data(), pos, ttmove, data, thread, ply, MovegenType::ALL);
         const auto n_moves = move_picker.size();
 
         while (move_picker.hasNext())
@@ -407,7 +404,7 @@ namespace sagittar::search {
                             data.killer_moves[0][ply] = move;
 
                             // History Heuristic
-                            data.history[move_piece][move.to()] += depth;
+                            thread.updateHistory(move_piece, move.to(), depth);
                         }
                         ttflag = TTFlag::LOWERBOUND;
                         break;
@@ -510,7 +507,7 @@ namespace sagittar::search {
           is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, data, ply, movegen_type);
+        MovePicker move_picker(buffer.data(), pos, ttmove, data, thread, ply, movegen_type);
 
         while (move_picker.hasNext())
         {
