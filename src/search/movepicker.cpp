@@ -13,7 +13,7 @@ namespace sagittar::search {
         Queen         101    201    301    401    501    601
         King          100    200    300    400    500    600
     */
-    static const u32 MVV_LVA_TABLE[36] = {
+    static const i16 MVV_LVA_TABLE[36] = {
         105, 205, 305, 405, 505, 605,
         104, 204, 304, 404, 504, 604,
         103, 203, 303, 403, 503, 603,
@@ -33,9 +33,7 @@ namespace sagittar::search {
         return a.move.id() < b.move.id();
     };
 
-    constexpr u32 MVVLVA_SCORE_OFFSET = 10000;
-    constexpr u32 HISTORY_SCORE_MIN   = 0;
-    constexpr u32 HISTORY_SCORE_MAX   = 7000;
+    constexpr i16 MVVLVA_SCORE_OFFSET = 10000;
 
     MovePicker::MovePicker(ExtMove*                    buffer,
                            const Position&             pos,
@@ -97,8 +95,8 @@ namespace sagittar::search {
                                            ? PieceType::PAWN
                                            : pieceTypeOf(pos.pieceOn(move.to()));
                 const auto      idx      = mvvlvaIdx(attacker, victim);
-                const auto      score    = MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET;
-                buffer[capture_count++]  = ExtMove{move, score};
+                const auto      score = static_cast<i16>(MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET);
+                buffer[capture_count++] = ExtMove{move, score};
             }
         }
 
@@ -124,8 +122,7 @@ namespace sagittar::search {
             else
             {
                 const Piece piece = pos.pieceOn(move.from());
-                const auto  score = std::clamp(thread.history[piece][move.to()], HISTORY_SCORE_MIN,
-                                               HISTORY_SCORE_MAX);
+                const auto  score = thread.history[piece][move.to()];
                 *quiet_ptr++      = ExtMove{move, score};
             }
         }

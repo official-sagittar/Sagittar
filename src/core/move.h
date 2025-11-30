@@ -61,13 +61,13 @@ namespace sagittar {
 
     struct ExtMove final {
         Move move{};
-        u32  score;
+        i16  score;
 
         ExtMove() noexcept :
             move(),
             score(0) {}
 
-        ExtMove(const Move& m, u32 s) noexcept :
+        ExtMove(const Move& m, i16 s) noexcept :
             move(m),
             score(s) {}
 
