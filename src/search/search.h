@@ -33,17 +33,19 @@ namespace sagittar::search {
     class Searcher {
        public:
         struct ThreadData {
+            static constexpr i16 MAX_HISTORY = std::numeric_limits<i16>::max();
+
             std::vector<u64>                    key_history;
             Move                                pvmove{};
             size_t                              nodes;
-            std::array<std::array<u32, 64>, 15> history{};  // [piece][to]
+            std::array<std::array<i16, 64>, 15> history{};  // [piece][to]
 
             ThreadData();
             bool doMove(Position& pos, const Move& move);
             void doNullMove(Position& pos);
             void undoMove();
             void undoNullMove();
-            void updateHistory(const Piece, const Square, const Depth);
+            void updateHistory(const Piece, const Square, const i32);
         };
 
         Searcher();

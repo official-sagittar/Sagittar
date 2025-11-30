@@ -40,8 +40,9 @@ namespace sagittar::search {
 
     void Searcher::ThreadData::undoNullMove() { key_history.pop_back(); }
 
-    void Searcher::ThreadData::updateHistory(const Piece p, const Square to, const Depth d) {
-        history[p][to] += d;
+    void Searcher::ThreadData::updateHistory(const Piece p, const Square to, const i32 bonus) {
+        const auto clamped_bonus = std::clamp<i16>(bonus, -MAX_HISTORY, MAX_HISTORY);
+        history[p][to] += clamped_bonus - history[p][to] * std::abs(clamped_bonus) / MAX_HISTORY;
     }
 
     /*
