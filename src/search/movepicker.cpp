@@ -37,21 +37,23 @@ namespace sagittar::search {
     constexpr u32 HISTORY_SCORE_MIN   = 0;
     constexpr u32 HISTORY_SCORE_MAX   = 7000;
 
-    MovePicker::MovePicker(ExtMove*            buffer,
-                           const Position&     pos,
-                           const Move&         ttmove,
-                           const SearcherData& data,
-                           const i32           ply,
-                           const MovegenType   type) {
-        process(buffer, pos, ttmove, data, ply, type);
+    MovePicker::MovePicker(ExtMove*                    buffer,
+                           const Position&             pos,
+                           const Move&                 ttmove,
+                           const SearcherData&         data,
+                           const Searcher::ThreadData& thread,
+                           const i32                   ply,
+                           const MovegenType           type) {
+        process(buffer, pos, ttmove, data, thread, ply, type);
     }
 
-    void MovePicker::process(ExtMove*            buffer,
-                             const Position&     pos,
-                             const Move&         ttmove,
-                             const SearcherData& data,
-                             const i32           ply,
-                             const MovegenType   type) {
+    void MovePicker::process(ExtMove*                    buffer,
+                             const Position&             pos,
+                             const Move&                 ttmove,
+                             const SearcherData&         data,
+                             const Searcher::ThreadData& thread,
+                             const i32                   ply,
+                             const MovegenType           type) {
         // Generate pseudolegal moves
         containers::ArrayList<Move> moves;
 
@@ -122,9 +124,9 @@ namespace sagittar::search {
             else
             {
                 const Piece piece = pos.pieceOn(move.from());
-                const auto  score =
-                  std::clamp(data.history[piece][move.to()], HISTORY_SCORE_MIN, HISTORY_SCORE_MAX);
-                *quiet_ptr++ = ExtMove{move, score};
+                const auto  score = std::clamp(thread.history[piece][move.to()], HISTORY_SCORE_MIN,
+                                               HISTORY_SCORE_MAX);
+                *quiet_ptr++      = ExtMove{move, score};
             }
         }
 
