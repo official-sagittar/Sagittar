@@ -405,7 +405,7 @@ namespace sagittar::search {
                             data.killer_moves[0][ply] = move;
 
                             // History Heuristic
-                            thread.updateHistory(move_piece, move.to(), depth);
+                            thread.updateHistory(move_piece, move.to(), depth * depth);
                         }
                         ttflag = TTFlag::LOWERBOUND;
                         break;
