@@ -9,16 +9,6 @@
 
 namespace sagittar::search {
 
-    SearcherData::SearcherData() { reset(); }
-
-    void SearcherData::reset() {
-        for (u8 i = 0; i < MAX_DEPTH; i++)
-        {
-            killer_moves[0][i] = Move();
-            killer_moves[1][i] = Move();
-        }
-    }
-
     Searcher::ThreadData::ThreadData() :
         nodes(0) {
         key_history.reserve(1024);
@@ -54,7 +44,6 @@ namespace sagittar::search {
     void Searcher::reset() {
         stop.store(false, std::memory_order_relaxed);
         tt.clear();
-        data.reset();
     }
 
     void Searcher::resetForSearch() { tt.resetForSearch(); }
@@ -289,6 +278,8 @@ namespace sagittar::search {
             }
         }
 
+        ThreadData::StackEntry& stack = thread.stack[ply];
+
         Score  best_score = -INF;
         Move   best_move_so_far;
         TTFlag ttflag            = TTFlag::UPPERBOUND;
@@ -298,7 +289,7 @@ namespace sagittar::search {
         const Move ttmove = is_root_node ? thread.pvmove : tthit ? ttdata.move : Move{};
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, data, thread, ply, MovegenType::ALL);
+        MovePicker move_picker(buffer.data(), pos, ttmove, thread, ply, MovegenType::ALL);
         const auto n_moves = move_picker.size();
 
         while (move_picker.hasNext())
@@ -401,8 +392,8 @@ namespace sagittar::search {
                         if (!move_is_capture)
                         {
                             // Killer Heuristic
-                            data.killer_moves[1][ply] = data.killer_moves[0][ply];
-                            data.killer_moves[0][ply] = move;
+                            stack.killers[1] = stack.killers[0];
+                            stack.killers[0] = move;
 
                             // History Heuristic
                             thread.updateHistory(move_piece, move.to(), depth * depth);
@@ -508,7 +499,7 @@ namespace sagittar::search {
           is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, data, thread, ply, movegen_type);
+        MovePicker move_picker(buffer.data(), pos, ttmove, thread, ply, movegen_type);
 
         while (move_picker.hasNext())
         {

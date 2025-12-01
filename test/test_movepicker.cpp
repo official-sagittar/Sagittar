@@ -13,7 +13,6 @@ using namespace sagittar;
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::next::all") {
-        search::SearcherData         data;
         search::Searcher::ThreadData thread;
 
         Position pos;
@@ -25,8 +24,7 @@ TEST_SUITE("Movepicker") {
         const Move pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker             move_picker(buffer.data(), pos, pvmove, data, thread, 0,
-                                                   MovegenType::ALL);
+        search::MovePicker move_picker(buffer.data(), pos, pvmove, thread, 0, MovegenType::ALL);
 
         while (move_picker.hasNext())
         {
@@ -72,7 +70,6 @@ TEST_SUITE("Movepicker") {
     }
 
     TEST_CASE("movepicker::next::all with Killers") {
-        search::SearcherData         data;
         search::Searcher::ThreadData thread;
 
         Position pos;
@@ -84,12 +81,11 @@ TEST_SUITE("Movepicker") {
         int killer_move_done_at  = -1;
 
         const Move pvmove(Square::D5, Square::E6, MoveFlag::MOVE_CAPTURE);
-        data.killer_moves[0][0] = Move(Square::F3, Square::D3, MoveFlag::MOVE_QUIET);
-        data.killer_moves[1][0] = Move(Square::D2, Square::E3, MoveFlag::MOVE_QUIET);
+        thread.stack[0].killers[0] = Move(Square::F3, Square::D3, MoveFlag::MOVE_QUIET);
+        thread.stack[0].killers[1] = Move(Square::D2, Square::E3, MoveFlag::MOVE_QUIET);
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker             move_picker(buffer.data(), pos, pvmove, data, thread, 0,
-                                                   MovegenType::ALL);
+        search::MovePicker move_picker(buffer.data(), pos, pvmove, thread, 0, MovegenType::ALL);
 
         while (move_picker.hasNext())
         {
@@ -148,7 +144,6 @@ TEST_SUITE("Movepicker") {
     }
 
     TEST_CASE("movepicker::next::captures") {
-        search::SearcherData         data;
         search::Searcher::ThreadData thread;
 
         Position pos;
@@ -159,7 +154,7 @@ TEST_SUITE("Movepicker") {
         const Move pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker             move_picker(buffer.data(), pos, pvmove, data, thread, 0,
+        search::MovePicker             move_picker(buffer.data(), pos, pvmove, thread, 0,
                                                    MovegenType::CAPTURES);
         while (move_picker.hasNext())
         {

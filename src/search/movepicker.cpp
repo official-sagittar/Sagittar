@@ -38,17 +38,15 @@ namespace sagittar::search {
     MovePicker::MovePicker(ExtMove*                    buffer,
                            const Position&             pos,
                            const Move&                 ttmove,
-                           const SearcherData&         data,
                            const Searcher::ThreadData& thread,
                            const i32                   ply,
                            const MovegenType           type) {
-        process(buffer, pos, ttmove, data, thread, ply, type);
+        process(buffer, pos, ttmove, thread, ply, type);
     }
 
     void MovePicker::process(ExtMove*                    buffer,
                              const Position&             pos,
                              const Move&                 ttmove,
-                             const SearcherData&         data,
                              const Searcher::ThreadData& thread,
                              const i32                   ply,
                              const MovegenType           type) {
@@ -104,6 +102,9 @@ namespace sagittar::search {
 
         ExtMove* quiet_ptr = buffer + capture_count;
 
+        const Move& killer1 = thread.stack[ply].killers[0];
+        const Move& killer2 = thread.stack[ply].killers[1];
+
         for (const auto& move : moves)
         {
             if (move.isCapture() || (move == ttmove))
@@ -111,11 +112,11 @@ namespace sagittar::search {
                 continue;
             }
 
-            if (move == data.killer_moves[0][ply])
+            if (move == killer1)
             {
                 m_killers[0] = move;
             }
-            else if (move == data.killer_moves[1][ply])
+            else if (move == killer2)
             {
                 m_killers[1] = move;
             }

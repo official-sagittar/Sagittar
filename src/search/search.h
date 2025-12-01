@@ -23,22 +23,20 @@ namespace sagittar::search {
         PV
     };
 
-    struct SearcherData {
-        Move killer_moves[2][MAX_DEPTH];
-
-        SearcherData();
-        void reset();
-    };
-
     class Searcher {
        public:
         struct ThreadData {
             static constexpr i16 MAX_HISTORY = std::numeric_limits<i16>::max();
 
+            struct StackEntry {
+                std::array<Move, 2> killers{};
+            };
+
             std::vector<u64>                    key_history;
             Move                                pvmove{};
             size_t                              nodes;
             std::array<std::array<i16, 64>, 15> history{};  // [piece][to]
+            std::array<StackEntry, MAX_DEPTH>   stack{};
 
             ThreadData();
             bool doMove(Position& pos, const Move& move);
@@ -70,7 +68,6 @@ namespace sagittar::search {
        private:
         std::atomic_bool   stop;
         TranspositionTable tt = TranspositionTable(DEFAULT_TT_SIZE_MB);
-        SearcherData       data;
 
         void shouldStopSearchNow(const SearchInfo&);
 
