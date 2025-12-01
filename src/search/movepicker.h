@@ -24,7 +24,6 @@ namespace sagittar::search {
         explicit MovePicker(ExtMove*                    buffer,
                             const Position&             pos,
                             const Move&                 ttmove,
-                            const SearcherData&         data,
                             const Searcher::ThreadData& thread,
                             const i32                   ply,
                             const MovegenType           type);
@@ -45,7 +44,6 @@ namespace sagittar::search {
         void process(ExtMove*                    buffer,
                      const Position&             pos,
                      const Move&                 ttmove,
-                     const SearcherData&         data,
                      const Searcher::ThreadData& thread,
                      const i32                   ply,
                      const MovegenType           type);
