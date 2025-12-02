@@ -1,4 +1,5 @@
 #include "eval.h"
+#include "commons/utils.h"
 
 namespace sagittar::eval::hce {
 
@@ -105,29 +106,29 @@ namespace sagittar::eval::hce {
         Score eval_mg = 0;
         Score eval_eg = 0;
 
-        for (u8 sq = A1; sq <= H8; sq++)
+        const auto w_p = pos.pieces(Color::WHITE);
+        const auto b_p = pos.pieces(Color::BLACK);
+
+        for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
         {
-            const Piece piece = pos.pieceOn(static_cast<Square>(sq));
-            if (piece == Piece::NO_PIECE)
+            const auto pt_bb = pos.pieces(static_cast<PieceType>(pt));
+            // WHITE
+            auto pt_bb_w = pt_bb & w_p;
+            while (pt_bb_w)
             {
-                continue;
+                phase -= PHASE_WEIGHTS[pt - 1];
+                const auto sq = utils::bitScanForward(&pt_bb_w);
+                eval_mg += PSQT[pt - 1][SQUARES_MIRRORED[sq]][MG];
+                eval_eg += PSQT[pt - 1][SQUARES_MIRRORED[sq]][EG];
             }
-
-            const PieceType ptype  = pieceTypeOf(piece);
-            const Color     pcolor = pieceColorOf(piece);
-
-            phase -= PHASE_WEIGHTS[ptype - 1];
-
-            switch (pcolor)
+            // BLACK
+            auto pt_bb_b = pt_bb & b_p;
+            while (pt_bb_b)
             {
-                case Color::WHITE :
-                    eval_mg += PSQT[ptype - 1][SQUARES_MIRRORED[sq]][MG];
-                    eval_eg += PSQT[ptype - 1][SQUARES_MIRRORED[sq]][EG];
-                    break;
-                case Color::BLACK :
-                    eval_mg -= PSQT[ptype - 1][sq][MG];
-                    eval_eg -= PSQT[ptype - 1][sq][EG];
-                    break;
+                phase -= PHASE_WEIGHTS[pt - 1];
+                const auto sq = utils::bitScanForward(&pt_bb_b);
+                eval_mg -= PSQT[pt - 1][sq][MG];
+                eval_eg -= PSQT[pt - 1][sq][EG];
             }
         }
 
