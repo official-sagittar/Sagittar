@@ -68,7 +68,7 @@ namespace sagittar::search {
         newentry.key         = hash;
         newentry.score       = static_cast<i16>(value);
         newentry.move_id     = move_to_replace.id();
-        newentry.depth       = depth;
+        newentry.depth       = static_cast<i8>(depth);
         newentry.age_flag_pv = TTEntry::foldAgeFlagPV(currentage, flag, false);
 
         entries.at(index) = newentry;
@@ -80,7 +80,7 @@ namespace sagittar::search {
 
         if (currentry.key == hash)
         {
-            ttdata->depth = currentry.depth;
+            ttdata->depth = static_cast<Depth>(currentry.depth);
             ttdata->flag  = currentry.flag();
             ttdata->score = static_cast<Score>(currentry.score);
             ttdata->move  = currentry.move();
