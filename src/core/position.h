@@ -30,10 +30,19 @@ namespace sagittar {
 
         BitBoard pieces(const Color) const;
         BitBoard pieces(const PieceType) const;
+        template<typename... PieceTypes>
+        inline BitBoard pieces(PieceTypes... pts) const {
+            return (m_bb_pieces[pts] | ...);
+        }
         BitBoard pieces(const Color, const PieceType) const;
+        template<typename... PieceTypes>
+        inline BitBoard pieces(const Color c, PieceTypes... pts) const {
+            return m_bb_colors[c] & pieces(pts...);
+        }
         BitBoard occupied() const;
         BitBoard empty() const;
         Piece    pieceOn(const Square) const;
+        u8       pieceCount(const PieceType) const;
         u8       pieceCount(const Piece) const;
 
         inline BitBoard checkers() const { return m_checkers; }
