@@ -33,7 +33,7 @@ namespace sagittar::search {
             static constexpr u8 AGE_BITS = 5;
 
             u64   key;
-            Score score;
+            i16   score;
             u16   move_id;
             Depth depth;
             u8    age_flag_pv;

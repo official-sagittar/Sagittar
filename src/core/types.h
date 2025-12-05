@@ -13,7 +13,7 @@ namespace sagittar {
     using u64  = std::uint64_t;
     using u128 = unsigned __int128;
 
-    using Score = i16;
+    using Score = i32;
     using Depth = i8;
 
     constexpr int MOVES_MAX = 256;
