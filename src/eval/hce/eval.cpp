@@ -149,33 +149,22 @@ namespace sagittar::eval::hce {
     }
 
     bool isEndGame(const Position& pos) {
-        const u8 wQ = pos.pieceCount(Piece::WHITE_QUEEN);
-        const u8 bQ = pos.pieceCount(Piece::BLACK_QUEEN);
+        const auto queens = pos.pieceCount(PieceType::QUEEN);
 
-        const u8 wR = pos.pieceCount(Piece::WHITE_ROOK);
-        const u8 bR = pos.pieceCount(Piece::BLACK_ROOK);
-
-        const u8 wB = pos.pieceCount(Piece::WHITE_BISHOP);
-        const u8 bB = pos.pieceCount(Piece::BLACK_BISHOP);
-
-        const u8 wN = pos.pieceCount(Piece::WHITE_KNIGHT);
-        const u8 bN = pos.pieceCount(Piece::BLACK_KNIGHT);
-
-        bool is_end_game = false;
-
-        if (wQ == 0 && bQ == 0)
+        if (queens == 0)
         {
-            is_end_game = true;
-        }
-        else if (wQ == 1 && bQ == 1 && wR == 0 && bR == 0)
-        {
-            if ((wN + wB) <= 1 && (bN + bB) <= 1)
-            {
-                is_end_game = true;
-            }
+            return true;
         }
 
-        return is_end_game;
+        if ((queens == 2) && (pos.pieceCount(PieceType::ROOK) == 0))
+        {
+            const auto w_minors_bb = pos.pieces(Color::WHITE, PieceType::KNIGHT, PieceType::BISHOP);
+            const auto b_minors_bb = pos.pieces(Color::BLACK, PieceType::KNIGHT, PieceType::BISHOP);
+
+            return ((utils::bitCount1s(w_minors_bb) <= 1) && (utils::bitCount1s(b_minors_bb) <= 1));
+        }
+
+        return false;
     }
 
 }

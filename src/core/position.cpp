@@ -674,6 +674,8 @@ namespace sagittar {
 
     Piece Position::pieceOn(const Square square) const { return m_board[square]; }
 
+    u8 Position::pieceCount(const PieceType pt) const { return utils::bitCount1s(m_bb_pieces[pt]); }
+
     u8 Position::pieceCount(const Piece piece) const {
         return utils::bitCount1s(m_bb_pieces[pieceTypeOf(piece)]
                                  & m_bb_colors[pieceColorOf(piece)]);
