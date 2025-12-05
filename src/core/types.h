@@ -14,7 +14,7 @@ namespace sagittar {
     using u128 = unsigned __int128;
 
     using Score = i32;
-    using Depth = i8;
+    using Depth = i32;
 
     constexpr int MOVES_MAX = 256;
 

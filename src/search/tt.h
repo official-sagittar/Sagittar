@@ -32,11 +32,11 @@ namespace sagittar::search {
         struct TTEntry {
             static constexpr u8 AGE_BITS = 5;
 
-            u64   key;
-            i16   score;
-            u16   move_id;
-            Depth depth;
-            u8    age_flag_pv;
+            u64 key;
+            i16 score;
+            u16 move_id;
+            i8  depth;
+            u8  age_flag_pv;
 
             TTEntry() :
                 key(0ULL),
