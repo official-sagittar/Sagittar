@@ -56,13 +56,15 @@ namespace sagittar {
         inline bool operator==(const Move& rhs) const { return m_data == rhs.m_data; }
         inline bool operator!=(const Move& rhs) const { return m_data != rhs.m_data; }
 
-        inline Square   from() const { return static_cast<Square>(m_data & 0x3F); }
-        inline Square   to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
-        inline MoveFlag flag() const { return static_cast<MoveFlag>((m_data >> 12) & 0xF); }
-        inline u16      id() const { return m_data; }
+        [[nodiscard]] inline Square from() const { return static_cast<Square>(m_data & 0x3F); }
+        [[nodiscard]] inline Square to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
+        [[nodiscard]] inline MoveFlag flag() const {
+            return static_cast<MoveFlag>((m_data >> 12) & 0xF);
+        }
+        [[nodiscard]] inline u16 id() const { return m_data; }
 
-        inline bool isCapture() const { return MOVE_IS_CAPTURE(flag()); }
-        inline bool isPromotion() const { return MOVE_IS_PROMOTION(flag()); }
+        [[nodiscard]] inline bool isCapture() const { return MOVE_IS_CAPTURE(flag()); }
+        [[nodiscard]] inline bool isPromotion() const { return MOVE_IS_PROMOTION(flag()); }
 
         void toString(std::ostringstream&) const;
         void display() const;
