@@ -11,6 +11,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <memory>
 #include <span>
 #include <sstream>
 #include <string>

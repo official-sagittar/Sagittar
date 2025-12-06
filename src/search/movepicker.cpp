@@ -35,21 +35,23 @@ namespace sagittar::search {
 
     constexpr i16 MVVLVA_SCORE_OFFSET = 10000;
 
-    MovePicker::MovePicker(ExtMove*                    buffer,
-                           const Position&             pos,
-                           const Move&                 ttmove,
-                           const Searcher::ThreadData& thread,
-                           const i32                   ply,
-                           const MovegenType           type) {
-        process(buffer, pos, ttmove, thread, ply, type);
+    MovePicker::MovePicker(ExtMove*              buffer,
+                           const Position&       pos,
+                           const Move&           ttmove,
+                           const PieceToHistory& history,
+                           const Move&           killer1,
+                           const Move&           killer2,
+                           const MovegenType     type) {
+        process(buffer, pos, ttmove, history, killer1, killer2, type);
     }
 
-    void MovePicker::process(ExtMove*                    buffer,
-                             const Position&             pos,
-                             const Move&                 ttmove,
-                             const Searcher::ThreadData& thread,
-                             const i32                   ply,
-                             const MovegenType           type) {
+    void MovePicker::process(ExtMove*              buffer,
+                             const Position&       pos,
+                             const Move&           ttmove,
+                             const PieceToHistory& history,
+                             const Move&           killer1,
+                             const Move&           killer2,
+                             const MovegenType     type) {
         // Generate pseudolegal moves
         containers::ArrayList<Move> moves;
 
@@ -102,9 +104,6 @@ namespace sagittar::search {
 
         ExtMove* quiet_ptr = buffer + capture_count;
 
-        const Move& killer1 = thread.stack[ply].killers[0];
-        const Move& killer2 = thread.stack[ply].killers[1];
-
         for (const auto& move : moves)
         {
             if (move.isCapture() || (move == ttmove))
@@ -123,7 +122,7 @@ namespace sagittar::search {
             else
             {
                 const Piece piece = pos.pieceOn(move.from());
-                const auto  score = thread.history[piece][move.to()];
+                const auto  score = history[piece][move.to()];
                 *quiet_ptr++      = ExtMove{move, score};
             }
         }
