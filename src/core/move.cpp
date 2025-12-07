@@ -4,56 +4,6 @@ namespace sagittar {
 
     static const char* PROMOTION_PIECE_STR = "xxxxxxxxnbrqnbrq";
 
-    Move::Move() :
-        m_data(0) {}
-
-    Move::Move(const Move& other) :
-        m_data(other.m_data) {}
-
-    Move::Move(Move&& other) :
-        m_data(other.m_data) {}
-
-    Move::Move(const Square from, const Square to, const MoveFlag flag) {
-        m_data = (flag << 12) | (to << 6) | from;
-    }
-
-    Move::Move(const u16 data) :
-        m_data(data) {}
-
-    Move& Move::operator=(const Move& rhs) {
-        if (this != &rhs)
-        {
-            m_data = rhs.m_data;
-        }
-        return *this;
-    }
-
-    Move& Move::operator=(const Move&& rhs) {
-        if (this != &rhs)
-        {
-            m_data = rhs.m_data;
-        }
-        return *this;
-    }
-
-    bool Move::operator==(const Move& rhs) const { return m_data == rhs.m_data; }
-
-    bool Move::operator!=(const Move& rhs) const { return m_data != rhs.m_data; };
-
-    Move Move::fromId(const u16 id) { return Move(id); }
-
-    Square Move::from() const { return static_cast<Square>(m_data & 0x3F); }
-
-    Square Move::to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
-
-    MoveFlag Move::flag() const { return static_cast<MoveFlag>((m_data >> 12) & 0xF); }
-
-    u16 Move::id() const { return m_data; }
-
-    bool Move::isCapture() const { return (flag() & 0x4); }
-
-    bool Move::isPromotion() const { return (flag() & 0x8); }
-
     void Move::toString(std::ostringstream& ss) const {
         const auto from_sq = from();
         const auto to_sq   = to();

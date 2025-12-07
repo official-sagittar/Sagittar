@@ -51,7 +51,7 @@ namespace sagittar::search {
 
             bool pv() const { return static_cast<bool>((age_flag_pv >> 2) & 1); }
 
-            Move move() const { return Move::fromId(move_id); }
+            Move move() const { return Move(move_id); }
 
             static u8 foldAgeFlagPV(u8 age, TTFlag flag, bool pv) {
                 return static_cast<u8>(flag | (pv << 2) | (age << 3));
