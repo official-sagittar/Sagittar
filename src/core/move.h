@@ -27,28 +27,44 @@ namespace sagittar {
 
     class Move final {
        public:
-        Move();
-        Move(const Move& other);
-        Move(Move&& other);
-        Move& operator=(const Move& rhs);
-        Move& operator=(const Move&& rhs);
-        ~Move() = default;
+        Move() noexcept :
+            m_data(0) {}
+        Move(const Square from, const Square to, const MoveFlag flag) noexcept :
+            m_data((flag << 12) | (to << 6) | from) {}
+        Move(const u16 data) noexcept :
+            m_data(data) {}
+        Move(const Move& other) noexcept :
+            m_data(other.m_data) {}
+        Move(Move&& other) noexcept :
+            m_data(other.m_data) {}
+        inline Move& operator=(const Move& rhs) noexcept {
+            if (this != &rhs)
+            {
+                m_data = rhs.m_data;
+            }
+            return *this;
+        }
+        inline Move& operator=(const Move&& rhs) noexcept {
+            if (this != &rhs)
+            {
+                m_data = rhs.m_data;
+            }
+            return *this;
+        }
+        ~Move() noexcept = default;
 
-        Move(const Square from, const Square to, const MoveFlag flag);
-        Move(const u16 data);
+        inline bool operator==(const Move& rhs) const { return m_data == rhs.m_data; }
+        inline bool operator!=(const Move& rhs) const { return m_data != rhs.m_data; }
 
-        bool operator==(const Move& rhs) const;
-        bool operator!=(const Move& rhs) const;
+        [[nodiscard]] inline Square from() const { return static_cast<Square>(m_data & 0x3F); }
+        [[nodiscard]] inline Square to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
+        [[nodiscard]] inline MoveFlag flag() const {
+            return static_cast<MoveFlag>((m_data >> 12) & 0xF);
+        }
+        [[nodiscard]] inline u16 id() const { return m_data; }
 
-        static Move fromId(const u16 id);
-
-        Square   from() const;
-        Square   to() const;
-        MoveFlag flag() const;
-        u16      id() const;
-
-        bool isCapture() const;
-        bool isPromotion() const;
+        [[nodiscard]] inline bool isCapture() const { return MOVE_IS_CAPTURE(flag()); }
+        [[nodiscard]] inline bool isPromotion() const { return MOVE_IS_PROMOTION(flag()); }
 
         void toString(std::ostringstream&) const;
         void display() const;
