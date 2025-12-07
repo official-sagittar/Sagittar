@@ -73,14 +73,14 @@ namespace sagittar::search {
                 std::array<Move, 2> killers{};
             };
 
+            void checkTimeUp();
+
             bool doMove(Position&, const Move&);
             void doNullMove(Position&);
             void undoMove();
             void undoNullMove();
 
             void updateHistory(const Piece, const Square, const i32);
-
-            void checkTimeUp();
 
             template<NodeType nodeType>
             Score search(const Position& pos,

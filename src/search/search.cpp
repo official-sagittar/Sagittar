@@ -34,6 +34,25 @@ namespace sagittar::search {
 
     void Searcher::stopSearch() { worker->stop(); }
 
+    Searcher::Worker::Worker(const i32           id,
+                             std::span<u64>      key_history_ptr,
+                             const SearchInfo&   info,
+                             TranspositionTable& tt) :
+        id(id),
+        info(info),
+        tt(tt) {
+        key_history.reserve(1024);
+        key_history.clear();
+        std::ranges::copy(key_history_ptr, std::back_inserter(key_history));
+    }
+
+    void Searcher::Worker::checkTimeUp() {
+        if (info.timeset && (utils::currtimeInMilliseconds() >= info.stoptime))
+        {
+            should_stop.store(true, std::memory_order_relaxed);
+        }
+    }
+
     bool Searcher::Worker::doMove(Position& pos, const Move& move) {
         key_history.push_back(pos.key());
         return pos.doMove(move);
@@ -51,18 +70,6 @@ namespace sagittar::search {
     void Searcher::Worker::updateHistory(const Piece p, const Square to, const i32 bonus) {
         const auto clamped_bonus = std::clamp<i16>(bonus, -MAX_HISTORY, MAX_HISTORY);
         history[p][to] += clamped_bonus - history[p][to] * std::abs(clamped_bonus) / MAX_HISTORY;
-    }
-
-    Searcher::Worker::Worker(const i32           id,
-                             std::span<u64>      key_history_ptr,
-                             const SearchInfo&   info,
-                             TranspositionTable& tt) :
-        id(id),
-        info(info),
-        tt(tt) {
-        key_history.reserve(1024);
-        key_history.clear();
-        std::ranges::copy(key_history_ptr, std::back_inserter(key_history));
     }
 
     SearchResult Searcher::Worker::start(const Position&                          pos,
@@ -138,13 +145,6 @@ namespace sagittar::search {
     }
 
     void Searcher::Worker::stop() { should_stop.store(true, std::memory_order_relaxed); }
-
-    void Searcher::Worker::checkTimeUp() {
-        if (info.timeset && (utils::currtimeInMilliseconds() >= info.stoptime))
-        {
-            should_stop.store(true, std::memory_order_relaxed);
-        }
-    }
 
     template<Searcher::Worker::NodeType nodeType>
     Score Searcher::Worker::search(const Position& pos,
