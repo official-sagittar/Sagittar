@@ -1,30 +1,29 @@
-#include "commons/containers.h"
 #include "commons/pch.h"
 #include "core/move.h"
 #include "core/movegen.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "doctest/doctest.h"
+#include "search/history.h"
 #include "search/movepicker.h"
-#include "search/search.h"
 
 using namespace sagittar;
 
 TEST_SUITE("Movepicker") {
 
     TEST_CASE("movepicker::next::all") {
-        search::Searcher::ThreadData thread;
-
         Position pos;
         pos.setFen("4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i                    = 0;
         int capture_move_done_at = -1;
 
-        const Move pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        const Move             pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        search::PieceToHistory history;
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker move_picker(buffer.data(), pos, pvmove, thread, 0, MovegenType::ALL);
+        search::MovePicker move_picker(buffer.data(), pos, pvmove, history, NULL_MOVE, NULL_MOVE,
+                                       MovegenType::ALL);
 
         while (move_picker.hasNext())
         {
@@ -70,8 +69,6 @@ TEST_SUITE("Movepicker") {
     }
 
     TEST_CASE("movepicker::next::all with Killers") {
-        search::Searcher::ThreadData thread;
-
         Position pos;
         pos.setFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
 
@@ -80,12 +77,14 @@ TEST_SUITE("Movepicker") {
         int killers              = 0;
         int killer_move_done_at  = -1;
 
-        const Move pvmove(Square::D5, Square::E6, MoveFlag::MOVE_CAPTURE);
-        thread.stack[0].killers[0] = Move(Square::F3, Square::D3, MoveFlag::MOVE_QUIET);
-        thread.stack[0].killers[1] = Move(Square::D2, Square::E3, MoveFlag::MOVE_QUIET);
+        const Move             pvmove(Square::D5, Square::E6, MoveFlag::MOVE_CAPTURE);
+        search::PieceToHistory history;
+        const Move             killers1{Square::F3, Square::D3, MoveFlag::MOVE_QUIET};
+        const Move             killers2{Square::D2, Square::E3, MoveFlag::MOVE_QUIET};
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker move_picker(buffer.data(), pos, pvmove, thread, 0, MovegenType::ALL);
+        search::MovePicker move_picker(buffer.data(), pos, pvmove, history, killers1, killers2,
+                                       MovegenType::ALL);
 
         while (move_picker.hasNext())
         {
@@ -144,18 +143,17 @@ TEST_SUITE("Movepicker") {
     }
 
     TEST_CASE("movepicker::next::captures") {
-        search::Searcher::ThreadData thread;
-
         Position pos;
         pos.setFen("4k3/8/8/1r1q1n1p/2B1P1P1/2N5/5q2/1R1RK3 w - - 0 1");
 
         int i = 0;
 
-        const Move pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        const Move             pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        search::PieceToHistory history;
 
         std::array<ExtMove, MOVES_MAX> buffer{};
-        search::MovePicker             move_picker(buffer.data(), pos, pvmove, thread, 0,
-                                                   MovegenType::CAPTURES);
+        search::MovePicker move_picker(buffer.data(), pos, pvmove, history, NULL_MOVE, NULL_MOVE,
+                                       MovegenType::CAPTURES);
         while (move_picker.hasNext())
         {
             const Move move = move_picker.next();
