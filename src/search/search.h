@@ -47,14 +47,12 @@ namespace sagittar::search {
         class Worker {
            public:
             Worker() = delete;
-            Worker(const i32, std::span<u64>, const SearchInfo&, TranspositionTable&);
+            Worker(std::span<u64>, const SearchInfo&, TranspositionTable&);
             Worker(const Worker&)            = delete;
             Worker(Worker&&)                 = delete;
             Worker& operator=(const Worker&) = delete;
             Worker& operator=(Worker&&)      = delete;
             ~Worker()                        = default;
-
-            inline bool isMain() const { return id == 0; }
 
             [[nodiscard]] SearchResult start(const Position&                          pos,
                                              std::function<void(const SearchResult&)> onProgress,
@@ -92,7 +90,6 @@ namespace sagittar::search {
 
             Score quiescencesearch(const Position& pos, Score alpha, Score beta, const i32 ply);
 
-            i32                 id;
             std::atomic_bool    should_stop{false};
             std::vector<u64>    key_history{};
             SearchInfo          info{};
@@ -105,8 +102,9 @@ namespace sagittar::search {
             std::array<StackEntry, MAX_DEPTH> stack{};
         };
 
-        TranspositionTable      tt{DEFAULT_TT_SIZE_MB};
-        std::unique_ptr<Worker> worker;
+        TranspositionTable                   tt{DEFAULT_TT_SIZE_MB};
+        size_t                               n_threads{4};
+        std::vector<std::unique_ptr<Worker>> workers;
     };
 
 }

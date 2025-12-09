@@ -23,8 +23,49 @@ namespace sagittar::search {
                                        std::function<void(const SearchResult&)> onComplete) {
         setSearchHardBoundTime(&info, pos);
 
-        worker = std::make_unique<Worker>(0, key_history, info, tt);
-        return worker->start(pos, onProgress, onComplete);
+        workers.clear();
+        workers.reserve(n_threads);
+
+        for (size_t i = 0; i < n_threads; i++)
+        {
+            workers.emplace_back(std::make_unique<Worker>(key_history, info, tt));
+        }
+
+        std::vector<std::future<SearchResult>> futures;
+        futures.reserve(n_threads);
+
+        for (size_t id = 0; id < n_threads; ++id)
+        {
+            futures.emplace_back(std::async(
+              std::launch::async, [this, id, &pos, onProgress, onComplete]() -> SearchResult {
+                  Worker& w = *workers[id];
+
+                  if (id == 0)
+                  {
+                      // Main thread
+                      return w.start(pos, onProgress, onComplete);
+                  }
+                  else
+                  {
+                      // Helper threads
+                      return w.start(pos, [](const auto&) {}, [](const auto&) {});
+                  }
+              }));
+        }
+
+        SearchResult result = futures[0].get();
+
+        for (size_t id = 1; id < n_threads; ++id)
+        {
+            if (futures[id].valid())
+            {
+                futures[id].wait();
+            }
+        }
+
+        workers.clear();
+
+        return result;
     }
 
     SearchResult
@@ -32,13 +73,19 @@ namespace sagittar::search {
         return startSearch(pos, key_history, info, [](auto&) {}, [](auto&) {});
     }
 
-    void Searcher::stopSearch() { worker->stop(); }
+    void Searcher::stopSearch() {
+        for (auto& w : workers)
+        {
+            if (w)
+            {
+                w->stop();
+            }
+        }
+    }
 
-    Searcher::Worker::Worker(const i32           id,
-                             std::span<u64>      key_history_ptr,
+    Searcher::Worker::Worker(std::span<u64>      key_history_ptr,
                              const SearchInfo&   info,
                              TranspositionTable& tt) :
-        id(id),
         info(info),
         tt(tt) {
         key_history.reserve(1024);
