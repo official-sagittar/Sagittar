@@ -29,6 +29,8 @@ namespace sagittar {
 
         void setTranspositionTableSize(const std::size_t);
 
+        void setThreadCount(const std::size_t);
+
         void setPosition(std::string);
 
         bool doMove(const std::string&);

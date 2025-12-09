@@ -31,6 +31,7 @@ namespace sagittar::search {
         void resetForSearch();
 
         void setTranspositionTableSize(const std::size_t);
+        void setThreadCount(const std::size_t);
 
         [[nodiscard]] SearchResult startSearch(const Position&                          pos,
                                                std::span<u64>                           key_history,
@@ -103,7 +104,7 @@ namespace sagittar::search {
         };
 
         TranspositionTable                   tt{DEFAULT_TT_SIZE_MB};
-        size_t                               n_threads{4};
+        size_t                               n_threads{1};
         std::vector<std::unique_ptr<Worker>> workers;
     };
 

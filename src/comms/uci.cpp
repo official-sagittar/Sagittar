@@ -14,7 +14,7 @@ namespace sagittar::comms::uci {
         ss << "id name " << engine.getName() << "\n";
         ss << "id author the Sagittar developers (see AUTHORS file)\n";
         ss << "option name Hash type spin default 16 min 1 max 512\n";
-        ss << "option name Threads type spin default 1 min 1 max 1\n";
+        ss << "option name Threads type spin default 1 min 1 max 4\n";
 #ifdef EXTERNAL_TUNE
         for (auto& param : params::params())
         {
@@ -46,6 +46,14 @@ namespace sagittar::comms::uci {
             if (ttsize >= 1 && ttsize <= 512)
             {
                 engine.setTranspositionTableSize(ttsize);
+            }
+        }
+        else if (id == "Threads")
+        {
+            const std::size_t threads = static_cast<std::size_t>(std::stoi(value));
+            if (threads >= 1 && threads <= 4)
+            {
+                engine.setThreadCount(threads);
             }
         }
 #ifdef EXTERNAL_TUNE

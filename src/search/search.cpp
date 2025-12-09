@@ -8,13 +8,24 @@
 
 namespace sagittar::search {
 
-    Searcher::Searcher() { reset(); }
+    Searcher::Searcher() :
+        n_threads(1) {
+        reset();
+    }
 
-    void Searcher::reset() { tt.clear(); }
+    void Searcher::reset() {
+        workers.clear();
+        tt.clear();
+    }
 
-    void Searcher::resetForSearch() { tt.resetForSearch(); }
+    void Searcher::resetForSearch() {
+        workers.clear();
+        tt.resetForSearch();
+    }
 
     void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
+
+    void Searcher::setThreadCount(const std::size_t n) { n_threads = n; }
 
     SearchResult Searcher::startSearch(const Position&                          pos,
                                        std::span<u64>                           key_history,
