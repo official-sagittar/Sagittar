@@ -39,6 +39,8 @@ namespace sagittar {
         searcher.setTranspositionTableSize(size);
     }
 
+    void Engine::setThreadCount(const std::size_t n) { searcher.setThreadCount(n); }
+
     void Engine::setPosition(std::string fen) { pos.setFen(fen); }
 
     bool Engine::doMove(const std::string& move) {
