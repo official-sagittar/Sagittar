@@ -295,7 +295,8 @@ namespace sagittar::search {
             // Null Move Pruning
             if (do_null && depth >= 3 && !eval::hce::isEndGame(pos))
             {
-                const u8 r        = 2;
+                u8 r = 2;
+                r += (depth > 7);
                 Position pos_copy = pos;
                 doNullMove(pos_copy);
                 const Score score =
