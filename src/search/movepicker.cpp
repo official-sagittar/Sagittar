@@ -103,8 +103,7 @@ namespace sagittar::search {
                 const PieceType victim   = (move.flag() == MoveFlag::MOVE_CAPTURE_EP)
                                            ? PieceType::PAWN
                                            : pieceTypeOf(pos.pieceOn(move.to()));
-                const auto      idx      = mvvlvaIdx(attacker, victim);
-                const auto      score    = static_cast<i16>(MVV_LVA_TABLE[idx]);
+                const auto      score    = MVV_LVA_TABLE[mvvlvaIdx(attacker, victim)];
                 buffer[capture_count++]  = ExtMove{move, score};
             }
         }
