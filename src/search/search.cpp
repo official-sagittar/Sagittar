@@ -424,29 +424,27 @@ namespace sagittar::search {
                 return 0;
             }
 
-            // Fail-soft
-            if (score > best_score)
-            {
-                best_score = score;
-                if (best_score > alpha)
-                {
-                    alpha            = score;
-                    best_move_so_far = move;
-                    ttflag           = TTFlag::EXACT;
-                    if (best_score >= beta)
-                    {
-                        if (!move_is_capture)
-                        {
-                            // Killer Heuristic
-                            ss.killers[1] = ss.killers[0];
-                            ss.killers[0] = move;
+            best_score = std::max(score, best_score);
 
-                            // History Heuristic
-                            updateHistory(move_piece, move.to(), depth * depth);
-                        }
-                        ttflag = TTFlag::LOWERBOUND;
-                        break;
+            // Fail-soft
+            if (best_score > alpha)
+            {
+                alpha            = score;
+                best_move_so_far = move;
+                ttflag           = TTFlag::EXACT;
+                if (best_score >= beta)
+                {
+                    if (!move_is_capture)
+                    {
+                        // Killer Heuristic
+                        ss.killers[1] = ss.killers[0];
+                        ss.killers[0] = move;
+
+                        // History Heuristic
+                        updateHistory(move_piece, move.to(), depth * depth);
                     }
+                    ttflag = TTFlag::LOWERBOUND;
+                    break;
                 }
             }
         }
