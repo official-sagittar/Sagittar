@@ -13,14 +13,25 @@ namespace sagittar::search {
         Queen         101    201    301    401    501    601
         King          100    200    300    400    500    600
     */
-    static const i16 MVV_LVA_TABLE[36] = {
-        105, 205, 305, 405, 505, 605,
-        104, 204, 304, 404, 504, 604,
-        103, 203, 303, 403, 503, 603,
-        102, 202, 302, 402, 502, 602,
-        101, 201, 301, 401, 501, 601,
-        100, 200, 300, 400, 500, 600
-    };
+    static constexpr std::array<i16, 36> MVV_LVA_TABLE = []() {
+        std::array<i16, 36> table = {
+            105, 205, 305, 405, 505, 605,
+            104, 204, 304, 404, 504, 604,
+            103, 203, 303, 403, 503, 603,
+            102, 202, 302, 402, 502, 602,
+            101, 201, 301, 401, 501, 601,
+            100, 200, 300, 400, 500, 600
+        };
+
+        constexpr i16 MVVLVA_SCORE_OFFSET = 10000;
+
+        for (int i = 0; i < 36; i++)
+        {
+            table[i] += MVVLVA_SCORE_OFFSET;
+        }
+
+        return table;
+    }();
     // clang-format on
 
     static constexpr int mvvlvaIdx(const PieceType attacker, const PieceType victim) {
@@ -32,8 +43,6 @@ namespace sagittar::search {
             return a.score > b.score;
         return a.move.id() < b.move.id();
     };
-
-    constexpr i16 MVVLVA_SCORE_OFFSET = 10000;
 
     MovePicker::MovePicker(ExtMove*              buffer,
                            const Position&       pos,
@@ -95,8 +104,8 @@ namespace sagittar::search {
                                            ? PieceType::PAWN
                                            : pieceTypeOf(pos.pieceOn(move.to()));
                 const auto      idx      = mvvlvaIdx(attacker, victim);
-                const auto      score = static_cast<i16>(MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET);
-                buffer[capture_count++] = ExtMove{move, score};
+                const auto      score    = static_cast<i16>(MVV_LVA_TABLE[idx]);
+                buffer[capture_count++]  = ExtMove{move, score};
             }
         }
 
