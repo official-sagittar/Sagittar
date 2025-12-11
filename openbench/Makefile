@@ -38,7 +38,7 @@ endef
 all: clean release
 
 release:
-	$(call run_cmake,Release,OFF)
+	$(call run_cmake,Tune,OFF)
 
 clean:
 	@echo "=== Cleaning build artifacts ==="

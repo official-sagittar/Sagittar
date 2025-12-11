@@ -29,7 +29,7 @@ namespace sagittar::search::params {
     }
 
     bool set(std::string& name, int value) {
-        auto* p = params::lookup(name);
+        auto* p = lookup(name);
         if (p != nullptr)
         {
             p->value = value;
@@ -77,7 +77,7 @@ namespace sagittar::search::params {
     }
 
     void updateFutilityMargin() {
-        for (u8 depth = 0; depth < 5; depth++)
+        for (u8 depth = 0; depth < 8; depth++)
         {
             futility_margin[depth] = (futility_margin_m * depth) + futility_margin_c;
         }
