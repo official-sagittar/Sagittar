@@ -10,14 +10,35 @@ namespace sagittar::eval::hce {
         EG
     };
 
+    constexpr std::array<i32, 7> PHASE_WEIGHTS = {0, 0, 1, 1, 2, 4, 0};
+    constexpr i32                TOTAL_PHASE   = 24;
+
     constexpr i32 S(const i32 mg, const i32 eg) {
         return static_cast<i32>(static_cast<u32>(eg) << 16) + mg;
     }
     constexpr i32 mg_score(const i32 score) { return static_cast<i16>(score); }
     constexpr i32 eg_score(const i32 score) { return static_cast<i16>((score + 0x8000) >> 16); }
 
-    constexpr std::array<i32, 7> PHASE_WEIGHTS = {0, 0, 1, 1, 2, 4, 0};
-    constexpr i32                TOTAL_PHASE   = 24;
+    constexpr Score scale_eval(const Score mg, const Score eg, const i32 phase) {
+        return static_cast<Score>(((mg * (256 - phase)) + (eg * phase)) / 256);
+    }
+
+    constexpr i32 std_phase(const i32 phase) {
+        return ((phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE);
+    }
+
+    inline i32 pos_phase(const Position& pos) {
+        i32 phase = TOTAL_PHASE;
+
+        for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
+        {
+            phase -= pos.pieceCount(static_cast<PieceType>(pt)) * PHASE_WEIGHTS[pt];
+        }
+
+        phase = std_phase(phase);
+
+        return phase;
+    }
 
     // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
     // clang-format off

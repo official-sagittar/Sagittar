@@ -81,15 +81,17 @@ namespace sagittar::eval::hce {
             }
         }
 
-        phase = (phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE;
+        phase = std_phase(phase);
+#ifdef DEBUG
+        assert(phase == pos_phase(pos));
+#endif
 
-        Score eval = ((eval_mg * (256 - phase)) + (eval_eg * phase)) / 256;
+        Score eval = scale_eval(eval_mg, eval_eg, phase);
 
-        const i8 stm = 1 - (2 * pos.stm());
+        const auto stm = 1 - (2 * pos.stm());
 
         // Tempo Bonus
-        const Score tempo_bonus =
-          ((mg_score(TEMPO_BONUS) * (256 - phase)) + (eg_score(TEMPO_BONUS) * phase)) / 256;
+        const Score tempo_bonus = scale_eval(mg_score(TEMPO_BONUS), eg_score(TEMPO_BONUS), phase);
         eval += tempo_bonus * stm;
 
         eval *= stm;
