@@ -6,7 +6,6 @@
 
 namespace sagittar::eval::hce {
 
-    void  initialize();
     Score evaluate(const Position&);
     bool  isEndGame(const Position&);
 

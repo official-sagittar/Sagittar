@@ -1,7 +1,6 @@
 #include "engine.h"
 #include "commons/utils.h"
 #include "core/perft.h"
-#include "eval/hce/eval.h"
 #include "search/params.h"
 
 namespace sagittar {
@@ -9,7 +8,6 @@ namespace sagittar {
     Engine::Engine() {
         name = "Sagittar v0.1.0";
         Position::initialize();
-        eval::hce::initialize();
         search::params::init();
         key_history.reserve(1024);
         key_history.shrink_to_fit();
