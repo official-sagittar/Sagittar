@@ -16,7 +16,7 @@ namespace sagittar::comms::uci {
         ss << "option name Hash type spin default 16 min 1 max 512\n";
         ss << "option name Threads type spin default 1 min 1 max 4\n";
 #ifdef EXTERNAL_TUNE
-        for (auto& param : params::params())
+        for (auto& param : search::params::params())
         {
             ss << "option name " << param.name;
             ss << " type spin";
@@ -59,7 +59,7 @@ namespace sagittar::comms::uci {
 #ifdef EXTERNAL_TUNE
         else
         {
-            if (!params::set(id, std::stoi(value)))
+            if (!search::params::set(id, std::stoi(value)))
             {
                 std::cerr << "Invalid option!" << std::endl;
             }
@@ -226,7 +226,7 @@ namespace sagittar::comms::uci {
 #ifdef EXTERNAL_TUNE
     void UCIHandler::handleDisplayParams() {
         std::ostringstream ss;
-        for (auto& param : params::params())
+        for (auto& param : search::params::params())
         {
             ss << param.name;
             ss << ", int";

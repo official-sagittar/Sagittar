@@ -283,7 +283,7 @@ namespace sagittar::search {
             const Score static_eval = eval::hce::evaluate(pos);
 
             // Reverse Futility Pruning
-            if (depth <= 3)
+            if (depth <= 8)
             {
                 const Score margin = params::rfp_margin * depth;
                 if (static_eval >= beta + margin)
@@ -310,7 +310,7 @@ namespace sagittar::search {
 
             // Futility Pruning Decision
             // clang-format off
-            if (depth <= 3
+            if (depth <= 8
                 && alpha < WIN_SCORE
                 && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
             {
@@ -371,7 +371,7 @@ namespace sagittar::search {
                 }
 
                 // Late Move Pruning
-                if (depth <= 2 && move_piece_type != PieceType::PAWN)
+                if (depth <= 8 && move_piece_type != PieceType::PAWN)
                 {
                     const u32 LMP_MOVE_CUTOFF =
                       n_moves * (1 - (params::lmp_treshold_pct - (0.1 * depth)));

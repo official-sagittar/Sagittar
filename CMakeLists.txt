@@ -80,6 +80,11 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     target_compile_definitions(${EXE_NAME} PRIVATE DEBUG TEST)
     target_compile_options(${EXE_NAME} PRIVATE -O3)
 
+elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
+    target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
+    target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
+    target_compile_options(${EXE_NAME} PRIVATE -O3 -DEXTERNAL_TUNE)
+
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
     target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
@@ -101,7 +106,7 @@ endif()
 # ----------------------------------------------------------
 set(LTO_STATUS "OFF")
 
-if(CMAKE_BUILD_TYPE MATCHES "^(Release|Test)$")
+if(CMAKE_BUILD_TYPE MATCHES "^(Release|Tune|Test)$")
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error)
     if(ipo_supported)
