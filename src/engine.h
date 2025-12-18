@@ -48,6 +48,8 @@ namespace sagittar {
 
         void bench();
 
+        void tune();
+
         void display() const;
     };
 

@@ -16,6 +16,10 @@ int main(int argc, char* argv[]) {
         {
             engine.bench();
         }
+        else if (cmd == "tune")
+        {
+            engine.tune();
+        }
     }
     return 0;
 }

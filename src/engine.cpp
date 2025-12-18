@@ -1,6 +1,7 @@
 #include "engine.h"
 #include "commons/utils.h"
 #include "core/perft.h"
+#include "eval/hce/tuner/tuner.h"
 #include "search/params.h"
 
 namespace sagittar {
@@ -156,6 +157,8 @@ namespace sagittar {
 
         std::cout << ss.str() << std::endl;
     }
+
+    void Engine::tune() { eval::hce::tuner::tune(); }
 
     void Engine::display() const { pos.display(); }
 
