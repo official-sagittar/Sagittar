@@ -90,11 +90,11 @@ namespace sagittar::eval::hce {
 
         const auto stm = 1 - (2 * pos.stm());
 
+        eval *= stm;
+
         // Tempo Bonus
         const Score tempo_bonus = scale_eval(mg_score(TEMPO_BONUS), eg_score(TEMPO_BONUS), phase);
-        eval += tempo_bonus * stm;
-
-        eval *= stm;
+        eval += tempo_bonus;
 
         return eval;
     }
