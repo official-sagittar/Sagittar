@@ -108,7 +108,7 @@ namespace sagittar::eval::hce::tuner {
     }
 
     constexpr double sigmoid(const double K, const double E) {
-        return 1.0 / (1.0 + exp(-K * E / 400.0));
+        return 1.0 / (1.0 + std::exp(-K * E / 400.0));
     }
 
     double mse(const std::span<Entry> entries, const ParameterVector& params, const double K) {
@@ -136,9 +136,14 @@ namespace sagittar::eval::hce::tuner {
         const double sig  = sigmoid(K, eval);
         const double res  = (entry.wdl - sig) * sig * (1 - sig);
 
-        // TODO
-        const double mg_base = 0;
-        const double eg_base = 0;
+        if (std::abs(res) < 1e-12)
+            return;
+
+        const double w_eg = entry.phase / 256.0;
+        const double w_mg = 1.0 - w_eg;
+
+        const double mg_base = res * w_mg;
+        const double eg_base = res * w_eg;
 
         for (int i = 0; i < N_PARAMS; i++)
         {
