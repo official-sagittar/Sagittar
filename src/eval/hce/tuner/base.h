@@ -60,8 +60,10 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
+    constexpr i32 round_value(const Parameter value) { return static_cast<i32>(std::round(value)); }
+
     void print_param_single(const ParameterTuple& p, std::string end = "\n") {
-        std::cout << "S(" << p[MG] << ", " << p[EG] << ")," << end;
+        std::cout << "S(" << round_value(p[MG]) << ", " << round_value(p[EG]) << ")," << end;
     }
 
     void print_param_array(ParameterVector& params, const size_t start, const size_t end) {
