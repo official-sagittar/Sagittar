@@ -1,5 +1,8 @@
 #include "tuner.h"
 
+#include <filesystem>
+#include <fstream>
+
 #include "core/position.h"
 #include "eval/hce/tuner/base.h"
 
@@ -155,7 +158,9 @@ namespace sagittar::eval::hce::tuner {
             // Forward pass: eval -> sigmoid -> residual w.r.t target WDL
             const double eval = linear_eval(entry, params);
             const double sig  = sigmoid(K, eval);
-            const double res  = (entry.wdl - sig) * sig * (1 - sig);
+
+            // Backprop
+            const double res = (entry.wdl - sig) * sig * (1 - sig);
 
             if (std::abs(res) < 1e-12)
             {
@@ -212,6 +217,30 @@ namespace sagittar::eval::hce::tuner {
                     params[base + sq][EG] -= eg_mean;
                 }
             }
+        }
+
+        double compute_optimal_K(const std::span<Entry> entries,
+                                 const ParameterVector& params,
+                                 const double           K_init = 2.0) {
+            constexpr double delta     = 1e-3;
+            constexpr double lr        = 0.5;
+            constexpr double tol       = 1e-6;
+            constexpr size_t max_iters = 100;
+
+            double K = K_init;
+
+            for (size_t it = 0; it < max_iters; ++it)
+            {
+                const double err_up   = mse(entries, params, K + delta);
+                const double err_down = mse(entries, params, K - delta);
+                const double grad     = (err_up - err_down) / (2.0 * delta);
+                K -= lr * grad;
+                K = std::clamp(K, 0.1, 10.0);
+                if (std::abs(grad) < tol)
+                    break;
+            }
+
+            return K;
         }
 
         void run(ParameterVector&       params,
@@ -297,6 +326,28 @@ namespace sagittar::eval::hce::tuner {
                     const double error = mse(entries, params, K);
                     std::cout << "Error = " << error << std::endl;
                 }
+            }
+        }
+
+        void read_epd(const std::filesystem::path& epd_path, std::vector<Entry>& entries) {
+            std::ifstream file(epd_path);
+
+            if (!file.is_open())
+            {
+                std::cerr << "Failed to open EPD file: " << epd_path << std::endl;
+                return;
+            }
+
+            std::string line;
+            while (std::getline(file, line))
+            {
+                // Skip blank/whitespace-only lines
+                if (line.find_first_not_of(" \t\r\n") == std::string::npos)
+                {
+                    continue;
+                }
+
+                entries.emplace_back(create_entry(line));
             }
         }
 
