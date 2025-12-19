@@ -152,6 +152,7 @@ namespace sagittar::eval::hce::tuner {
                                     const Entry&           entry,
                                     const ParameterVector& params,
                                     const double           K) {
+            // Forward pass: eval -> sigmoid -> residual w.r.t target WDL
             const double eval = linear_eval(entry, params);
             const double sig  = sigmoid(K, eval);
             const double res  = (entry.wdl - sig) * sig * (1 - sig);
@@ -161,6 +162,7 @@ namespace sagittar::eval::hce::tuner {
                 return;
             }
 
+            // Phase blend: split residual between middle-game and end-game
             const double w_eg = entry.phase / 256.0;
             const double w_mg = 1.0 - w_eg;
 
@@ -169,6 +171,7 @@ namespace sagittar::eval::hce::tuner {
 
             for (size_t i = 0; i < N_PARAMS; i++)
             {
+                // Accumulate gradient per parameter for both phases
                 gradient[i][MG] += mg_base * entry.coefficients[i];
                 gradient[i][EG] += eg_base * entry.coefficients[i];
             }
@@ -214,12 +217,11 @@ namespace sagittar::eval::hce::tuner {
         void run(ParameterVector&       params,
                  const std::span<Entry> entries,
                  const double           K,
-                 const size_t           epoch                       = 5000,
-                 const double           beta1                       = 0.9,
-                 const double           beta2                       = 0.999,
-                 double                 learning_rate               = 0.1,
-                 const size_t           learning_rate_drop_interval = 500,
-                 const double           learning_rate_drop_ratio    = 0.5) {
+                 const size_t           epoch               = 5000,
+                 const double           beta1               = 0.9,
+                 const double           beta2               = 0.999,
+                 const double           learning_rate_init  = 0.1,
+                 const double           learning_rate_decay = 0.001) {
 
             if (entries.empty())
                 return;
@@ -237,6 +239,11 @@ namespace sagittar::eval::hce::tuner {
 
             for (size_t i = 1; i <= epoch; i++)
             {
+                // Exponential learning rate decay
+                const double learning_rate =
+                  learning_rate_init * std::exp(-learning_rate_decay * (i - 1));
+
+                // Track beta powers for bias correction of moving averages
                 beta1_pow *= beta1;
                 beta2_pow *= beta2;
 
@@ -247,28 +254,35 @@ namespace sagittar::eval::hce::tuner {
                 {
                     const double decay = (param < NB_PIECETYPE) ? 1e-3 : 1e-4;
 
+                    // Scale raw gradients by K factor and average over batch
                     const double mg_grad = -k_over_400 * gradient[param][MG] * invN;
                     const double eg_grad = -k_over_400 * gradient[param][EG] * invN;
 
+                    // Update 1st moment (momentum) estimates
                     momentum[param][MG] = beta1 * momentum[param][MG] + (1.0 - beta1) * mg_grad;
                     momentum[param][EG] = beta1 * momentum[param][EG] + (1.0 - beta1) * eg_grad;
 
+                    // Update 2nd moment (variance) estimates
                     velocity[param][MG] =
                       beta2 * velocity[param][MG] + (1.0 - beta2) * (mg_grad * mg_grad);
                     velocity[param][EG] =
                       beta2 * velocity[param][EG] + (1.0 - beta2) * (eg_grad * eg_grad);
 
+                    // Bias correction (1st moment): undo bias from zero-initialized momentum
                     const double mg_m_hat = momentum[param][MG] / (1.0 - beta1_pow);
                     const double eg_m_hat = momentum[param][EG] / (1.0 - beta1_pow);
 
+                    // Bias correction (2nd moment): keep variance estimate unbiased early on
                     const double mg_v_hat = velocity[param][MG] / (1.0 - beta2_pow);
                     const double eg_v_hat = velocity[param][EG] / (1.0 - beta2_pow);
 
+                    // AdamW-style decoupled weight decay keeps L2 penalty separate from adaptive step
                     const double mg_update =
                       mg_m_hat / (std::sqrt(mg_v_hat) + ADAM_EPS) + decay * params[param][MG];
                     const double eg_update =
                       eg_m_hat / (std::sqrt(eg_v_hat) + ADAM_EPS) + decay * params[param][EG];
 
+                    // Apply AdamW step scaled by learning rate
                     params[param][MG] -= learning_rate * mg_update;
                     params[param][EG] -= learning_rate * eg_update;
                 }
@@ -282,11 +296,6 @@ namespace sagittar::eval::hce::tuner {
                 {
                     const double error = mse(entries, params, K);
                     std::cout << "Error = " << error << std::endl;
-                }
-
-                if (i % learning_rate_drop_interval == 0)
-                {
-                    learning_rate *= learning_rate_drop_ratio;
                 }
             }
         }
