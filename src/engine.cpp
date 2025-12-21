@@ -158,7 +158,10 @@ namespace sagittar {
         std::cout << ss.str() << std::endl;
     }
 
-    void Engine::tune() { eval::hce::tuner::tune(); }
+    void Engine::tune(const std::filesystem::path& epd_path) {
+        eval::hce::tuner::TunerSettings default_settings{};
+        eval::hce::tuner::tune(epd_path, default_settings);
+    }
 
     void Engine::display() const { pos.display(); }
 

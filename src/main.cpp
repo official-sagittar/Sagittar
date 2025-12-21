@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
         sagittar::comms::uci::UCIHandler ucihandler(engine);
         ucihandler.start();
     }
-    else if (argc == 2)
+    else if (argc >= 2)
     {
         std::string cmd = std::string(argv[1]);
         if (cmd == "bench")
@@ -18,7 +18,11 @@ int main(int argc, char* argv[]) {
         }
         else if (cmd == "tune")
         {
-            engine.tune();
+            if (argc >= 3)
+            {
+                const std::filesystem::path data_path = argv[2];
+                engine.tune(data_path);
+            }
         }
     }
     return 0;

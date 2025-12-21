@@ -48,7 +48,7 @@ namespace sagittar {
 
         void bench();
 
-        void tune();
+        void tune(const std::filesystem::path& epd_path = "data.epd");
 
         void display() const;
     };

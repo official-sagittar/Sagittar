@@ -1,8 +1,5 @@
 #include "tuner.h"
 
-#include <filesystem>
-#include <fstream>
-
 #include "core/position.h"
 #include "eval/hce/tuner/base.h"
 
@@ -368,9 +365,7 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    void tune() {
-        std::string data_path = "data.epd";
-
+    void tune(const std::filesystem::path& data_path, const TunerSettings& settings) {
         ParameterVector params = init_parameters();
         normalize_psqt_params(params);
 
@@ -380,17 +375,11 @@ namespace sagittar::eval::hce::tuner {
         std::vector<Entry> entries{};
         read_epd(entries, data_path);
 
-        double K = compute_optimal_K(entries, params);
+        double K = settings.compute_k ? compute_optimal_K(entries, params) : settings.K;
         std::cout << "K = " << (double) K << std::endl;
 
-        std::array<size_t, 3> epochs = {1000, 3000, 5000};
-
-        for (const auto epoch : epochs)
-        {
-            run(params, entries, K, epoch);
-            K = compute_optimal_K(entries, params);
-            std::cout << "K = " << (double) K << std::endl;
-        }
+        run(params, entries, K, settings.epochs, settings.beta1, settings.beta2,
+            settings.learning_rate_init, settings.learning_rate_decay);
 
         print_param_array(params, 0, NB_PIECETYPE);
         print_psqt(params, NB_PIECETYPE);
