@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
         {
             engine.bench();
         }
+#ifdef EXTERNAL_TUNE
         else if (cmd == "tune")
         {
             if (argc >= 3)
@@ -24,6 +25,7 @@ int main(int argc, char* argv[]) {
                 engine.tune(data_path);
             }
         }
+#endif
     }
     return 0;
 }

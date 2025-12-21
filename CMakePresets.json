@@ -33,6 +33,15 @@
             }
         },
         {
+            "name": "tune",
+            "inherits": "base",
+            "displayName": "Tuning Build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Tune",
+                "ENABLE_SAN": "OFF"
+            }
+        },
+        {
             "name": "release",
             "inherits": "base",
             "displayName": "Release Build",
@@ -50,6 +59,10 @@
         {
             "name": "build-test",
             "configurePreset": "test"
+        },
+        {
+            "name": "build-tune",
+            "configurePreset": "tune"
         },
         {
             "name": "build-release",

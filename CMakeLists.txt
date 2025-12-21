@@ -61,8 +61,10 @@ set_target_properties(${EXE_NAME} PROPERTIES
 # ----------------------------------------------------------
 file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/**.cpp src/**.h)
 list(FILTER CORE_SRC EXCLUDE REGEX "src/commons/pch.cpp")
+list(FILTER CORE_SRC EXCLUDE REGEX "src/eval/hce/tuner/.*")
 
 file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)
+file(GLOB_RECURSE TUNE_SRC CONFIGURE_DEPENDS src/eval/hce/tuner/*.cpp src/eval/hce/tuner/*.h)
 
 # ----------------------------------------------------------
 # Build type configurations
@@ -81,7 +83,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     target_compile_options(${EXE_NAME} PRIVATE -O3)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
-    target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
+    target_sources(${EXE_NAME} PRIVATE ${CORE_SRC} ${TUNE_SRC})
     target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
     target_compile_options(${EXE_NAME} PRIVATE -O3 -DEXTERNAL_TUNE)
 
