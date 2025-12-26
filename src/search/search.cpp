@@ -285,7 +285,7 @@ namespace sagittar::search {
             // Reverse Futility Pruning
             if (depth <= 8)
             {
-                const Score margin = params::rfp_margin * depth;
+                const Score margin = params::rfp_margin() * depth;
                 if (static_eval >= beta + margin)
                 {
                     return static_eval;
@@ -310,7 +310,7 @@ namespace sagittar::search {
 
             // Futility Pruning Decision
             // clang-format off
-            if (depth <= 8
+            if (depth <= 7
                 && alpha < WIN_SCORE
                 && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
             {

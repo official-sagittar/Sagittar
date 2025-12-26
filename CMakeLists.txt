@@ -82,8 +82,8 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
-    target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
-    target_compile_options(${EXE_NAME} PRIVATE -O3 -DEXTERNAL_TUNE)
+    target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG EXTERNAL_TUNE)
+    target_compile_options(${EXE_NAME} PRIVATE -O3)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
