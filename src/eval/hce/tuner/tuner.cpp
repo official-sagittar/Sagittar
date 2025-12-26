@@ -203,37 +203,6 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static void normalize_psqt_params(ParameterVector& params) {
-        for (size_t pt = 0; pt < NB_PIECETYPE; ++pt)
-        {
-            double mg_sum = 0.0;
-            double eg_sum = 0.0;
-
-            const size_t base = NB_PIECETYPE + pt * NB_SQUARE;
-
-            const size_t start_sq = (pt == PieceType::PAWN) ? Square::A2 : Square::A1;
-            const size_t end_sq   = (pt == PieceType::PAWN) ? Square::H7 : Square::H8;
-            const size_t n_sq     = (pt == PieceType::PAWN) ? (NB_SQUARE - 16) : NB_SQUARE;
-
-            // 1) Compute mean
-            for (size_t sq = start_sq; sq <= end_sq; ++sq)
-            {
-                mg_sum += params[base + sq][MG];
-                eg_sum += params[base + sq][EG];
-            }
-
-            const double mg_mean = mg_sum / n_sq;
-            const double eg_mean = eg_sum / n_sq;
-
-            // 2) Subtract mean
-            for (size_t sq = start_sq; sq <= end_sq; ++sq)
-            {
-                params[base + sq][MG] -= mg_mean;
-                params[base + sq][EG] -= eg_mean;
-            }
-        }
-    }
-
     static double compute_optimal_K(const std::vector<Entry>& entries,
                                     const ParameterVector&    params,
                                     const double              K_init = 2.0) {
@@ -331,11 +300,6 @@ namespace sagittar::eval::hce::tuner {
                 params[param][EG] -= learning_rate * eg_update;
             }
 
-            if (i % 5 == 0)
-            {
-                normalize_psqt_params(params);
-            }
-
             if (i % 100 == 0)
             {
                 const double error = mse(entries, params, K);
@@ -373,7 +337,6 @@ namespace sagittar::eval::hce::tuner {
 
         std::cout << "Reading initial params" << std::endl;
         ParameterVector params = init_parameters();
-        normalize_psqt_params(params);
 
         std::cout << "Initial Parameters:\n" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
