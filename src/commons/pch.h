@@ -18,6 +18,8 @@
 #include <vector>
 #ifdef EXTERNAL_TUNE
     #include <deque>
+    #include <filesystem>
+    #include <fstream>
 #endif
 #ifdef TEST
     #include <filesystem>
