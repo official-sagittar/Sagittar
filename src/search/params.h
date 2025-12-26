@@ -16,32 +16,52 @@ namespace sagittar::search::params {
         std::function<void()> callback;
     };
 
-    std::deque<Parameter>& params();
-    Parameter&             addParam(std::string           name,
-                                    int                   value,
-                                    int                   min,
-                                    int                   max,
-                                    int                   step,
-                                    std::function<void()> callback = std::function<void()>());
-    bool                   set(std::string& name, int value);
+    class ParameterRegistry {
+       public:
+        using container_type = std::deque<Parameter>;
+        using iterator       = container_type::iterator;
+        using const_iterator = container_type::const_iterator;
+
+        static ParameterRegistry& instance();
+
+        Parameter& add(const std::string&           name,
+                       int                          value,
+                       int                          min,
+                       int                          max,
+                       int                          step,
+                       const std::function<void()>& callback = {});
+        bool       set(std::string_view name, int value);
+        int        get(std::string_view name) const;
+
+        iterator begin() noexcept { return m_params.begin(); }
+        iterator end() noexcept { return m_params.end(); }
+
+        const_iterator begin() const noexcept { return m_params.begin(); }
+        const_iterator end() const noexcept { return m_params.end(); }
+
+       private:
+        container_type m_params;
+    };
 
     #define PARAM(name, val, min, max, step) \
-        inline Parameter& param_##name = addParam(#name, val, min, max, step); \
-        inline const int& name         = param_##name.value;
+        inline Parameter& param_##name = \
+          ParameterRegistry::instance().add(#name, val, min, max, step); \
+        [[nodiscard]] inline int name() { return param_##name.value; }
 
     #define PARAM_CALLBACK(name, val, min, max, step, callback) \
-        inline Parameter& param_##name = addParam(#name, val, min, max, step, callback); \
-        inline const int& name         = param_##name.value;
+        inline Parameter& param_##name = \
+          ParameterRegistry::instance().add(#name, val, min, max, step, callback); \
+        [[nodiscard]] inline int name() { return param_##name.value; }
 #else
-    #define PARAM(name, val, min, max, step) constexpr int name = val;
-
+    #define PARAM(name, val, min, max, step) \
+        [[nodiscard]] constexpr int name() { return val; }
     #define PARAM_CALLBACK(name, val, min, max, step, callback) PARAM(name, val, min, max, step)
 #endif
 
-    inline double lmp_treshold_pct;
-    inline u8     lmr_r_table_tactical[64][64];  // [move][depth]
-    inline u8     lmr_r_table_quiet[64][64];     // [move][depth]
-    inline Score  futility_margin[8];            // [depth]
+    inline double                             lmp_treshold_pct = 0.0;
+    inline std::array<std::array<u8, 64>, 64> lmr_r_table_tactical{};  // [move][depth]
+    inline std::array<std::array<u8, 64>, 64> lmr_r_table_quiet{};     // [move][depth]
+    inline std::array<Score, 8>               futility_margin{};       // [depth]
 
     void init();
     void updateLMPTresholdPct();
