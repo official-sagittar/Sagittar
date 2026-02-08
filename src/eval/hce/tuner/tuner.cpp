@@ -131,22 +131,12 @@ namespace sagittar::eval::hce::tuner {
         // E = 0            -> 0.5  => Draw
         // E = +INFINITY    -> 1    => WHITE Winning
 
-        // To prevent overflows
-        // NOTE: Depending on the value of K, it will clamp E
-        // K = 1; |E| ~ 6000cp
-        // K = 2; |E| ~ 3000cp
-        // K = 3; |E| ~ 2000cp
-        // K = 4; |E| ~ 1500cp
-        // And so on...
-        static constexpr double MAX_EXP = 15.0;
-
-        const double x = std::clamp(-K * E / 400.0, -MAX_EXP, MAX_EXP);
-        return 1.0 / (1.0 + std::exp(x));
+        return 1.0 / (1.0 + exp(-K * E / 400.0));
     }
 
     static double
     mse(const std::vector<Entry>& entries, const ParameterVector& params, const double K) {
-        double total_error = 0;
+        double total_error = 0.0;
 
         for (const Entry& entry : entries)
         {
@@ -172,11 +162,6 @@ namespace sagittar::eval::hce::tuner {
 
         // Backprop
         const double res = (entry.wdl - sig) * sig * (1 - sig);
-
-        if (std::abs(res) < 1e-12)
-        {
-            return;
-        }
 
         // Phase blend: split residual between middle-game and end-game
         const double w_eg = entry.phase / 256.0;
@@ -206,22 +191,21 @@ namespace sagittar::eval::hce::tuner {
     static double compute_optimal_K(const std::vector<Entry>& entries,
                                     const ParameterVector&    params,
                                     const double              K_init = 2.0) {
-        constexpr double delta     = 1e-3;
-        constexpr double lr        = 0.1;
-        constexpr double tol       = 1e-6;
-        constexpr size_t max_iters = 1000;
+        constexpr double rate           = 10;
+        constexpr double delta          = 1e-5;
+        constexpr double deviation_goal = 1e-6;
 
-        double K = K_init;
+        double K         = K_init;
+        double deviation = 1;
 
-        for (size_t it = 0; it < max_iters; ++it)
+        while (std::fabs(deviation) > deviation_goal)
         {
             const double err_up   = mse(entries, params, K + delta);
             const double err_down = mse(entries, params, K - delta);
-            const double grad     = (err_up - err_down) / (2.0 * delta);
-            K -= lr * grad;
-            K = std::clamp(K, 0.1, 10.0);
-            if (std::abs(grad) < tol)
-                break;
+            deviation             = (err_up - err_down) / (2.0 * delta);
+            std::cout << "Current K: " << K << ", Error Up: " << err_up
+                      << ", Error Down: " << err_down << ", Deviation: " << deviation << std::endl;
+            K -= deviation * rate;
         }
 
         return K;
@@ -230,46 +214,31 @@ namespace sagittar::eval::hce::tuner {
     static void run(ParameterVector&          params,
                     const std::vector<Entry>& entries,
                     const double              K,
-                    const size_t              epoch               = 5000,
-                    const double              beta1               = 0.9,
-                    const double              beta2               = 0.999,
-                    const double              learning_rate_init  = 0.1,
-                    const double              learning_rate_decay = 0.001) {
+                    const size_t              epoch                       = 5000,
+                    const double              beta1                       = 0.9,
+                    const double              beta2                       = 0.999,
+                    const double              learning_rate_init          = 0.1,
+                    const size_t              learning_rate_drop_interval = 500,
+                    const double              learning_rate_drop_ratio    = 0.5) {
 
         if (entries.empty())
             return;
 
-        static constexpr double ADAM_EPS = 1e-8;
-
         ParameterVector momentum(N_PARAMS);
         ParameterVector velocity(N_PARAMS);
 
-        double beta1_pow = 1.0;
-        double beta2_pow = 1.0;
-
-        const double invN       = 1.0 / entries.size();
-        const double k_over_400 = K / 400.0;
+        double learning_rate = learning_rate_init;
 
         for (size_t i = 1; i <= epoch; i++)
         {
-            // Exponential learning rate decay
-            const double learning_rate =
-              learning_rate_init * std::exp(-learning_rate_decay * (i - 1));
-
-            // Track beta powers for bias correction of moving averages
-            beta1_pow *= beta1;
-            beta2_pow *= beta2;
-
             ParameterVector gradient(N_PARAMS);
             compute_gradient(gradient, entries, params, K);
 
             for (size_t param = 0; param < N_PARAMS; param++)
             {
-                const double decay = (param < NB_PIECETYPE) ? 1e-3 : 1e-4;
-
                 // Scale raw gradients by K factor and average over batch
-                const double mg_grad = -k_over_400 * gradient[param][MG] * invN;
-                const double eg_grad = -k_over_400 * gradient[param][EG] * invN;
+                const double mg_grad = (-K / 400.0) * gradient[param][MG] / entries.size();
+                const double eg_grad = (-K / 400.0) * gradient[param][EG] / entries.size();
 
                 // Update 1st moment (momentum) estimates
                 momentum[param][MG] = beta1 * momentum[param][MG] + (1.0 - beta1) * mg_grad;
@@ -277,33 +246,26 @@ namespace sagittar::eval::hce::tuner {
 
                 // Update 2nd moment (variance) estimates
                 velocity[param][MG] =
-                  beta2 * velocity[param][MG] + (1.0 - beta2) * (mg_grad * mg_grad);
+                  beta2 * velocity[param][MG] + (1.0 - beta2) * std::pow(mg_grad, 2);
                 velocity[param][EG] =
-                  beta2 * velocity[param][EG] + (1.0 - beta2) * (eg_grad * eg_grad);
+                  beta2 * velocity[param][EG] + (1.0 - beta2) * std::pow(eg_grad, 2);
 
-                // Bias correction (1st moment): undo bias from zero-initialized momentum
-                const double mg_m_hat = momentum[param][MG] / (1.0 - beta1_pow);
-                const double eg_m_hat = momentum[param][EG] / (1.0 - beta1_pow);
-
-                // Bias correction (2nd moment): keep variance estimate unbiased early on
-                const double mg_v_hat = velocity[param][MG] / (1.0 - beta2_pow);
-                const double eg_v_hat = velocity[param][EG] / (1.0 - beta2_pow);
-
-                // AdamW-style decoupled weight decay keeps L2 penalty separate from adaptive step
-                const double mg_update =
-                  mg_m_hat / (std::sqrt(mg_v_hat) + ADAM_EPS) + decay * params[param][MG];
-                const double eg_update =
-                  eg_m_hat / (std::sqrt(eg_v_hat) + ADAM_EPS) + decay * params[param][EG];
-
-                // Apply AdamW step scaled by learning rate
-                params[param][MG] -= learning_rate * mg_update;
-                params[param][EG] -= learning_rate * eg_update;
+                // Apply Adam step scaled by learning rate
+                params[param][MG] -=
+                  learning_rate * momentum[param][MG] / (1e-8 + std::sqrt(velocity[param][MG]));
+                params[param][EG] -=
+                  learning_rate * momentum[param][EG] / (1e-8 + std::sqrt(velocity[param][EG]));
             }
 
             if (i % 100 == 0)
             {
                 const double error = mse(entries, params, K);
                 std::cout << "Error = " << error << std::endl;
+            }
+
+            if (i % learning_rate_drop_interval == 0)
+            {
+                learning_rate *= learning_rate_drop_ratio;
             }
         }
     }
@@ -343,12 +305,23 @@ namespace sagittar::eval::hce::tuner {
         print_psqt(params, NB_PIECETYPE);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
-        double K = settings.compute_k ? compute_optimal_K(entries, params) : settings.K;
-        std::cout << "Optimal K = " << (double) K << std::endl;
+        double K = 0.0;
+        if (settings.compute_k)
+        {
+            std::cout << "Computing Optimal K" << std::endl;
+            K = compute_optimal_K(entries, params, settings.K);
+            std::cout << "Optimal K = " << (double) K << std::endl;
+        }
+        else
+        {
+            K = settings.K;
+            std::cout << "Using K = " << (double) K << std::endl;
+        }
 
         std::cout << "Beginning to tune" << std::endl;
         run(params, entries, K, settings.epochs, settings.beta1, settings.beta2,
-            settings.learning_rate_init, settings.learning_rate_decay);
+            settings.learning_rate_init, settings.learning_rate_drop_interval,
+            settings.learning_rate_drop_ratio);
 
         std::cout << "Tuned Parameters:" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
