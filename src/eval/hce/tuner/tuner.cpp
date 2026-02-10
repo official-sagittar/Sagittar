@@ -121,9 +121,8 @@ namespace sagittar::eval::hce::tuner {
 
         const double tempo_bonus = static_cast<double>(
           scale_eval(mg_score(TEMPO_BONUS), eg_score(TEMPO_BONUS), entry.phase));
-        eval += tempo_bonus;
 
-        return eval;
+        return eval + (entry.stm == Color::WHITE ? tempo_bonus : -tempo_bonus);
     }
 
     static double sigmoid(const double K, const double E) {
@@ -260,7 +259,13 @@ namespace sagittar::eval::hce::tuner {
             if (i % 100 == 0)
             {
                 const double error = mse(entries, params, K);
-                std::cout << "Error = " << error << std::endl;
+
+                std::cout << "Current Parameters:" << std::endl;
+                print_param_array(params, 0, NB_PIECETYPE);
+                print_psqt(params, NB_PIECETYPE);
+
+                std::cout << "Epoch = " << (size_t) i << "\tError = " << error
+                          << "\tLearning Rate = " << (double) learning_rate << std::endl;
             }
 
             if (i % learning_rate_drop_interval == 0)
@@ -304,6 +309,18 @@ namespace sagittar::eval::hce::tuner {
         print_param_array(params, 0, NB_PIECETYPE);
         print_psqt(params, NB_PIECETYPE);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
+
+        if (settings.retune_from_zero)
+        {
+            std::cout << "Resetting Parameters to zero" << std::endl;
+            for (size_t i = 0; i < N_PARAMS; i++)
+            {
+                params[i][MG] = params[i][EG] = 0;
+            }
+            std::cout << "Zero-ed Parameters:\n" << std::endl;
+            print_param_array(params, 0, NB_PIECETYPE);
+            print_psqt(params, NB_PIECETYPE);
+        }
 
         double K = 0.0;
         if (settings.compute_k)
