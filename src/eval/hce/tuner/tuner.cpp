@@ -1,6 +1,8 @@
 #include "tuner.h"
 
+#include "commons/threadpool.h"
 #include "core/position.h"
+#include "eval/hce/eval.h"
 #include "eval/hce/tuner/base.h"
 
 namespace sagittar::eval::hce::tuner {
@@ -75,8 +77,12 @@ namespace sagittar::eval::hce::tuner {
         {
             return 0.0;
         }
+        else if (fen.find("[0.5]") != (size_t) std::string::npos)
+        {
+            return 0.5;
+        }
 
-        return 0.5;
+        throw std::runtime_error("Could not find WDL marker");
     }
 
     static Entry create_entry(const std::string& fen) {
@@ -93,9 +99,14 @@ namespace sagittar::eval::hce::tuner {
             throw std::runtime_error("Coefficients size mismatch");
         }
 
-        e.stm   = pos.stm();
-        e.phase = pos_phase(pos);  // 0 => MG; 256 => EG
+        e.stm = pos.stm();
+
+        e.phase        = pos_phase(pos);  // 0 => MG; 256 => EG
+        e.pfactors[MG] = 1.0 - (e.phase / 256.0);
+        e.pfactors[EG] = e.phase / 256.0;
+
         e.wdl   = extract_wdl(fen);
+        e.seval = evaluate(pos);
 
         return e;
     }
@@ -125,6 +136,21 @@ namespace sagittar::eval::hce::tuner {
         return eval + (entry.stm == Color::WHITE ? tempo_bonus : -tempo_bonus);
     }
 
+    static bool check_entries_eval(const std::vector<Entry>& entries,
+                                   const ParameterVector&    params) {
+        for (const Entry& entry : entries)
+        {
+            const Score seval_w_pov = (entry.stm == Color::WHITE) ? entry.seval : -entry.seval;
+            const Score coeff_eval  = static_cast<Score>(linear_eval(entry, params));
+            if (std::abs(seval_w_pov - coeff_eval) != 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     static double sigmoid(const double K, const double E) {
         // E = -INFINITY    -> 0    => BLACK Winning
         // E = 0            -> 0.5  => Draw
@@ -133,22 +159,47 @@ namespace sagittar::eval::hce::tuner {
         return 1.0 / (1.0 + exp(-K * E / 400.0));
     }
 
-    static double
-    mse(const std::vector<Entry>& entries, const ParameterVector& params, const double K) {
-        double total_error = 0.0;
-
-        for (const Entry& entry : entries)
+    static double mse(commons::ThreadPool&      pool,
+                      const size_t              nthreads,
+                      const std::vector<Entry>& entries,
+                      const ParameterVector&    params,
+                      const double              K) {
+        if (entries.empty())
         {
-            const double eval        = linear_eval(entry, params);
-            const double sig         = sigmoid(K, eval);
-            const double diff        = entry.wdl - sig;
-            const double entry_error = diff * diff;
-            total_error += entry_error;
+            return 0.0;
         }
 
-        const double avg_error = total_error / static_cast<double>(entries.size());
+        std::vector<std::future<double>> futs;
+        futs.reserve(nthreads);
 
-        return avg_error;
+        const size_t n = entries.size();
+
+        for (size_t tid = 0; tid < nthreads; ++tid)
+        {
+            const size_t start = (tid * n) / nthreads;
+            const size_t end   = ((tid + 1) * n) / nthreads;
+
+            futs.push_back(pool.submit([start, end, &entries, &params, K]() -> double {
+                double local = 0.0;
+                for (size_t i = start; i < end; ++i)
+                {
+                    const auto&  entry = entries[i];
+                    const double eval  = linear_eval(entry, params);
+                    const double sig   = sigmoid(K, eval);
+                    const double diff  = entry.wdl - sig;
+                    local += diff * diff;
+                }
+                return local;
+            }));
+        }
+
+        double total_error = 0.0;
+        for (auto& f : futs)
+        {
+            total_error += f.get();
+        }
+
+        return total_error / static_cast<double>(n);
     }
 
     static void update_gradient_single(ParameterVector&       gradient,
@@ -162,12 +213,8 @@ namespace sagittar::eval::hce::tuner {
         // Backprop
         const double res = (entry.wdl - sig) * sig * (1 - sig);
 
-        // Phase blend: split residual between middle-game and end-game
-        const double w_eg = entry.phase / 256.0;
-        const double w_mg = 1.0 - w_eg;
-
-        const double mg_base = res * w_mg;
-        const double eg_base = res * w_eg;
+        const double mg_base = res * entry.pfactors[MG];
+        const double eg_base = res * entry.pfactors[EG];
 
         for (size_t i = 0; i < N_PARAMS; i++)
         {
@@ -177,17 +224,58 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static void compute_gradient(ParameterVector&          gradient,
+    static void compute_gradient(commons::ThreadPool&      pool,
+                                 const size_t              nthreads,
+                                 ParameterVector&          gradient,
                                  const std::vector<Entry>& entries,
                                  const ParameterVector&    params,
                                  const double              K) {
-        for (const Entry& e : entries)
+        if (entries.empty())
         {
-            update_gradient_single(gradient, e, params, K);
+            return;
+        }
+
+        std::vector<ParameterVector>   thread_gradients(nthreads, ParameterVector(N_PARAMS));
+        std::vector<std::future<void>> futs;
+        futs.reserve(nthreads);
+
+        const size_t n = entries.size();
+
+        for (size_t tid = 0; tid < nthreads; ++tid)
+        {
+            const size_t start = (tid * n) / nthreads;
+            const size_t end   = ((tid + 1) * n) / nthreads;
+
+            futs.push_back(
+              pool.submit([tid, start, end, &thread_gradients, &entries, &params, K]() {
+                  auto& g = thread_gradients[tid];
+                  for (size_t i = start; i < end; ++i)
+                  {
+                      update_gradient_single(g, entries[i], params, K);
+                  }
+              }));
+        }
+
+        for (auto& f : futs)
+        {
+            f.get();
+        }
+
+        // Reduce thread gradients into output gradient
+        for (size_t tid = 0; tid < nthreads; ++tid)
+        {
+            const auto& tg = thread_gradients[tid];
+            for (size_t p = 0; p < N_PARAMS; ++p)
+            {
+                gradient[p][MG] += tg[p][MG];
+                gradient[p][EG] += tg[p][EG];
+            }
         }
     }
 
-    static double compute_optimal_K(const std::vector<Entry>& entries,
+    static double compute_optimal_K(commons::ThreadPool&      pool,
+                                    const size_t              nthreads,
+                                    const std::vector<Entry>& entries,
                                     const ParameterVector&    params,
                                     const double              K_init = 2.0) {
         constexpr double rate           = 10;
@@ -199,8 +287,8 @@ namespace sagittar::eval::hce::tuner {
 
         while (std::fabs(deviation) > deviation_goal)
         {
-            const double err_up   = mse(entries, params, K + delta);
-            const double err_down = mse(entries, params, K - delta);
+            const double err_up   = mse(pool, nthreads, entries, params, K + delta);
+            const double err_down = mse(pool, nthreads, entries, params, K - delta);
             deviation             = (err_up - err_down) / (2.0 * delta);
             std::cout << "Current K: " << K << ", Error Up: " << err_up
                       << ", Error Down: " << err_down << ", Deviation: " << deviation << std::endl;
@@ -210,7 +298,9 @@ namespace sagittar::eval::hce::tuner {
         return K;
     }
 
-    static void run(ParameterVector&          params,
+    static void run(commons::ThreadPool&      pool,
+                    const size_t              nthreads,
+                    ParameterVector&          params,
                     const std::vector<Entry>& entries,
                     const double              K,
                     const size_t              epoch                       = 5000,
@@ -231,13 +321,13 @@ namespace sagittar::eval::hce::tuner {
         for (size_t i = 1; i <= epoch; i++)
         {
             ParameterVector gradient(N_PARAMS);
-            compute_gradient(gradient, entries, params, K);
+            compute_gradient(pool, nthreads, gradient, entries, params, K);
 
             for (size_t param = 0; param < N_PARAMS; param++)
             {
                 // Scale raw gradients by K factor and average over batch
-                const double mg_grad = (-K / 400.0) * gradient[param][MG] / entries.size();
-                const double eg_grad = (-K / 400.0) * gradient[param][EG] / entries.size();
+                const double mg_grad = (-K / 200.0) * gradient[param][MG] / entries.size();
+                const double eg_grad = (-K / 200.0) * gradient[param][EG] / entries.size();
 
                 // Update 1st moment (momentum) estimates
                 momentum[param][MG] = beta1 * momentum[param][MG] + (1.0 - beta1) * mg_grad;
@@ -249,7 +339,7 @@ namespace sagittar::eval::hce::tuner {
                 velocity[param][EG] =
                   beta2 * velocity[param][EG] + (1.0 - beta2) * std::pow(eg_grad, 2);
 
-                // Apply Adam step scaled by learning rate
+                // Update params
                 params[param][MG] -=
                   learning_rate * momentum[param][MG] / (1e-8 + std::sqrt(velocity[param][MG]));
                 params[param][EG] -=
@@ -258,7 +348,7 @@ namespace sagittar::eval::hce::tuner {
 
             if (i % 100 == 0)
             {
-                const double error = mse(entries, params, K);
+                const double error = mse(pool, nthreads, entries, params, K);
 
                 std::cout << "Current Parameters:" << std::endl;
                 print_param_array(params, 0, NB_PIECETYPE);
@@ -310,6 +400,13 @@ namespace sagittar::eval::hce::tuner {
         print_psqt(params, NB_PIECETYPE);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
+        if (!check_entries_eval(entries, params))
+        {
+            std::cerr << "Eval check failed!" << std::endl;
+            return;
+        }
+        std::cout << "Eval check succeeded" << std::endl;
+
         if (settings.retune_from_zero)
         {
             std::cout << "Resetting Parameters to zero" << std::endl;
@@ -322,11 +419,17 @@ namespace sagittar::eval::hce::tuner {
             print_psqt(params, NB_PIECETYPE);
         }
 
+        const size_t nthreads =
+          std::max<size_t>(1, std::min(settings.thread_count, entries.size()));
+        std::cout << "Using " << (size_t) nthreads << " threads" << std::endl;
+
+        commons::ThreadPool pool(nthreads);
+
         double K = 0.0;
         if (settings.compute_k)
         {
             std::cout << "Computing Optimal K" << std::endl;
-            K = compute_optimal_K(entries, params, settings.K);
+            K = compute_optimal_K(pool, nthreads, entries, params, settings.K);
             std::cout << "Optimal K = " << (double) K << std::endl;
         }
         else
@@ -336,7 +439,7 @@ namespace sagittar::eval::hce::tuner {
         }
 
         std::cout << "Beginning to tune" << std::endl;
-        run(params, entries, K, settings.epochs, settings.beta1, settings.beta2,
+        run(pool, nthreads, params, entries, K, settings.epochs, settings.beta1, settings.beta2,
             settings.learning_rate_init, settings.learning_rate_drop_interval,
             settings.learning_rate_drop_ratio);
 

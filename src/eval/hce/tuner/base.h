@@ -11,10 +11,12 @@ namespace sagittar::eval::hce::tuner {
     using ParameterVector = std::vector<ParameterTuple>;
 
     struct Entry {
-        std::vector<i32> coefficients{};
-        Color            stm{Color::WHITE};
-        i32              phase{0};
-        double           wdl{0};
+        std::vector<i32>      coefficients{};
+        Color                 stm{Color::WHITE};
+        i32                   phase{0};
+        std::array<double, 2> pfactors{};
+        double                wdl{0};
+        Score                 seval{0};
     };
 
     void init_param_single(ParameterVector& params, const i32 p) {

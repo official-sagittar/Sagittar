@@ -14,6 +14,7 @@ namespace sagittar::eval::hce::tuner {
         double learning_rate_init          = 0.15;
         size_t learning_rate_drop_interval = 2000;
         double learning_rate_drop_ratio    = 0.75;
+        size_t thread_count                = 4;  // std::thread::hardware_concurrency();
     };
 
     void tune(const std::filesystem::path& epd_path, const TunerSettings& settings);
