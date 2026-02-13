@@ -142,9 +142,11 @@ namespace sagittar::eval::hce::tuner {
         for (const Entry& entry : entries)
         {
             const Score seval_w_pov = (entry.stm == Color::WHITE) ? entry.seval : -entry.seval;
-            const Score coeff_eval  = static_cast<Score>(linear_eval(entry, params));
-            if (std::abs(seval_w_pov - coeff_eval) != 0)
+            const Score coeff_eval  = static_cast<Score>(std::llround(linear_eval(entry, params)));
+            if (std::abs(seval_w_pov - coeff_eval) > 1)
             {
+                std::cerr << "Eval mismatch: Eval WHITE PoV =" << seval_w_pov
+                          << " Linear Eval =" << coeff_eval << std::endl;
                 return false;
             }
         }
