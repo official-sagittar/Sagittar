@@ -1,11 +1,12 @@
 #include "tuner.h"
 
-#include "commons/threadpool.h"
 #include "core/position.h"
 #include "eval/hce/eval.h"
 #include "eval/hce/tuner/base.h"
 
 namespace sagittar::eval::hce::tuner {
+
+    using ThreadPool = dp::thread_pool<>;
 
     constexpr size_t NB_COLOR     = 2;
     constexpr size_t NB_PIECETYPE = 7;
@@ -159,7 +160,7 @@ namespace sagittar::eval::hce::tuner {
         return 1.0 / (1.0 + exp(-K * E / 400.0));
     }
 
-    static double mse(commons::ThreadPool&      pool,
+    static double mse(ThreadPool&               pool,
                       const size_t              nthreads,
                       const std::vector<Entry>& entries,
                       const ParameterVector&    params,
@@ -179,7 +180,7 @@ namespace sagittar::eval::hce::tuner {
             const size_t start = (tid * n) / nthreads;
             const size_t end   = ((tid + 1) * n) / nthreads;
 
-            futs.push_back(pool.submit([start, end, &entries, &params, K]() -> double {
+            futs.push_back(pool.enqueue([start, end, &entries, &params, K]() -> double {
                 double local = 0.0;
                 for (size_t i = start; i < end; ++i)
                 {
@@ -224,7 +225,7 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static void compute_gradient(commons::ThreadPool&      pool,
+    static void compute_gradient(ThreadPool&               pool,
                                  const size_t              nthreads,
                                  ParameterVector&          gradient,
                                  const std::vector<Entry>& entries,
@@ -235,9 +236,7 @@ namespace sagittar::eval::hce::tuner {
             return;
         }
 
-        std::vector<ParameterVector>   thread_gradients(nthreads, ParameterVector(N_PARAMS));
-        std::vector<std::future<void>> futs;
-        futs.reserve(nthreads);
+        std::vector<ParameterVector> thread_gradients(nthreads, ParameterVector(N_PARAMS));
 
         const size_t n = entries.size();
 
@@ -246,20 +245,16 @@ namespace sagittar::eval::hce::tuner {
             const size_t start = (tid * n) / nthreads;
             const size_t end   = ((tid + 1) * n) / nthreads;
 
-            futs.push_back(
-              pool.submit([tid, start, end, &thread_gradients, &entries, &params, K]() {
-                  auto& g = thread_gradients[tid];
-                  for (size_t i = start; i < end; ++i)
-                  {
-                      update_gradient_single(g, entries[i], params, K);
-                  }
-              }));
+            pool.enqueue_detach([tid, start, end, &thread_gradients, &entries, &params, K]() {
+                auto& g = thread_gradients[tid];
+                for (size_t i = start; i < end; ++i)
+                {
+                    update_gradient_single(g, entries[i], params, K);
+                }
+            });
         }
 
-        for (auto& f : futs)
-        {
-            f.get();
-        }
+        pool.wait_for_tasks();
 
         // Reduce thread gradients into output gradient
         for (size_t tid = 0; tid < nthreads; ++tid)
@@ -273,7 +268,7 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static double compute_optimal_K(commons::ThreadPool&      pool,
+    static double compute_optimal_K(ThreadPool&               pool,
                                     const size_t              nthreads,
                                     const std::vector<Entry>& entries,
                                     const ParameterVector&    params,
@@ -298,7 +293,7 @@ namespace sagittar::eval::hce::tuner {
         return K;
     }
 
-    static void run(commons::ThreadPool&      pool,
+    static void run(ThreadPool&               pool,
                     const size_t              nthreads,
                     ParameterVector&          params,
                     const std::vector<Entry>& entries,
@@ -416,11 +411,13 @@ namespace sagittar::eval::hce::tuner {
             print_psqt(params, NB_PIECETYPE);
         }
 
+        std::cout << "Using dp::thread-pool version " << THREADPOOL_VERSION << '\n';
+
         const size_t nthreads =
           std::max<size_t>(1, std::min(settings.thread_count, entries.size()));
         std::cout << "Using " << (size_t) nthreads << " threads" << std::endl;
 
-        commons::ThreadPool pool(nthreads);
+        ThreadPool pool(nthreads);
 
         double K = 0.0;
         if (settings.compute_k)

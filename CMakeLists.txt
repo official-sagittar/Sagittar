@@ -87,6 +87,23 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
     target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG EXTERNAL_TUNE)
     target_compile_options(${EXE_NAME} PRIVATE -O3)
 
+    # ----------------------------------------------------------
+    # dp::thread-pool (v0.7.0)
+    # Repo: https://github.com/ptsouchlos/thread-pool.git
+    # ----------------------------------------------------------
+    include(FetchContent)
+    set(TP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(TP_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+    set(TP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(dp_thread_pool
+        GIT_REPOSITORY https://github.com/ptsouchlos/thread-pool.git
+        GIT_TAG        0.7.0
+    )
+    FetchContent_MakeAvailable(dp_thread_pool)
+
+    target_link_libraries(${EXE_NAME} PRIVATE dp::thread-pool)
+
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC})
     target_compile_definitions(${EXE_NAME} PRIVATE NDEBUG)
