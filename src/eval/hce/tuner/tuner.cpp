@@ -277,7 +277,7 @@ namespace sagittar::eval::hce::tuner {
                                     const size_t              nthreads,
                                     const std::vector<Entry>& entries,
                                     const ParameterVector&    params,
-                                    const double              K_init = 2.0) {
+                                    const double              K_init) {
         constexpr double rate           = 10;
         constexpr double delta          = 1e-5;
         constexpr double deviation_goal = 1e-6;
@@ -303,12 +303,7 @@ namespace sagittar::eval::hce::tuner {
                     ParameterVector&          params,
                     const std::vector<Entry>& entries,
                     const double              K,
-                    const size_t              epoch                       = 5000,
-                    const double              beta1                       = 0.9,
-                    const double              beta2                       = 0.999,
-                    const double              learning_rate_init          = 0.1,
-                    const size_t              learning_rate_drop_interval = 500,
-                    const double              learning_rate_drop_ratio    = 0.5) {
+                    const TunerSettings&      settings) {
 
         if (entries.empty())
             return;
@@ -316,9 +311,9 @@ namespace sagittar::eval::hce::tuner {
         ParameterVector momentum(N_PARAMS);
         ParameterVector velocity(N_PARAMS);
 
-        double learning_rate = learning_rate_init;
+        double learning_rate = settings.learning_rate_init;
 
-        for (size_t i = 1; i <= epoch; i++)
+        for (size_t i = 1; i <= settings.epochs; i++)
         {
             ParameterVector gradient(N_PARAMS);
             compute_gradient(pool, nthreads, gradient, entries, params, K);
@@ -330,14 +325,16 @@ namespace sagittar::eval::hce::tuner {
                 const double eg_grad = (-K / 200.0) * gradient[param][EG] / entries.size();
 
                 // Update 1st moment (momentum) estimates
-                momentum[param][MG] = beta1 * momentum[param][MG] + (1.0 - beta1) * mg_grad;
-                momentum[param][EG] = beta1 * momentum[param][EG] + (1.0 - beta1) * eg_grad;
+                momentum[param][MG] =
+                  settings.beta1 * momentum[param][MG] + (1.0 - settings.beta1) * mg_grad;
+                momentum[param][EG] =
+                  settings.beta1 * momentum[param][EG] + (1.0 - settings.beta1) * eg_grad;
 
                 // Update 2nd moment (variance) estimates
-                velocity[param][MG] =
-                  beta2 * velocity[param][MG] + (1.0 - beta2) * std::pow(mg_grad, 2);
-                velocity[param][EG] =
-                  beta2 * velocity[param][EG] + (1.0 - beta2) * std::pow(eg_grad, 2);
+                velocity[param][MG] = settings.beta2 * velocity[param][MG]
+                                    + (1.0 - settings.beta2) * std::pow(mg_grad, 2);
+                velocity[param][EG] = settings.beta2 * velocity[param][EG]
+                                    + (1.0 - settings.beta2) * std::pow(eg_grad, 2);
 
                 // Update params
                 params[param][MG] -=
@@ -358,9 +355,9 @@ namespace sagittar::eval::hce::tuner {
                           << "\tLearning Rate = " << (double) learning_rate << std::endl;
             }
 
-            if (i % learning_rate_drop_interval == 0)
+            if (i % settings.learning_rate_drop_interval == 0)
             {
-                learning_rate *= learning_rate_drop_ratio;
+                learning_rate *= settings.learning_rate_drop_ratio;
             }
         }
     }
@@ -439,9 +436,7 @@ namespace sagittar::eval::hce::tuner {
         }
 
         std::cout << "Beginning to tune" << std::endl;
-        run(pool, nthreads, params, entries, K, settings.epochs, settings.beta1, settings.beta2,
-            settings.learning_rate_init, settings.learning_rate_drop_interval,
-            settings.learning_rate_drop_ratio);
+        run(pool, nthreads, params, entries, K, settings);
 
         std::cout << "Tuned Parameters:" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
