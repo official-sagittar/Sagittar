@@ -12,7 +12,7 @@ namespace sagittar::eval::hce::tuner {
         double beta1                       = 0.9;
         double beta2                       = 0.999;
         double learning_rate_init          = 0.15;
-        size_t learning_rate_drop_interval = 2000;
+        size_t learning_rate_drop_interval = 1000;
         double learning_rate_drop_ratio    = 0.75;
         size_t thread_count                = 4;  // std::thread::hardware_concurrency();
     };
