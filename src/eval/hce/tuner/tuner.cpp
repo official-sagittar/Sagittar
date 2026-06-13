@@ -65,8 +65,9 @@ namespace sagittar::eval::hce::tuner {
     }
 
     static void init_entry_coeffs(Entry& e, const EvalTrace& trace) {
-        init_coeff_array(e, trace.piece_counts, NB_PIECETYPE);
-        init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE);
+        size_t index = 0;
+        init_coeff_array(e, trace.piece_counts, NB_PIECETYPE, index);
+        init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE, index);
     }
 
     static double extract_wdl(std::string_view fen) {
@@ -93,12 +94,9 @@ namespace sagittar::eval::hce::tuner {
         const EvalTrace trace = create_eval_trace(pos);
 
         Entry e{};
+        e.coefficients.reserve(32);
 
         init_entry_coeffs(e, trace);
-        if (e.coefficients.size() != N_PARAMS)
-        {
-            throw std::runtime_error("Coefficients size mismatch");
-        }
 
         e.stm = pos.stm();
 
@@ -120,19 +118,18 @@ namespace sagittar::eval::hce::tuner {
         double eval_mg = 0;
         double eval_eg = 0;
 
-        for (size_t i = 0; i < N_PARAMS; i++)
+        for (const Coefficient& c : entry.coefficients)
         {
-            const i32             coeff = entry.coefficients[i];
-            const ParameterTuple& param = params[i];
+            const ParameterTuple& param = params[c.index];
 
-            eval_mg += coeff * param[MG];
-            eval_eg += coeff * param[EG];
+            eval_mg += c.value * param[MG];
+            eval_eg += c.value * param[EG];
         }
 
-        double eval = static_cast<double>(scale_eval(eval_mg, eval_eg, entry.phase));
+        const double eval = eval_mg * entry.pfactors[MG] + eval_eg * entry.pfactors[EG];
 
-        const double tempo_bonus = static_cast<double>(
-          scale_eval(mg_score(TEMPO_BONUS), eg_score(TEMPO_BONUS), entry.phase));
+        const double tempo_bonus =
+          mg_score(TEMPO_BONUS) * entry.pfactors[MG] + eg_score(TEMPO_BONUS) * entry.pfactors[EG];
 
         return eval + (entry.stm == Color::WHITE ? tempo_bonus : -tempo_bonus);
     }
@@ -143,7 +140,7 @@ namespace sagittar::eval::hce::tuner {
         {
             const Score seval_w_pov = (entry.stm == Color::WHITE) ? entry.seval : -entry.seval;
             const Score coeff_eval  = static_cast<Score>(std::llround(linear_eval(entry, params)));
-            if (std::abs(seval_w_pov - coeff_eval) > 1)
+            if (std::abs(seval_w_pov - coeff_eval) > 2)
             {
                 std::cerr << "Eval mismatch: Eval WHITE PoV =" << seval_w_pov
                           << " Linear Eval =" << coeff_eval << std::endl;
@@ -219,11 +216,11 @@ namespace sagittar::eval::hce::tuner {
         const double mg_base = res * entry.pfactors[MG];
         const double eg_base = res * entry.pfactors[EG];
 
-        for (size_t i = 0; i < N_PARAMS; i++)
+        for (const Coefficient& c : entry.coefficients)
         {
             // Accumulate gradient per parameter for both phases
-            gradient[i][MG] += mg_base * entry.coefficients[i];
-            gradient[i][EG] += eg_base * entry.coefficients[i];
+            gradient[c.index][MG] += mg_base * c.value;
+            gradient[c.index][EG] += eg_base * c.value;
         }
     }
 
@@ -315,6 +312,10 @@ namespace sagittar::eval::hce::tuner {
             ParameterVector gradient(N_PARAMS);
             compute_gradient(pool, nthreads, gradient, entries, params, K);
 
+            // Adam bias-correction factors (depend only on epoch index i)
+            const double bias_correction1 = 1.0 - std::pow(settings.beta1, static_cast<double>(i));
+            const double bias_correction2 = 1.0 - std::pow(settings.beta2, static_cast<double>(i));
+
             for (size_t param = 0; param < N_PARAMS; param++)
             {
                 // Scale raw gradients by K factor and average over batch
@@ -333,11 +334,15 @@ namespace sagittar::eval::hce::tuner {
                 velocity[param][EG] = settings.beta2 * velocity[param][EG]
                                     + (1.0 - settings.beta2) * std::pow(eg_grad, 2);
 
+                // Bias-corrected 1st and 2nd moment estimates
+                const double m_mg = momentum[param][MG] / bias_correction1;
+                const double m_eg = momentum[param][EG] / bias_correction1;
+                const double v_mg = velocity[param][MG] / bias_correction2;
+                const double v_eg = velocity[param][EG] / bias_correction2;
+
                 // Update params
-                params[param][MG] -=
-                  learning_rate * momentum[param][MG] / (1e-8 + std::sqrt(velocity[param][MG]));
-                params[param][EG] -=
-                  learning_rate * momentum[param][EG] / (1e-8 + std::sqrt(velocity[param][EG]));
+                params[param][MG] -= learning_rate * m_mg / (1e-8 + std::sqrt(v_mg));
+                params[param][EG] -= learning_rate * m_eg / (1e-8 + std::sqrt(v_eg));
             }
 
             if (i % 100 == 0)

@@ -10,13 +10,18 @@ namespace sagittar::eval::hce::tuner {
     using ParameterTuple  = std::array<Parameter, 2>;
     using ParameterVector = std::vector<ParameterTuple>;
 
+    struct Coefficient {
+        i32 index;
+        i32 value;
+    };
+
     struct Entry {
-        std::vector<i32>      coefficients{};
-        Color                 stm{Color::WHITE};
-        i32                   phase{0};
-        std::array<double, 2> pfactors{};
-        double                wdl{0};
-        Score                 seval{0};
+        std::vector<Coefficient> coefficients{};
+        Color                    stm{Color::WHITE};
+        i32                      phase{0};
+        std::array<double, 2>    pfactors{};
+        double                   wdl{0};
+        Score                    seval{0};
     };
 
     void init_param_single(ParameterVector& params, const i32 p) {
@@ -41,24 +46,28 @@ namespace sagittar::eval::hce::tuner {
     }
 
     template<typename T>
-    void init_coeff_single(Entry& entry, const T& trace) {
-        const auto coeff = trace[Color::WHITE] - trace[Color::BLACK];
-        entry.coefficients.push_back(coeff);
-    }
-
-    template<typename T>
-    void init_coeff_array(Entry& entry, const T& trace, const size_t n) {
-        for (size_t i = 0; i < n; i++)
+    void init_coeff_single(Entry& entry, const T& trace, const size_t index) {
+        const i32 coeff = trace[Color::WHITE] - trace[Color::BLACK];
+        if (coeff != 0)
         {
-            init_coeff_single(entry, trace[i]);
+            entry.coefficients.push_back({static_cast<i32>(index), coeff});
         }
     }
 
     template<typename T>
-    void init_coeff_array_2d(Entry& entry, const T& trace, const size_t m, const size_t n) {
+    void init_coeff_array(Entry& entry, const T& trace, const size_t n, size_t& index) {
+        for (size_t i = 0; i < n; i++)
+        {
+            init_coeff_single(entry, trace[i], index++);
+        }
+    }
+
+    template<typename T>
+    void init_coeff_array_2d(
+      Entry& entry, const T& trace, const size_t m, const size_t n, size_t& index) {
         for (size_t i = 0; i < m; i++)
         {
-            init_coeff_array(entry, trace[i], n);
+            init_coeff_array(entry, trace[i], n, index);
         }
     }
 
