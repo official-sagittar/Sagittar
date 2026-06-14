@@ -1,5 +1,6 @@
 #include "eval.h"
 #include "commons/utils.h"
+#include "core/bitboard.h"
 #include "eval/hce/defs.h"
 
 namespace sagittar::eval::hce {
@@ -67,6 +68,23 @@ namespace sagittar::eval::hce {
                 eval_eg -= psqt_b[pt][EG][sq];
             }
         }
+
+        // Doubled / Tripled Pawns
+        const auto pawn_bb   = pos.pieces(PieceType::PAWN);
+        i32        doubled_w = 0;
+        i32        doubled_b = 0;
+        for (int f = 0; f < 8; f++)
+        {
+            const auto file_bb = FILE_A_BB << f;
+            const i32  w_cnt   = utils::bitCount1s(pawn_bb & w_p & file_bb);
+            const i32  b_cnt   = utils::bitCount1s(pawn_bb & b_p & file_bb);
+            doubled_w += std::max(0, w_cnt - 1);
+            doubled_b += std::max(0, b_cnt - 1);
+        }
+        eval_mg += mg_score(DOUBLED_PAWN) * doubled_w;
+        eval_eg += eg_score(DOUBLED_PAWN) * doubled_w;
+        eval_mg -= mg_score(DOUBLED_PAWN) * doubled_b;
+        eval_eg -= eg_score(DOUBLED_PAWN) * doubled_b;
 
         // Bishop Pair
         const auto b_bb          = pos.pieces(PieceType::BISHOP);

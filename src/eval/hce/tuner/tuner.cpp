@@ -1,5 +1,7 @@
 #include "tuner.h"
 
+#include "commons/utils.h"
+#include "core/bitboard.h"
 #include "core/position.h"
 #include "eval/hce/eval.h"
 #include "eval/hce/tuner/base.h"
@@ -14,12 +16,14 @@ namespace sagittar::eval::hce::tuner {
 
     constexpr size_t N_PARAMS = NB_PIECETYPE                // Piece Scores
                               + (NB_PIECETYPE * NB_SQUARE)  // PSQT
-                              + 1;                          // Bishop Pair
+                              + 1                           // Bishop Pair
+                              + 1;                          // Doubled Pawns
 
     struct EvalTrace {
         i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
         i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
         i32 bishop_pair[NB_COLOR]                         = {};
+        i32 doubled_pawns[NB_COLOR]                       = {};
     };
 
     static ParameterVector init_parameters() {
@@ -28,6 +32,7 @@ namespace sagittar::eval::hce::tuner {
         init_param_array(params, PIECE_SCORES, NB_PIECETYPE);
         init_param_array_2d(params, PSQT_SCORES, NB_PIECETYPE, NB_SQUARE);
         init_param_single(params, BISHOP_PAIR);
+        init_param_single(params, DOUBLED_PAWN);
 
         if (params.size() != N_PARAMS)
         {
@@ -74,6 +79,22 @@ namespace sagittar::eval::hce::tuner {
             trace.bishop_pair[Color::BLACK]++;
         }
 
+        const auto w_p       = pos.pieces(Color::WHITE);
+        const auto b_p       = pos.pieces(Color::BLACK);
+        const auto pawn_bb   = pos.pieces(PieceType::PAWN);
+        i32        doubled_w = 0;
+        i32        doubled_b = 0;
+        for (int f = 0; f < 8; f++)
+        {
+            const auto file_bb = FILE_A_BB << f;
+            const i32  w_cnt   = utils::bitCount1s(pawn_bb & w_p & file_bb);
+            const i32  b_cnt   = utils::bitCount1s(pawn_bb & b_p & file_bb);
+            doubled_w += std::max(0, w_cnt - 1);
+            doubled_b += std::max(0, b_cnt - 1);
+        }
+        trace.doubled_pawns[Color::WHITE] = doubled_w;
+        trace.doubled_pawns[Color::BLACK] = doubled_b;
+
         return trace;
     }
 
@@ -82,6 +103,7 @@ namespace sagittar::eval::hce::tuner {
         init_coeff_array(e, trace.piece_counts, NB_PIECETYPE, index);
         init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE, index);
         init_coeff_single(e, trace.bishop_pair, index++);
+        init_coeff_single(e, trace.doubled_pawns, index++);
     }
 
     static double extract_wdl(std::string_view fen) {
@@ -407,6 +429,7 @@ namespace sagittar::eval::hce::tuner {
         print_param_array(params, 0, NB_PIECETYPE);
         auto next = print_psqt(params, NB_PIECETYPE);
         print_param_single(params[next++]);
+        print_param_single(params[next++]);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
         if (!check_entries_eval(entries, params))
@@ -455,6 +478,7 @@ namespace sagittar::eval::hce::tuner {
         std::cout << "Tuned Parameters:" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
         next = print_psqt(params, NB_PIECETYPE);
+        print_param_single(params[next++]);
         print_param_single(params[next++]);
 
         std::cout << "Tuning complete" << std::endl;
