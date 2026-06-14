@@ -12,12 +12,14 @@ namespace sagittar::eval::hce::tuner {
     constexpr size_t NB_PIECETYPE = 7;
     constexpr size_t NB_SQUARE    = 64;
 
-    constexpr size_t N_PARAMS = NB_PIECETYPE                 // Piece Scores
-                              + (NB_PIECETYPE * NB_SQUARE);  // PSQT
+    constexpr size_t N_PARAMS = NB_PIECETYPE                // Piece Scores
+                              + (NB_PIECETYPE * NB_SQUARE)  // PSQT
+                              + 1;                          // Bishop Pair
 
     struct EvalTrace {
         i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
         i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
+        i32 bishop_pair[NB_COLOR]                         = {};
     };
 
     static ParameterVector init_parameters() {
@@ -25,6 +27,7 @@ namespace sagittar::eval::hce::tuner {
 
         init_param_array(params, PIECE_SCORES, NB_PIECETYPE);
         init_param_array_2d(params, PSQT_SCORES, NB_PIECETYPE, NB_SQUARE);
+        init_param_single(params, BISHOP_PAIR);
 
         if (params.size() != N_PARAMS)
         {
@@ -61,6 +64,16 @@ namespace sagittar::eval::hce::tuner {
             }
         }
 
+        if (pos.pieceCount(Piece::WHITE_BISHOP) > 1)
+        {
+            trace.bishop_pair[Color::WHITE]++;
+        }
+
+        if (pos.pieceCount(Piece::BLACK_BISHOP) > 1)
+        {
+            trace.bishop_pair[Color::BLACK]++;
+        }
+
         return trace;
     }
 
@@ -68,6 +81,7 @@ namespace sagittar::eval::hce::tuner {
         size_t index = 0;
         init_coeff_array(e, trace.piece_counts, NB_PIECETYPE, index);
         init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE, index);
+        init_coeff_single(e, trace.bishop_pair, index++);
     }
 
     static double extract_wdl(std::string_view fen) {
@@ -348,11 +362,6 @@ namespace sagittar::eval::hce::tuner {
             if (i % 100 == 0)
             {
                 const double error = mse(pool, nthreads, entries, params, K);
-
-                std::cout << "Current Parameters:" << std::endl;
-                print_param_array(params, 0, NB_PIECETYPE);
-                print_psqt(params, NB_PIECETYPE);
-
                 std::cout << "Epoch = " << (size_t) i << "\tError = " << error
                           << "\tLearning Rate = " << (double) learning_rate << std::endl;
             }
@@ -396,7 +405,8 @@ namespace sagittar::eval::hce::tuner {
 
         std::cout << "Initial Parameters:\n" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
-        print_psqt(params, NB_PIECETYPE);
+        auto next = print_psqt(params, NB_PIECETYPE);
+        print_param_single(params[next++]);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
         if (!check_entries_eval(entries, params))
@@ -444,7 +454,8 @@ namespace sagittar::eval::hce::tuner {
 
         std::cout << "Tuned Parameters:" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
-        print_psqt(params, NB_PIECETYPE);
+        next = print_psqt(params, NB_PIECETYPE);
+        print_param_single(params[next++]);
 
         std::cout << "Tuning complete" << std::endl;
     }
