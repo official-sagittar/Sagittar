@@ -348,11 +348,6 @@ namespace sagittar::eval::hce::tuner {
             if (i % 100 == 0)
             {
                 const double error = mse(pool, nthreads, entries, params, K);
-
-                std::cout << "Current Parameters:" << std::endl;
-                print_param_array(params, 0, NB_PIECETYPE);
-                print_psqt(params, NB_PIECETYPE);
-
                 std::cout << "Epoch = " << (size_t) i << "\tError = " << error
                           << "\tLearning Rate = " << (double) learning_rate << std::endl;
             }
