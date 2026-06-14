@@ -2,6 +2,9 @@
 #include "commons/utils.h"
 #include "core/perft.h"
 #include "search/params.h"
+#ifdef EXTERNAL_TUNE
+    #include "eval/hce/tuner/tuner.h"
+#endif
 
 namespace sagittar {
 
@@ -156,6 +159,13 @@ namespace sagittar {
 
         std::cout << ss.str() << std::endl;
     }
+
+#ifdef EXTERNAL_TUNE
+    void Engine::tune(const std::filesystem::path& epd_path) {
+        eval::hce::tuner::TunerSettings default_settings{};
+        eval::hce::tuner::tune(epd_path, default_settings);
+    }
+#endif
 
     void Engine::display() const { pos.display(); }
 

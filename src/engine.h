@@ -48,6 +48,10 @@ namespace sagittar {
 
         void bench();
 
+#ifdef EXTERNAL_TUNE
+        void tune(const std::filesystem::path& epd_path);
+#endif
+
         void display() const;
     };
 
