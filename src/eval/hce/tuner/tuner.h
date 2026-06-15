@@ -7,7 +7,7 @@ namespace sagittar::eval::hce::tuner {
     struct TunerSettings {
         bool   compute_k                   = false;
         bool   retune_from_zero            = false;
-        double K                           = 2.5;
+        double K                           = 2.85;
         size_t epochs                      = 5000;
         double beta1                       = 0.9;
         double beta2                       = 0.999;

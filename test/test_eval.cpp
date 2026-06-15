@@ -104,5 +104,23 @@ TEST_SUITE("Eval") {
 
         CHECK(eval::hce::mg_score(score) == 100);
         CHECK(eval::hce::eg_score(score) == 200);
+
+        score = eval::hce::S(-100, -200);
+        CHECK(eval::hce::mg_score(score) == -100);
+        CHECK(eval::hce::eg_score(score) == -200);
+
+        i32 x = eval::hce::S(10, 20);
+        i32 y = eval::hce::S(30, 40);
+        i32 z = x + y;
+
+        CHECK(eval::hce::mg_score(z) == 40);
+        CHECK(eval::hce::eg_score(z) == 60);
+
+        x = eval::hce::S(-100, -200);
+        y = eval::hce::S(-300, -400);
+        z = x + y;
+
+        CHECK(eval::hce::mg_score(z) == -400);
+        CHECK(eval::hce::eg_score(z) == -600);
     }
 }
