@@ -24,7 +24,7 @@ namespace sagittar::eval::hce {
     }
 
     constexpr i32 std_phase(const i32 phase) {
-        return ((phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE);
+        return std::clamp(((phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE), 0, 256);
     }
 
     inline i32 pos_phase(const Position& pos) {
