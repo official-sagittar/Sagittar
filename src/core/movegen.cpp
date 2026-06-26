@@ -1,5 +1,10 @@
 #include "movegen.h"
+#include "arch.h"
 #include "commons/utils.h"
+
+#if defined(SAGITTAR_HAS_BMI2)
+    #include <immintrin.h>
+#endif
 
 namespace sagittar {
 
@@ -9,7 +14,9 @@ namespace sagittar {
         u8       shift;
 
         unsigned index(BitBoard occ) const {
-#if defined(IS_32_BIT)
+#if defined(SAGITTAR_HAS_BMI2)
+            return static_cast<unsigned>(_pext_u64(occ, mask));
+#elif defined(SAGITTAR_32_BIT)
             const u32 lo = unsigned(occ) & unsigned(mask);
             const u32 hi = unsigned(occ >> 32) & unsigned(mask >> 32);
             return ((lo * unsigned(magic)) ^ (hi * unsigned(magic >> 32))) >> shift;
@@ -204,7 +211,9 @@ namespace sagittar {
     template<PieceType PT>
     static void initSliderAttackTable(std::array<Magic, 64>& magic_table,
                                       std::span<AttackTable> attack_table) {
+#if !defined(SAGITTAR_HAS_BMI2)
         static constexpr size_t MAGIC_MAX_TRIES = 500000;
+#endif
 
         const auto occupancy = [](const i32 index, const i32 bits, BitBoard mask) -> BitBoard {
             BitBoard result = 0ULL;
@@ -234,7 +243,7 @@ namespace sagittar {
                             : (PT == PieceType::ROOK)   ? (rookAttacks(square, 0ULL) & ~edges)
                                                         : 0ULL;
             const auto bits = utils::bitCount1s(m.mask);
-#if defined(IS_32_BIT)
+#if defined(SAGITTAR_32_BIT)
             m.shift = 32 - bits;
 #else
             m.shift = 64 - bits;
@@ -251,6 +260,7 @@ namespace sagittar {
                                                            : 0ULL;
             }
 
+#if !defined(SAGITTAR_HAS_BMI2)
             for (size_t tries = 0; tries < MAGIC_MAX_TRIES; ++tries)
             {
                 for (m.magic = 0ULL; utils::bitCount1s((m.magic * m.magic) >> 56) < 6;)
@@ -279,6 +289,7 @@ namespace sagittar {
                     break;
                 }
             }
+#endif
 
             for (size_t i = 0; i < (1 << bits); i++)
             {
