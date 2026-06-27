@@ -20,7 +20,7 @@ namespace sagittar {
     inline constexpr BitBoard RANK_6_BB       = RANK_1_BB << (8 * 5);
     inline constexpr BitBoard RANK_7_BB       = RANK_1_BB << (8 * 6);
     inline constexpr BitBoard RANK_8_BB       = RANK_1_BB << (8 * 7);
-    inline constexpr BitBoard RANK_1_AND_8_BB = RANK_1_BB & RANK_8_BB;
+    inline constexpr BitBoard RANK_1_AND_8_BB = RANK_1_BB | RANK_8_BB;
 
     inline constexpr BitBoard FILE_A_BB = 0x0101010101010101ULL;
     inline constexpr BitBoard FILE_B_BB = FILE_A_BB << 1;
