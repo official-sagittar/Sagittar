@@ -465,6 +465,7 @@ namespace sagittar {
 
         key_local ^= ZOBRIST_CA[m_ca_rights];
         m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
+        m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[to];
         key_local ^= ZOBRIST_CA[m_ca_rights];
 
         const BitBoard k_bb = m_bb_pieces[PieceType::KING];
