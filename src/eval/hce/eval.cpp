@@ -53,7 +53,7 @@ namespace sagittar::eval::hce {
             while (pt_bb_w)
             {
                 phase -= PHASE_WEIGHTS[pt];
-                const auto sq = utils::bitScanForward(&pt_bb_w);
+                const auto sq = pt_bb_w.pop_lsb();
                 eval_mg += psqt_w[pt][MG][sq];
                 eval_eg += psqt_w[pt][EG][sq];
             }
@@ -62,7 +62,7 @@ namespace sagittar::eval::hce {
             while (pt_bb_b)
             {
                 phase -= PHASE_WEIGHTS[pt];
-                const auto sq = utils::bitScanForward(&pt_bb_b);
+                const auto sq = pt_bb_b.pop_lsb();
                 eval_mg -= psqt_b[pt][MG][sq];
                 eval_eg -= psqt_b[pt][EG][sq];
             }
@@ -99,7 +99,7 @@ namespace sagittar::eval::hce {
             const auto w_minors_bb = pos.pieces(Color::WHITE, PieceType::KNIGHT, PieceType::BISHOP);
             const auto b_minors_bb = pos.pieces(Color::BLACK, PieceType::KNIGHT, PieceType::BISHOP);
 
-            return ((utils::bitCount1s(w_minors_bb) <= 1) && (utils::bitCount1s(b_minors_bb) <= 1));
+            return ((w_minors_bb.count() <= 1) && (b_minors_bb.count() <= 1));
         }
 
         return false;

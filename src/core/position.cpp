@@ -55,7 +55,7 @@ namespace sagittar {
         m_halfmoves(0),
         m_fullmoves(0),
         m_ply_count(0),
-        m_key(0ULL) {}
+        m_key(0ULL) { }
 
     void Position::reset() { *this = Position{}; }
 
@@ -131,8 +131,8 @@ namespace sagittar {
                 {
                     throw std::invalid_argument("Invalid FEN!");
                 }
-                const Color    c     = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
-                                                          || (ch == 'r') || (ch == 'q') || (ch == 'k'));
+                const Color    c = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
+                                                      || (ch == 'r') || (ch == 'q') || (ch == 'k'));
                 const Square   sq    = rf2sq(rank, file);
                 const BitBoard sq_bb = BB(sq);
                 m_bb_pieces[pt] |= sq_bb;
@@ -240,9 +240,9 @@ namespace sagittar {
         }
 
         // Set King Square & checkers
-        const BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
-        m_king_sq              = static_cast<Square>(__builtin_ctzll(king_bb));
-        m_checkers             = squareAttackers(*this, m_king_sq, colorFlip(m_stm));
+        BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
+        m_king_sq        = static_cast<Square>(king_bb.pop_lsb());
+        m_checkers       = squareAttackers(*this, m_king_sq, colorFlip(m_stm));
 
         // Reset Hash
         resetHash();
@@ -471,13 +471,13 @@ namespace sagittar {
         const BitBoard k_bb = m_bb_pieces[PieceType::KING];
 
         const BitBoard king_bb_us  = k_bb & m_bb_colors[US];
-        const Square   king_sq_us  = static_cast<Square>(__builtin_ctzll(king_bb_us));
+        const Square   king_sq_us  = static_cast<Square>(king_bb_us.lsb());
         const BitBoard checkers_us = squareAttackers(*this, king_sq_us, them);
 
         const bool is_valid_move = (checkers_us == 0ULL);
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
-        m_king_sq                   = static_cast<Square>(__builtin_ctzll(king_bb_them));
+        m_king_sq                   = static_cast<Square>(king_bb_them.lsb());
         m_checkers                  = squareAttackers(*this, m_king_sq, US);
 
         m_stm = colorFlip(m_stm);
@@ -675,11 +675,10 @@ namespace sagittar {
 
     Piece Position::pieceOn(const Square square) const { return m_board[square]; }
 
-    u8 Position::pieceCount(const PieceType pt) const { return utils::bitCount1s(m_bb_pieces[pt]); }
+    u8 Position::pieceCount(const PieceType pt) const { return m_bb_pieces[pt].count(); }
 
     u8 Position::pieceCount(const Piece piece) const {
-        return utils::bitCount1s(m_bb_pieces[pieceTypeOf(piece)]
-                                 & m_bb_colors[pieceColorOf(piece)]);
+        return (m_bb_pieces[pieceTypeOf(piece)] & m_bb_colors[pieceColorOf(piece)]).count();
     }
 
     Color Position::stm() const { return m_stm; }
@@ -695,8 +694,8 @@ namespace sagittar {
     u64 Position::key() const { return m_key; }
 
     bool Position::isValid() const {
-        return (utils::bitCount1s(m_bb_pieces[PieceType::KING]) == 2)
-            && ((m_bb_pieces[PieceType::PAWN] & RANK_1_AND_8_BB) == 0ULL);
+        return (m_bb_pieces[PieceType::KING].count() == 2)
+            && ((m_bb_pieces[PieceType::PAWN] & RANK_1_AND_8_BB).is_empty());
     }
 
     bool Position::isInCheck() const { return (m_checkers != 0ULL); }

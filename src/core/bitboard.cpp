@@ -21,7 +21,7 @@ namespace sagittar {
         const int dr = (ry > rx) - (ry < rx);
         const int df = (fy > fx) - (fy < fx);
 
-        BitBoard ray = 0ULL;
+        BitBoard ray{};
 
         int r = rx, f = fx;
 
@@ -66,7 +66,7 @@ namespace sagittar {
         const int dr = (ry > rx) - (ry < rx);
         const int df = (fy > fx) - (fy < fx);
 
-        BitBoard bb = 0ULL;
+        BitBoard bb{};
 
         for (int r = rx + dr, f = fx + df;
              r >= Rank::RANK_1 && r <= Rank::RANK_8 && f >= File::FILE_A && f <= File::FILE_H;
