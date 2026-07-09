@@ -274,7 +274,7 @@ namespace sagittar {
                 for (size_t i = 0; !fail && i < (1 << bits); i++)
                 {
                     const auto index = m.index(occupancies[i]);
-                    if (used[index] == 0ULL)
+                    if (used[index].is_empty())
                     {
                         used[index] = attacks[i];
                     }
@@ -564,13 +564,13 @@ namespace sagittar {
         const bool     king_ok   = (king_bb & BB(rf2sq(rank, File::FILE_E)));
 
         constexpr BitBoard mask_path_k  = (US == Color::WHITE) ? MASK_WKCA_PATH : MASK_BKCA_PATH;
-        const bool         path_k_empty = ((occ & mask_path_k) == 0ULL);
+        const bool         path_k_empty = (occ & mask_path_k).is_empty();
 
         constexpr BitBoard mask_path_q  = (US == Color::WHITE) ? MASK_WQCA_PATH : MASK_BQCA_PATH;
-        const bool         path_q_empty = ((occ & mask_path_q) == 0ULL);
+        const bool         path_q_empty = (occ & mask_path_q).is_empty();
 
-        const bool safe_k_ok = (squareAttackers(pos, k_sq_r, them) == 0ULL);
-        const bool safe_q_ok = (squareAttackers(pos, k_sq_l, them) == 0ULL);
+        const bool safe_k_ok = squareAttackers(pos, k_sq_r, them).is_empty();
+        const bool safe_q_ok = squareAttackers(pos, k_sq_l, them).is_empty();
 
         if (rights_k_ok && king_ok && rook_k_ok && path_k_empty && safe_k_ok)
         {

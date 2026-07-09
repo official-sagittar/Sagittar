@@ -55,7 +55,7 @@ namespace sagittar {
         m_halfmoves(0),
         m_fullmoves(0),
         m_ply_count(0),
-        m_key(0ULL) { }
+        m_key(0ULL) {}
 
     void Position::reset() { *this = Position{}; }
 
@@ -131,8 +131,8 @@ namespace sagittar {
                 {
                     throw std::invalid_argument("Invalid FEN!");
                 }
-                const Color    c = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
-                                                      || (ch == 'r') || (ch == 'q') || (ch == 'k'));
+                const Color    c     = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
+                                                          || (ch == 'r') || (ch == 'q') || (ch == 'k'));
                 const Square   sq    = rf2sq(rank, file);
                 const BitBoard sq_bb = BB(sq);
                 m_bb_pieces[pt] |= sq_bb;
@@ -142,7 +142,7 @@ namespace sagittar {
             }
         }
 
-        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID] == 0ULL);
+        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID].is_empty());
 
         if (!isValid()) [[unlikely]]
         {
@@ -459,7 +459,7 @@ namespace sagittar {
             }
         }
 
-        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID] == 0ULL);
+        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID].is_empty());
 
         m_halfmoves *= !(is_capture || (move_pt == PieceType::PAWN));
 
@@ -474,7 +474,7 @@ namespace sagittar {
         const Square   king_sq_us  = static_cast<Square>(king_bb_us.lsb());
         const BitBoard checkers_us = squareAttackers(*this, king_sq_us, them);
 
-        const bool is_valid_move = (checkers_us == 0ULL);
+        const bool is_valid_move = checkers_us.is_empty();
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
         m_king_sq                   = static_cast<Square>(king_bb_them.lsb());
@@ -698,7 +698,7 @@ namespace sagittar {
             && ((m_bb_pieces[PieceType::PAWN] & RANK_1_AND_8_BB).is_empty());
     }
 
-    bool Position::isInCheck() const { return (m_checkers != 0ULL); }
+    bool Position::isInCheck() const { return !m_checkers.is_empty(); }
 
     bool Position::isDrawn(std::span<u64> key_history) const {
         assert(key_history.size() == static_cast<size_t>(m_ply_count));
