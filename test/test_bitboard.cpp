@@ -8,8 +8,8 @@ using namespace sagittar;
 TEST_SUITE("BitBoard") {
 
     TEST_CASE("Ray") {
-        BitBoard b      = 0ULL;
-        BitBoard should = 0ULL;
+        BitBoard b{};
+        BitBoard should{};
 
         b = ray(Square::A1, Square::H1);
         REQUIRE(b == RANK_1_BB);
@@ -34,10 +34,10 @@ TEST_SUITE("BitBoard") {
         REQUIRE(b == should);
 
         b = ray(Square::D3, Square::E6);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b = ray(Square::G3, Square::B5);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b      = ray(Square::E4, Square::D5);
         should = BB(Square::E4);
@@ -75,10 +75,10 @@ TEST_SUITE("BitBoard") {
         REQUIRE(b == FILE_D_BB);
 
         b = line(Square::D3, Square::E6);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b = line(Square::G3, Square::B5);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b      = line(Square::E4, Square::D5);
         should = BB(Square::A8);
@@ -130,15 +130,15 @@ TEST_SUITE("BitBoard") {
         REQUIRE(b == should);
 
         b = between(Square::D3, Square::E6);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b = between(Square::G3, Square::B5);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b = between(Square::E4, Square::D5);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
 
         b = between(Square::C4, Square::C5);
-        REQUIRE(b == 0ULL);
+        REQUIRE(b.is_empty());
     }
 }

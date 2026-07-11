@@ -34,14 +34,14 @@ TEST_SUITE("Eval") {
                 while (pt_bb_w)
                 {
                     phase -= eval::hce::PHASE_WEIGHTS[pt];
-                    (void) utils::bitScanForward(&pt_bb_w);
+                    (void) pt_bb_w.pop_lsb();
                 }
                 // BLACK
                 auto pt_bb_b = pt_bb & b_p;
                 while (pt_bb_b)
                 {
                     phase -= eval::hce::PHASE_WEIGHTS[pt];
-                    (void) utils::bitScanForward(&pt_bb_b);
+                    (void) pt_bb_b.pop_lsb();
                 }
             }
 

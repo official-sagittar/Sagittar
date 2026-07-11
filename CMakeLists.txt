@@ -66,6 +66,8 @@ list(FILTER CORE_SRC EXCLUDE REGEX "src/eval/hce/tuner/*")
 file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)
 file(GLOB_RECURSE TUNE_SRC CONFIGURE_DEPENDS src/eval/hce/tuner/*.cpp src/eval/hce/tuner/*.h)
 
+include(FetchContent)
+
 # ----------------------------------------------------------
 # Build type configurations
 # ----------------------------------------------------------
@@ -78,9 +80,23 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Test")
     set(CORE_SRC_FOR_TEST ${CORE_SRC})
     list(FILTER CORE_SRC_FOR_TEST EXCLUDE REGEX "src/main.cpp")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC_FOR_TEST} ${TEST_SRC})
-    target_include_directories(${EXE_NAME} PRIVATE test/lib/doctest)
     target_compile_definitions(${EXE_NAME} PRIVATE DEBUG TEST)
     target_compile_options(${EXE_NAME} PRIVATE -O3)
+
+    # ----------------------------------------------------------
+    # doctest (v2.5.2, header-only)
+    # Repo: https://github.com/doctest/doctest/releases/tag/v2.5.2
+    # ----------------------------------------------------------
+    set(DOCTEST_NO_INSTALL ON CACHE BOOL "" FORCE)
+    set(DOCTEST_WITH_TESTS OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(doctest
+        GIT_REPOSITORY https://github.com/doctest/doctest.git
+        GIT_TAG        v2.5.2
+    )
+    FetchContent_MakeAvailable(doctest)
+
+    target_link_libraries(${EXE_NAME} PRIVATE doctest::doctest)
 
 elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
     target_sources(${EXE_NAME} PRIVATE ${CORE_SRC} ${TUNE_SRC})
@@ -91,7 +107,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Tune")
     # dp::thread-pool (v0.7.0)
     # Repo: https://github.com/ptsouchlos/thread-pool.git
     # ----------------------------------------------------------
-    include(FetchContent)
     set(TP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(TP_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
     set(TP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
