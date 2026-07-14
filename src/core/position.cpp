@@ -1,7 +1,6 @@
 #include "position.h"
 #include "commons/utils.h"
 #include "core/movegen.h"
-#include "types.h"
 
 namespace sagittar {
 
