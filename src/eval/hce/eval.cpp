@@ -1,6 +1,9 @@
 #include "eval.h"
 #include "commons/utils.h"
 #include "eval/hce/defs.h"
+#include <array>
+#include <cstddef>
+#include <utility>
 
 namespace sagittar::eval::hce {
 
@@ -35,6 +38,63 @@ namespace sagittar::eval::hce {
 
             return table;
         }();
+
+        std::pair<Score, Score> evaluate_pawns(const Position& pos) {
+            Score eval_mg = 0;
+            Score eval_eg = 0;
+
+            // WHITE
+            {
+                auto w_p_bb = pos.pieces(Color::WHITE, PieceType::PAWN);
+                while (w_p_bb)
+                {
+                    const auto sq = w_p_bb.pop_lsb();
+                    eval_mg += psqt_w[PieceType::PAWN][MG][sq];
+                    eval_eg += psqt_w[PieceType::PAWN][EG][sq];
+                }
+            }
+
+            // BLACK
+            {
+                auto b_p_bb = pos.pieces(Color::BLACK, PieceType::PAWN);
+                while (b_p_bb)
+                {
+                    const auto sq = b_p_bb.pop_lsb();
+                    eval_mg -= psqt_b[PieceType::PAWN][MG][sq];
+                    eval_eg -= psqt_b[PieceType::PAWN][EG][sq];
+                }
+            }
+
+            return std::make_pair(eval_mg, eval_eg);
+        }
+
+        class PawnCache {
+           public:
+            [[nodiscard]] std::pair<Score, Score> probe(const Position& pos) noexcept {
+                const u64 pawn_key = pos.pawn_key();
+
+                auto& entry = m_entries[static_cast<std::size_t>(pawn_key % SIZE)];
+
+                if (entry.pawn_key != pawn_key)
+                {
+                    entry.eval     = evaluate_pawns(pos);
+                    entry.pawn_key = pawn_key;
+                }
+
+                return entry.eval;
+            }
+
+           private:
+            static constexpr std::size_t SIZE = 128 * 1024;
+
+            struct PawnEvalEntry {
+                u64                     pawn_key{};
+                std::pair<Score, Score> eval{};
+            };
+
+            std::array<PawnEvalEntry, SIZE> m_entries{};
+        };
+
     }
 
     Score evaluate(const Position& pos) {
@@ -42,10 +102,18 @@ namespace sagittar::eval::hce {
         Score eval_mg = 0;
         Score eval_eg = 0;
 
+        // Evaluate Pawns
+        static PawnCache pawn_cache{};
+
+        const auto pawn_eval = pawn_cache.probe(pos);
+        eval_mg              = pawn_eval.first;
+        eval_eg              = pawn_eval.second;
+
+        // Evaluate Pieces
         const auto w_p = pos.pieces(Color::WHITE);
         const auto b_p = pos.pieces(Color::BLACK);
 
-        for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
+        for (int pt = PieceType::KNIGHT; pt <= PieceType::KING; pt++)
         {
             const auto pt_bb = pos.pieces(static_cast<PieceType>(pt));
             // WHITE
