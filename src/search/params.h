@@ -61,12 +61,10 @@ namespace sagittar::search::params {
     inline double                             lmp_treshold_pct = 0.0;
     inline std::array<std::array<u8, 64>, 64> lmr_r_table_tactical{};  // [move][depth]
     inline std::array<std::array<u8, 64>, 64> lmr_r_table_quiet{};     // [move][depth]
-    inline std::array<Score, 8>               futility_margin{};       // [depth]
 
     void init();
     void updateLMPTresholdPct();
     void updateLMRTable();
-    void updateFutilityMargin();
 
     PARAM(rfp_margin, 51, 50, 1000, 25);
 
@@ -77,7 +75,7 @@ namespace sagittar::search::params {
     PARAM_CALLBACK(lmr_alpha_quiet, 120, 0, 1000, 25, updateLMRTable);
     PARAM_CALLBACK(lmr_beta_quiet, 146, 50, 1000, 25, updateLMRTable);
 
-    PARAM_CALLBACK(futility_margin_c, 9, 5, 500, 5, updateFutilityMargin);
-    PARAM_CALLBACK(futility_margin_m, 143, 0, 1000, 10, updateFutilityMargin);
+    PARAM(futility_margin_c, 9, 5, 500, 5);
+    PARAM(futility_margin_m, 143, 0, 1000, 10);
 
 }

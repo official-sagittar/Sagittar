@@ -81,17 +81,9 @@ namespace sagittar::search::params {
         }
     }
 
-    void updateFutilityMargin() {
-        for (u8 depth = 0; depth < 8; depth++)
-        {
-            futility_margin[depth] = (futility_margin_m() * depth) + futility_margin_c();
-        }
-    }
-
     void init() {
         updateLMPTresholdPct();
         updateLMRTable();
-        updateFutilityMargin();
     }
 
 }

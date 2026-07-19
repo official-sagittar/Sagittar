@@ -312,7 +312,7 @@ namespace sagittar::search {
             // clang-format off
             if (depth <= 7
                 && alpha < WIN_SCORE
-                && ((static_eval + params::futility_margin[(int) depth]) <= alpha))
+                && (((static_eval + ((params::futility_margin_m() * depth) + params::futility_margin_c())) <= alpha)))
             {
                 do_futility_pruning = true;
             }
