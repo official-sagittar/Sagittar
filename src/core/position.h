@@ -54,6 +54,7 @@ namespace sagittar {
         u8     halfmoves() const;
         u8     fullmoves() const;
         u64    key() const;
+        u64    pawn_key() const;
 
         bool isValid() const;
         bool isInCheck() const;
@@ -110,6 +111,7 @@ namespace sagittar {
         u8                      m_fullmoves;
         i32                     m_ply_count;
         u64                     m_key;
+        u64                     m_pawn_key;
     };
 
 }

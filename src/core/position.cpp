@@ -55,12 +55,14 @@ namespace sagittar {
         m_halfmoves(0),
         m_fullmoves(0),
         m_ply_count(0),
-        m_key(0ULL) {}
+        m_key(0ULL),
+        m_pawn_key(0ULL) {}
 
     void Position::reset() { *this = Position{}; }
 
     void Position::resetHash() {
-        m_key = 0ULL;
+        m_key      = 0ULL;
+        m_pawn_key = 0ULL;
 
         // Side to move
         if (m_stm == Color::WHITE)
@@ -88,6 +90,11 @@ namespace sagittar {
             }
 
             m_key ^= ZOBRIST_TABLE[p][sq];
+
+            if (pieceTypeOf(p) == PieceType::PAWN)
+            {
+                m_pawn_key ^= ZOBRIST_TABLE[p][sq];
+            }
         }
     }
 
@@ -349,7 +356,8 @@ namespace sagittar {
         constexpr bool  is_promotion = MOVE_IS_PROMOTION(F);
         constexpr Color them         = colorFlip(US);
 
-        u64 key_local = m_key;
+        u64 key_local      = m_key;
+        u64 pawn_key_local = m_pawn_key;
 
         key_local ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
                                      ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
@@ -374,8 +382,14 @@ namespace sagittar {
         m_bb_colors[US] ^= move_mask;
         m_board[from] = Piece::NO_PIECE;
         m_board[to]   = move_p;
+
         key_local ^= ZOBRIST_TABLE[move_p][from];
         key_local ^= ZOBRIST_TABLE[move_p][to];
+        if (move_pt == PieceType::PAWN)
+        {
+            pawn_key_local ^= ZOBRIST_TABLE[move_p][from];
+            pawn_key_local ^= ZOBRIST_TABLE[move_p][to];
+        }
 
         if constexpr ((F == MoveFlag::MOVE_CASTLE_KING_SIDE)
                       || (F == MoveFlag::MOVE_CASTLE_QUEEN_SIDE))
@@ -420,6 +434,7 @@ namespace sagittar {
                     m_bb_colors[them] ^= ep_victim_sq_bb;
                     m_board[ep_victim_sq] = Piece::NO_PIECE;
                     key_local ^= ZOBRIST_TABLE[ep_victim][ep_victim_sq];
+                    pawn_key_local ^= ZOBRIST_TABLE[ep_victim][ep_victim_sq];
                 }
                 else
                 {
@@ -428,6 +443,10 @@ namespace sagittar {
                     m_bb_pieces[captured_pt] ^= move_mask_to;
                     m_bb_colors[them] ^= move_mask_to;
                     key_local ^= ZOBRIST_TABLE[captured_p][to];
+                    if (captured_pt == PieceType::PAWN)
+                    {
+                        pawn_key_local ^= ZOBRIST_TABLE[captured_p][to];
+                    }
                 }
             }
 
@@ -456,6 +475,7 @@ namespace sagittar {
                 m_board[to] = promoted;
                 key_local ^= ZOBRIST_TABLE[move_p][to];
                 key_local ^= ZOBRIST_TABLE[promoted][to];
+                pawn_key_local ^= ZOBRIST_TABLE[move_p][to];
             }
         }
 
@@ -483,12 +503,15 @@ namespace sagittar {
         m_stm = colorFlip(m_stm);
         key_local ^= ZOBRIST_SIDE;
 
-        m_key = key_local;
+        m_key      = key_local;
+        m_pawn_key = pawn_key_local;
 
 #ifdef DEBUG
-        const u64 curr_key = m_key;
+        const u64 curr_key      = m_key;
+        const u64 curr_pawn_key = m_pawn_key;
         resetHash();
         assert(m_key == curr_key);
+        assert(m_pawn_key == curr_pawn_key);
 #endif
 
         return is_valid_move;
@@ -692,6 +715,8 @@ namespace sagittar {
     u8 Position::fullmoves() const { return m_fullmoves; }
 
     u64 Position::key() const { return m_key; }
+
+    u64 Position::pawn_key() const { return m_pawn_key; }
 
     bool Position::isValid() const {
         return (m_bb_pieces[PieceType::KING].count() == 2)
