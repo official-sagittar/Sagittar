@@ -7,6 +7,6 @@ namespace sagittar::search {
 
     static constexpr i16 MAX_HISTORY = std::numeric_limits<i16>::max();
 
-    using PieceToHistory = std::array<std::array<i16, 64>, 12>;
+    using PieceToHistory = std::array<std::array<i16, 64>, 16>;
 
 }

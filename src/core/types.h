@@ -40,13 +40,13 @@ namespace sagittar {
         WHITE_ROOK,
         WHITE_QUEEN,
         WHITE_KING,
-        BLACK_PAWN,
+        BLACK_PAWN = 8,
         BLACK_KNIGHT,
         BLACK_BISHOP,
         BLACK_ROOK,
         BLACK_QUEEN,
         BLACK_KING,
-        NO_PIECE,
+        NO_PIECE = 15,
     };
 
     enum Rank : u8 {
@@ -105,12 +105,12 @@ namespace sagittar {
         BQCA = 8
     };
 
-    constexpr PieceType pieceTypeOf(const Piece p) { return static_cast<PieceType>(p % 6); }
+    constexpr PieceType pieceTypeOf(const Piece p) { return static_cast<PieceType>(p & 0x7); }
 
-    constexpr Color pieceColorOf(const Piece p) { return static_cast<Color>(p / 6); }
+    constexpr Color pieceColorOf(const Piece p) { return static_cast<Color>(p >> 3); }
 
     constexpr Piece pieceCreate(const PieceType t, Color c) {
-        return static_cast<Piece>((c * 6) + t);
+        return static_cast<Piece>((c << 3) | t);
     }
 
     constexpr Color colorFlip(const Color c) { return static_cast<Color>(c ^ 1); }
