@@ -25,7 +25,7 @@ namespace sagittar {
 
     void Position::initialize() {
 
-        for (u8 p = Piece::WHITE_PAWN; p < Piece::NO_PIECE; p++)
+        for (u8 p = Piece::WHITE_PAWN; p <= Piece::NO_PIECE; p++)
         {
             for (u8 sq = Square::A1; sq <= Square::H8; sq++)
             {
