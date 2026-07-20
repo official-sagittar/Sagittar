@@ -129,7 +129,7 @@ namespace sagittar {
     }
     constexpr Rank promotionRankDestOf(const Color c) { return static_cast<Rank>(7 * (c ^ 1)); }
 
-    const std::string PIECES_STR = "PNBRQKpnbrqk.";
+    const std::string PIECES_STR = "PNBRQKXXpnbrqkX.";
     const std::string COLORS_STR = "wb";
     const std::string FILE_STR   = "abcdefgh";
 }
