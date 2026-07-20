@@ -46,7 +46,7 @@ namespace sagittar {
         BLACK_ROOK,
         BLACK_QUEEN,
         BLACK_KING,
-        NO_PIECE = 15,
+        NO_PIECE
     };
 
     enum Rank : u8 {
@@ -129,7 +129,7 @@ namespace sagittar {
     }
     constexpr Rank promotionRankDestOf(const Color c) { return static_cast<Rank>(7 * (c ^ 1)); }
 
-    const std::string PIECES_STR = "PNBRQKXXpnbrqkX.";
+    const std::string PIECES_STR = "PNBRQKXXpnbrqk.";
     const std::string COLORS_STR = "wb";
     const std::string FILE_STR   = "abcdefgh";
 }

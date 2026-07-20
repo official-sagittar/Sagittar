@@ -18,10 +18,10 @@ namespace sagittar {
     };
     // clang-format on
 
-    static std::array<std::array<u64, 64>, 16> ZOBRIST_TABLE;  // [Piece][Square]
+    static std::array<std::array<u64, 64>, 15> ZOBRIST_TABLE;  // [Piece][Square]
     static std::array<u64, 16>                 ZOBRIST_CA;
     static u64                                 ZOBRIST_SIDE;
-    static int constexpr ZOBRIST_EP_IDX = 15;
+    static int constexpr ZOBRIST_EP_IDX = 14;
 
     void Position::initialize() {
 
