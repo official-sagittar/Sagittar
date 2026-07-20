@@ -24,7 +24,7 @@ namespace sagittar::search {
     // clang-format on
 
     static constexpr int mvvlvaIdx(const PieceType attacker, const PieceType victim) {
-        return ((attacker - 1) * 6) + (victim - 1);
+        return (attacker * 6) + victim;
     }
 
     static const auto cmp = [](const ExtMove& a, const ExtMove& b) {

@@ -6,10 +6,10 @@ namespace sagittar::eval::hce {
 
     namespace {
 
-        constexpr std::array<std::array<PSQT, 2>, 7> psqt_b = []() {
-            std::array<std::array<PSQT, 2>, 7> table{};
+        constexpr std::array<std::array<PSQT, 2>, 6> psqt_b = []() {
+            std::array<std::array<PSQT, 2>, 6> table{};
 
-            for (int pt = PieceType::PIECE_TYPE_INVALID; pt <= PieceType::KING; pt++)
+            for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {
@@ -21,10 +21,10 @@ namespace sagittar::eval::hce {
             return table;
         }();
 
-        constexpr std::array<std::array<PSQT, 2>, 7> psqt_w = []() {
-            std::array<std::array<PSQT, 2>, 7> table{};
+        constexpr std::array<std::array<PSQT, 2>, 6> psqt_w = []() {
+            std::array<std::array<PSQT, 2>, 6> table{};
 
-            for (int pt = PieceType::PIECE_TYPE_INVALID; pt <= PieceType::KING; pt++)
+            for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {

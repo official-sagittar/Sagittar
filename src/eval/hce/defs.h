@@ -10,7 +10,7 @@ namespace sagittar::eval::hce {
         EG
     };
 
-    constexpr std::array<i32, 7> PHASE_WEIGHTS = {0, 0, 1, 1, 2, 4, 0};
+    constexpr std::array<i32, 6> PHASE_WEIGHTS = {0, 1, 1, 2, 4, 0};
     constexpr i32                TOTAL_PHASE   = 24;
 
     constexpr i32 S(const i32 mg, const i32 eg) {
@@ -42,8 +42,7 @@ namespace sagittar::eval::hce {
 
     // https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
     // clang-format off
-    constexpr std::array<i32, 7> PIECE_SCORES = {
-        0,
+    constexpr std::array<i32, 6> PIECE_SCORES = {
         S(82, 94),      // PAWN
         S(337, 281),    // KNIGHT
         S(365, 297),    // BISHOP
@@ -54,10 +53,8 @@ namespace sagittar::eval::hce {
 
     using PSQT = std::array<i32, 64>;
 
-    constexpr std::array<PSQT, 7> PSQT_SCORES = []() {
-        std::array<PSQT, 7> table{};
-
-        table[PieceType::PIECE_TYPE_INVALID] = {};
+    constexpr std::array<PSQT, 6> PSQT_SCORES = []() {
+        std::array<PSQT, 6> table{};
 
         table[PieceType::PAWN] = {
             S(0, 0),     S(0, 0),      S(0, 0),     S(0, 0),     S(0, 0),     S(0, 0),     S(0, 0),     S(0, 0),

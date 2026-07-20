@@ -99,7 +99,7 @@ namespace sagittar {
             return table;
         }();
 
-        std::array<BitBoard, 7> m_bb_pieces;
+        std::array<BitBoard, 6> m_bb_pieces;
         std::array<BitBoard, 2> m_bb_colors;
         std::array<Piece, 64>   m_board;
         BitBoard                m_checkers;
