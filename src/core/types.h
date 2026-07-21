@@ -24,29 +24,29 @@ namespace sagittar {
     };
 
     enum PieceType : u8 {
-        PIECE_TYPE_INVALID,
         PAWN,
         KNIGHT,
         BISHOP,
         ROOK,
         QUEEN,
-        KING
+        KING,
+        PIECE_TYPE_INVALID,
     };
 
     enum Piece : u8 {
-        NO_PIECE,
         WHITE_PAWN,
         WHITE_KNIGHT,
         WHITE_BISHOP,
         WHITE_ROOK,
         WHITE_QUEEN,
         WHITE_KING,
-        BLACK_PAWN = 9,
+        BLACK_PAWN = 8,
         BLACK_KNIGHT,
         BLACK_BISHOP,
         BLACK_ROOK,
         BLACK_QUEEN,
-        BLACK_KING
+        BLACK_KING,
+        NO_PIECE
     };
 
     enum Rank : u8 {
@@ -82,7 +82,7 @@ namespace sagittar {
         A6, B6, C6, D6, E6, F6, G6, H6,
         A7, B7, C7, D7, E7, F7, G7, H7,
         A8, B8, C8, D8, E8, F8, G8, H8,
-        NO_SQ = 99
+        NO_SQ
     };
 
     constexpr std::array<Square, 64> SQUARES_MIRRORED = {
@@ -107,7 +107,7 @@ namespace sagittar {
 
     constexpr PieceType pieceTypeOf(const Piece p) { return static_cast<PieceType>(p & 0x7); }
 
-    constexpr Color pieceColorOf(const Piece p) { return static_cast<Color>((p & 0x8) / 8); }
+    constexpr Color pieceColorOf(const Piece p) { return static_cast<Color>(p >> 3); }
 
     constexpr Piece pieceCreate(const PieceType t, Color c) {
         return static_cast<Piece>((c << 3) | t);
@@ -129,7 +129,7 @@ namespace sagittar {
     }
     constexpr Rank promotionRankDestOf(const Color c) { return static_cast<Rank>(7 * (c ^ 1)); }
 
-    const std::string PIECES_STR = ".PNBRQKXXpnbrqk";
+    const std::string PIECES_STR = "PNBRQKXXpnbrqk.";
     const std::string COLORS_STR = "wb";
     const std::string FILE_STR   = "abcdefgh";
 }

@@ -21,11 +21,11 @@ namespace sagittar {
     static std::array<std::array<u64, 64>, 15> ZOBRIST_TABLE;  // [Piece][Square]
     static std::array<u64, 16>                 ZOBRIST_CA;
     static u64                                 ZOBRIST_SIDE;
-    static int constexpr ZOBRIST_EP_IDX = 0;
+    static int constexpr ZOBRIST_EP_IDX = 14;
 
     void Position::initialize() {
 
-        for (u8 p = Piece::NO_PIECE; p <= Piece::BLACK_KING; p++)
+        for (u8 p = Piece::WHITE_PAWN; p <= Piece::NO_PIECE; p++)
         {
             for (u8 sq = Square::A1; sq <= Square::H8; sq++)
             {
@@ -46,7 +46,6 @@ namespace sagittar {
     Position::Position() :
         m_bb_pieces({}),
         m_bb_colors({}),
-        m_board({}),
         m_checkers(0ULL),
         m_king_sq(Square::NO_SQ),
         m_stm(Color::WHITE),
@@ -56,7 +55,9 @@ namespace sagittar {
         m_fullmoves(0),
         m_ply_count(0),
         m_key(0ULL),
-        m_pawn_key(0ULL) {}
+        m_pawn_key(0ULL) {
+        m_board.fill(Piece::NO_PIECE);
+    }
 
     void Position::reset() { *this = Position{}; }
 
@@ -148,8 +149,6 @@ namespace sagittar {
                 ++file;
             }
         }
-
-        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID].is_empty());
 
         if (!isValid()) [[unlikely]]
         {
@@ -359,8 +358,8 @@ namespace sagittar {
         u64 key_local      = m_key;
         u64 pawn_key_local = m_pawn_key;
 
-        key_local ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
-                                     ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
+        key_local ^=
+          (m_ep_target == Square::NO_SQ) ? 0ULL : ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
 
         m_ep_target = Square::NO_SQ;
         ++m_halfmoves;
@@ -478,8 +477,6 @@ namespace sagittar {
                 pawn_key_local ^= ZOBRIST_TABLE[move_p][to];
             }
         }
-
-        assert(m_bb_pieces[PieceType::PIECE_TYPE_INVALID].is_empty());
 
         m_halfmoves *= !(is_capture || (move_pt == PieceType::PAWN));
 
@@ -672,8 +669,7 @@ namespace sagittar {
     }
 
     void Position::doNullMove() {
-        m_key ^= utils::SEL<u64>(m_ep_target != Square::NO_SQ, static_cast<u64>(0ULL),
-                                 ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target]);
+        m_key ^= (m_ep_target == Square::NO_SQ) ? 0ULL : ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
         m_checkers  = 0ULL;
         m_ep_target = Square::NO_SQ;
         m_stm       = colorFlip(m_stm);

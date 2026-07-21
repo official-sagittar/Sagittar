@@ -9,7 +9,7 @@ namespace sagittar::eval::hce::tuner {
     using ThreadPool = dp::thread_pool<>;
 
     constexpr size_t NB_COLOR     = 2;
-    constexpr size_t NB_PIECETYPE = 7;
+    constexpr size_t NB_PIECETYPE = 6;
     constexpr size_t NB_SQUARE    = 64;
 
     constexpr size_t N_PARAMS = NB_PIECETYPE                 // Piece Scores

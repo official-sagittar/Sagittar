@@ -87,13 +87,12 @@ namespace sagittar::eval::hce::tuner {
     size_t print_psqt(ParameterVector& params, const size_t start) {
         size_t index = start;
 
-        std::string pt_names[] = {
-          "PIECE_TYPE_INVALID", "PAWN", "KNIGHT", "BISHOP", "ROOK", "QUEEN", "KING"};
+        std::string pt_names[] = {"PAWN", "KNIGHT", "BISHOP", "ROOK", "QUEEN", "KING"};
 
-        std::cout << "constexpr std::array<PSQT, 7> PSQT_SCORES = []() {\n";
-        std::cout << "std::array<PSQT, 7> table{};" << std::endl;
+        std::cout << "constexpr std::array<PSQT, 6> PSQT_SCORES = []() {\n";
+        std::cout << "std::array<PSQT, 6> table{};" << std::endl;
 
-        for (int pt = PieceType::PIECE_TYPE_INVALID; pt <= PieceType::KING; pt++)
+        for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
         {
             std::cout << "table[PieceType::" << pt_names[pt] << "] = {\n";
             for (int sq = Square::A1; sq <= Square::H8; sq++)
