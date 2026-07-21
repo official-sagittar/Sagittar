@@ -8,10 +8,10 @@ namespace sagittar {
             return 0ULL;
         }
 
-        const Rank rx = sq2rank(x);
-        const Rank ry = sq2rank(y);
-        const File fx = sq2file(x);
-        const File fy = sq2file(y);
+        const Rank rx = x.rank();
+        const Rank ry = y.rank();
+        const File fx = x.file();
+        const File fy = y.file();
 
         if (!isAligned(x, y))
         {
@@ -25,13 +25,13 @@ namespace sagittar {
 
         int r = rx, f = fx;
 
-        ray |= BB(rf2sq(r, f));
+        ray |= BB(Square{r, f});
 
         while (r != ry || f != fy)
         {
             r += dr;
             f += df;
-            ray |= BB(rf2sq(r, f));
+            ray |= BB(Square{r, f});
         }
 
         return ray;
@@ -53,10 +53,10 @@ namespace sagittar {
             return 0ULL;
         }
 
-        const Rank rx = sq2rank(x);
-        const Rank ry = sq2rank(y);
-        const File fx = sq2file(x);
-        const File fy = sq2file(y);
+        const Rank rx = x.rank();
+        const Rank ry = y.rank();
+        const File fx = x.file();
+        const File fy = y.file();
 
         if (!isAligned(x, y))
         {
@@ -72,14 +72,14 @@ namespace sagittar {
              r >= Rank::RANK_1 && r <= Rank::RANK_8 && f >= File::FILE_A && f <= File::FILE_H;
              r += dr, f += df)
         {
-            bb |= BB(rf2sq(r, f));
+            bb |= BB(Square{r, f});
         }
 
         for (int r = rx - dr, f = fx - df;
              r >= Rank::RANK_1 && r <= Rank::RANK_8 && f >= File::FILE_A && f <= File::FILE_H;
              r -= dr, f -= df)
         {
-            bb |= BB(rf2sq(r, f));
+            bb |= BB(Square{r, f});
         }
 
         bb |= BB(x);
@@ -90,11 +90,11 @@ namespace sagittar {
     static constexpr auto RAY_BB = []() {
         std::array<std::array<BitBoard, 64>, 64> rays{};
 
-        for (int x = Square::A1; x <= Square::H8; ++x)
+        for (const Square x : Square::all())
         {
-            for (int y = Square::A1; y <= Square::H8; ++y)
+            for (const Square y : Square::all())
             {
-                rays[x][y] = compute_ray(static_cast<Square>(x), static_cast<Square>(y));
+                rays[x.index()][y.index()] = compute_ray(x, y);
             }
         }
 
@@ -104,11 +104,11 @@ namespace sagittar {
     static constexpr auto LINE_BB = []() {
         std::array<std::array<BitBoard, 64>, 64> lines{};
 
-        for (int x = Square::A1; x <= Square::H8; ++x)
+        for (const Square x : Square::all())
         {
-            for (int y = Square::A1; y <= Square::H8; ++y)
+            for (const Square y : Square::all())
             {
-                lines[x][y] = compute_line(static_cast<Square>(x), static_cast<Square>(y));
+                lines[x.index()][y.index()] = compute_line(x, y);
             }
         }
 
@@ -118,21 +118,21 @@ namespace sagittar {
     static constexpr auto BETWEEN_BB = []() {
         std::array<std::array<BitBoard, 64>, 64> bet{};
 
-        for (int x = Square::A1; x <= Square::H8; ++x)
+        for (const Square x : Square::all())
         {
-            for (int y = Square::A1; y <= Square::H8; ++y)
+            for (const Square y : Square::all())
             {
-                bet[x][y] = compute_between(static_cast<Square>(x), static_cast<Square>(y));
+                bet[x.index()][y.index()] = compute_between(x, y);
             }
         }
 
         return bet;
     }();
 
-    BitBoard ray(const Square x, const Square y) { return RAY_BB[x][y]; }
+    BitBoard ray(const Square x, const Square y) { return RAY_BB[x.index()][y.index()]; }
 
-    BitBoard line(const Square x, const Square y) { return LINE_BB[x][y]; }
+    BitBoard line(const Square x, const Square y) { return LINE_BB[x.index()][y.index()]; }
 
-    BitBoard between(const Square x, const Square y) { return BETWEEN_BB[x][y]; }
+    BitBoard between(const Square x, const Square y) { return BETWEEN_BB[x.index()][y.index()]; }
 
 }

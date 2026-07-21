@@ -11,10 +11,12 @@ namespace sagittar::eval::hce {
 
             for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
-                for (int sq = Square::A1; sq <= Square::H8; sq++)
+                for (const Square sq : Square::all())
                 {
-                    table[pt][MG][sq] = mg_score(PIECE_SCORES[pt]) + mg_score(PSQT_SCORES[pt][sq]);
-                    table[pt][EG][sq] = eg_score(PIECE_SCORES[pt]) + eg_score(PSQT_SCORES[pt][sq]);
+                    table[pt][MG][sq.index()] =
+                      mg_score(PIECE_SCORES[pt]) + mg_score(PSQT_SCORES[pt][sq.index()]);
+                    table[pt][EG][sq.index()] =
+                      eg_score(PIECE_SCORES[pt]) + eg_score(PSQT_SCORES[pt][sq.index()]);
                 }
             }
 
@@ -26,10 +28,10 @@ namespace sagittar::eval::hce {
 
             for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
-                for (int sq = Square::A1; sq <= Square::H8; sq++)
+                for (const Square sq : Square::all())
                 {
-                    table[pt][MG][sq] = psqt_b[pt][MG][SQUARES_MIRRORED[sq]];
-                    table[pt][EG][sq] = psqt_b[pt][EG][SQUARES_MIRRORED[sq]];
+                    table[pt][MG][sq.index()] = psqt_b[pt][MG][sq.flip().index()];
+                    table[pt][EG][sq.index()] = psqt_b[pt][EG][sq.flip().index()];
                 }
             }
 

@@ -71,31 +71,70 @@ namespace sagittar {
         FILE_H
     };
 
-    // Little-Endian Rank-File Mapping
-    // clang-format off
-    enum Square : u8 {
-        A1, B1, C1, D1, E1, F1, G1, H1,
-        A2, B2, C2, D2, E2, F2, G2, H2,
-        A3, B3, C3, D3, E3, F3, G3, H3,
-        A4, B4, C4, D4, E4, F4, G4, H4,
-        A5, B5, C5, D5, E5, F5, G5, H5,
-        A6, B6, C6, D6, E6, F6, G6, H6,
-        A7, B7, C7, D7, E7, F7, G7, H7,
-        A8, B8, C8, D8, E8, F8, G8, H8,
-        NO_SQ
-    };
+    class Square final {
+       public:
+        static constexpr int N_SQUARES = 64;
 
-    constexpr std::array<Square, 64> SQUARES_MIRRORED = {
-        A8, B8, C8, D8, E8, F8, G8, H8,
-        A7, B7, C7, D7, E7, F7, G7, H7,
-        A6, B6, C6, D6, E6, F6, G6, H6,
-        A5, B5, C5, D5, E5, F5, G5, H5,
-        A4, B4, C4, D4, E4, F4, G4, H4,
-        A3, B3, C3, D3, E3, F3, G3, H3,
-        A2, B2, C2, D2, E2, F2, G2, H2,
-        A1, B1, C1, D1, E1, F1, G1, H1,
+        // Little-Endian Rank-File Mapping
+        // clang-format off
+        enum class Raw : std::uint8_t {
+            A1, B1, C1, D1, E1, F1, G1, H1,
+            A2, B2, C2, D2, E2, F2, G2, H2,
+            A3, B3, C3, D3, E3, F3, G3, H3,
+            A4, B4, C4, D4, E4, F4, G4, H4,
+            A5, B5, C5, D5, E5, F5, G5, H5,
+            A6, B6, C6, D6, E6, F6, G6, H6,
+            A7, B7, C7, D7, E7, F7, G7, H7,
+            A8, B8, C8, D8, E8, F8, G8, H8,
+            NONE
+        };
+        // clang-format on
+
+        constexpr Square() = default;
+        constexpr Square(Raw value) :
+            m_value(value) {}
+        constexpr Square(int square) :
+            m_value(static_cast<Raw>(square)) {
+            assert(square >= 0 && square < 64);
+        }
+        constexpr Square(Rank r, File f) :
+            m_value(static_cast<Raw>((8 * r) + f)) {}
+        constexpr Square(int r, int f) :
+            m_value(static_cast<Raw>((8 * r) + f)) {}
+
+        [[nodiscard]] constexpr std::size_t index() const noexcept {
+            return static_cast<std::size_t>(m_value);
+        }
+        [[nodiscard]] constexpr Raw raw() const noexcept { return m_value; }
+
+        [[nodiscard]] constexpr Rank rank() const noexcept {
+            return static_cast<Rank>(static_cast<int>(m_value) >> 3);
+        }
+        [[nodiscard]] constexpr File file() const noexcept {
+            return static_cast<File>(static_cast<int>(m_value) & 7);
+        }
+
+        [[nodiscard]] constexpr Square flip() const noexcept {
+            return Square{static_cast<int>(m_value) ^ 56};
+        }
+
+        [[nodiscard]] static constexpr auto all() noexcept {
+            return std::views::iota(0, N_SQUARES)
+                 | std::views::transform([](const int i) { return Square{i}; });
+        }
+
+        constexpr bool operator==(const Square& rhs) const noexcept {
+            return m_value == rhs.m_value;
+        }
+        constexpr bool operator!=(const Square& rhs) const noexcept {
+            return m_value != rhs.m_value;
+        }
+        constexpr bool operator==(const Raw& rhs) const noexcept { return m_value == rhs; }
+        constexpr bool operator!=(const Raw& rhs) const noexcept { return m_value != rhs; }
+
+       private:
+        Raw m_value{Raw::NONE};
     };
-    // clang-format on
 
     enum CastleFlag : u8 {
         NOCA = 0,
@@ -114,15 +153,6 @@ namespace sagittar {
     }
 
     constexpr Color colorFlip(const Color c) { return static_cast<Color>(c ^ 1); }
-
-    constexpr Square rf2sq(const Rank r, const File f) { return static_cast<Square>(8 * r + f); }
-    constexpr Square rf2sq(const u8 r, const u8 f) { return static_cast<Square>(8 * r + f); }
-
-    constexpr Rank sq2rank(const Square sq) { return static_cast<Rank>(sq >> 3); }
-    constexpr Rank sq2rank(const u8 sq) { return static_cast<Rank>(sq >> 3); }
-
-    constexpr File sq2file(const Square sq) { return static_cast<File>(sq & 7); }
-    constexpr File sq2file(const u8 sq) { return static_cast<File>(sq & 7); }
 
     constexpr Rank promotionRankSrcOf(const Color c) {
         return static_cast<Rank>(1 + (5 * (c ^ 1)));

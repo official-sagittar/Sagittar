@@ -99,7 +99,7 @@ namespace sagittar::search {
             size_t nodes{0};
 
             Move                              pvmove{};
-            PieceToHistory                    history{};  // [piece][to]
+            PieceToHistory                    history{};  // [piece][to.index()]
             std::array<StackEntry, MAX_DEPTH> stack{};
         };
 

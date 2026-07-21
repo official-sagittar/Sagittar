@@ -1,0 +1,25 @@
+---
+Checks: >
+  bugprone-*,
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  concurrency-*,
+  performance-*,
+  portability-*,
+  misc-*,
+  -bugprone-easily-swappable-parameters,
+  -portability-avoid-pragma-once,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -misc-use-anonymous-namespace,
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+ExcludeHeaderFilterRegex: ''
+
+FormatStyle: none
+CheckOptions: {}
+
+SystemHeaders: false
+...

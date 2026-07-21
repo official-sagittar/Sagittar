@@ -47,7 +47,17 @@ option(ENABLE_SAN "Enable Address and Undefined sanitizers" OFF)
 
 # Only affect this target (avoid global flag pollution)
 add_executable(${EXE_NAME})
-target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra -Wpedantic -march=native)
+target_compile_options(
+    ${EXE_NAME}
+        PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Wconversion
+            -Wsign-conversion
+            -fno-rtti
+            -march=native
+)
 target_precompile_headers(${EXE_NAME} PRIVATE src/commons/pch.h)
 target_include_directories(${EXE_NAME} PRIVATE src)
 

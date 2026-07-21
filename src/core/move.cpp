@@ -9,10 +9,10 @@ namespace sagittar {
         const auto to_sq   = to();
         const auto f       = flag();
 
-        ss << (char) FILE_STR[sq2file(from_sq)];
-        ss << (int) (sq2rank(from_sq) + 1);
-        ss << (char) FILE_STR[sq2file(to_sq)];
-        ss << (int) (sq2rank(to_sq) + 1);
+        ss << (char) FILE_STR[from_sq.file()];
+        ss << (int) (from_sq.rank() + 1);
+        ss << (char) FILE_STR[to_sq.file()];
+        ss << (int) (to_sq.rank() + 1);
 
         if (isPromotion())
         {

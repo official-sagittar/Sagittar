@@ -16,8 +16,8 @@ TEST_SUITE("Movegen") {
         std::string fen = "4k3/8/8/4p3/8/8/8/4K3 w - - 0 1";
         pos.setFen(fen);
 
-        REQUIRE(squareAttackers(pos, Square::D4, Color::BLACK));
-        REQUIRE(squareAttackers(pos, Square::F4, Color::BLACK));
+        REQUIRE(squareAttackers(pos, Square{Square::Raw::D4}, Color::BLACK));
+        REQUIRE(squareAttackers(pos, Square{Square::Raw::F4}, Color::BLACK));
     }
 
     TEST_CASE("isInCheck") {

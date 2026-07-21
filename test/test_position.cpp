@@ -35,50 +35,50 @@ TEST_SUITE("Position") {
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         bool is_valid = pos.doMove("e2e4");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::E2) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::E4) == Piece::WHITE_PAWN);
+        CHECK(pos.pieceOn(Square{Square::Raw::E2}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E4}) == Piece::WHITE_PAWN);
 
         // MOVE_CASTLE_KING_SIDE WHITE
         std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
         pos.setFen(fen);
         is_valid = pos.doMove("e1g1");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::E1) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::F1) == Piece::WHITE_ROOK);
-        CHECK(pos.pieceOn(Square::G1) == Piece::WHITE_KING);
-        CHECK(pos.pieceOn(Square::H1) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E1}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::F1}) == Piece::WHITE_ROOK);
+        CHECK(pos.pieceOn(Square{Square::Raw::G1}) == Piece::WHITE_KING);
+        CHECK(pos.pieceOn(Square{Square::Raw::H1}) == Piece::NO_PIECE);
 
         // MOVE_CASTLE_KING_SIDE BLACK
         fen = "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 b kq - 0 5";
         pos.setFen(fen);
         is_valid = pos.doMove("e8g8");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::E8) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::F8) == Piece::BLACK_ROOK);
-        CHECK(pos.pieceOn(Square::G8) == Piece::BLACK_KING);
-        CHECK(pos.pieceOn(Square::H8) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E8}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::F8}) == Piece::BLACK_ROOK);
+        CHECK(pos.pieceOn(Square{Square::Raw::G8}) == Piece::BLACK_KING);
+        CHECK(pos.pieceOn(Square{Square::Raw::H8}) == Piece::NO_PIECE);
 
         // MOVE_CASTLE_QUEEN_SIDE WHITE
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/R3KB1R w KQkq - 6 8";
         pos.setFen(fen);
         is_valid = pos.doMove("e1c1");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::E1) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::D1) == Piece::WHITE_ROOK);
-        CHECK(pos.pieceOn(Square::C1) == Piece::WHITE_KING);
-        CHECK(pos.pieceOn(Square::B1) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::A1) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E1}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::D1}) == Piece::WHITE_ROOK);
+        CHECK(pos.pieceOn(Square{Square::Raw::C1}) == Piece::WHITE_KING);
+        CHECK(pos.pieceOn(Square{Square::Raw::B1}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::A1}) == Piece::NO_PIECE);
 
         // MOVE_CASTLE_QUEEN_SIDE BLACK
         fen = "r3kb1r/pp1npppp/2p2n2/q4b2/3P1B2/2N2N2/PPPQ1PPP/2KR1B1R b kq - 7 8";
         pos.setFen(fen);
         is_valid = pos.doMove("e8c8");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::E8) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::D8) == Piece::BLACK_ROOK);
-        CHECK(pos.pieceOn(Square::C8) == Piece::BLACK_KING);
-        CHECK(pos.pieceOn(Square::B8) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::A8) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E8}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::D8}) == Piece::BLACK_ROOK);
+        CHECK(pos.pieceOn(Square{Square::Raw::C8}) == Piece::BLACK_KING);
+        CHECK(pos.pieceOn(Square{Square::Raw::B8}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::A8}) == Piece::NO_PIECE);
 
         // MOVE_CAPTURE_EP
 
@@ -87,18 +87,18 @@ TEST_SUITE("Position") {
         pos.setFen(fen);
         is_valid = pos.doMove("d5e6");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::D5) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::E5) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::E6) == Piece::WHITE_PAWN);
+        CHECK(pos.pieceOn(Square{Square::Raw::D5}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E5}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E6}) == Piece::WHITE_PAWN);
 
         // BLACK
         fen = "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1";
         pos.setFen(fen);
         is_valid = pos.doMove("d4e3");
         CHECK(is_valid);
-        CHECK(pos.pieceOn(Square::D4) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::E4) == Piece::NO_PIECE);
-        CHECK(pos.pieceOn(Square::E3) == Piece::BLACK_PAWN);
+        CHECK(pos.pieceOn(Square{Square::Raw::D4}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E4}) == Piece::NO_PIECE);
+        CHECK(pos.pieceOn(Square{Square::Raw::E3}) == Piece::BLACK_PAWN);
 
         // MOVE_PROMOTION
         fen = "1q2k3/P7/8/8/8/8/8/4K3 w - - 0 1";
@@ -108,29 +108,29 @@ TEST_SUITE("Position") {
         Position pos_copy = pos;
         is_valid          = pos_copy.doMove("a7a8n");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::A8) == Piece::WHITE_KNIGHT);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A8}) == Piece::WHITE_KNIGHT);
 
         // BISHOP
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7a8b");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::A8) == Piece::WHITE_BISHOP);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A8}) == Piece::WHITE_BISHOP);
 
         // ROOK
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7a8r");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::A8) == Piece::WHITE_ROOK);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A8}) == Piece::WHITE_ROOK);
 
         // QUEEN
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7a8q");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::A8) == Piece::WHITE_QUEEN);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A8}) == Piece::WHITE_QUEEN);
 
         // MOVE_CAPTURE_PROMOTION
 
@@ -138,29 +138,29 @@ TEST_SUITE("Position") {
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7b8n");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::B8) == Piece::WHITE_KNIGHT);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::B8}) == Piece::WHITE_KNIGHT);
 
         // BISHOP
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7b8b");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::B8) == Piece::WHITE_BISHOP);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::B8}) == Piece::WHITE_BISHOP);
 
         // ROOK
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7b8r");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::B8) == Piece::WHITE_ROOK);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::B8}) == Piece::WHITE_ROOK);
 
         // QUEEN
         pos_copy = pos;
         is_valid = pos_copy.doMove("a7b8q");
         CHECK(is_valid);
-        CHECK(pos_copy.pieceOn(Square::A7) == Piece::NO_PIECE);
-        CHECK(pos_copy.pieceOn(Square::B8) == Piece::WHITE_QUEEN);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::A7}) == Piece::NO_PIECE);
+        CHECK(pos_copy.pieceOn(Square{Square::Raw::B8}) == Piece::WHITE_QUEEN);
     }
 
     TEST_CASE("Position::isDrawn") {

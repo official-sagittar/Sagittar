@@ -37,9 +37,9 @@ namespace sagittar::eval::hce::tuner {
     static EvalTrace create_eval_trace(const Position& pos) {
         EvalTrace trace{};
 
-        for (int sq = Square::A1; sq <= Square::H8; sq++)
+        for (const Square sq : Square::all())
         {
-            const Piece p = pos.pieceOn(static_cast<Square>(sq));
+            const Piece p = pos.pieceOn(sq);
 
             if (p == Piece::NO_PIECE)
             {
@@ -53,11 +53,11 @@ namespace sagittar::eval::hce::tuner {
 
             if (c == Color::WHITE)
             {
-                trace.psq_counts[pt][SQUARES_MIRRORED[sq]][c]++;
+                trace.psq_counts[pt][SQUARES_MIRRORED[sq.index()]][c]++;
             }
             else
             {
-                trace.psq_counts[pt][sq][c]++;
+                trace.psq_counts[pt][sq.index()][c]++;
             }
         }
 

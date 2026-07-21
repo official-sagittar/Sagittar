@@ -26,7 +26,8 @@ TEST_SUITE("TT") {
 
         REQUIRE(tt.getSize() > 0);
 
-        Move m(Square::E2, Square::E4, MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
+        Move m(Square{Square::Raw::E2}, Square{Square::Raw::E4},
+               MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
 
         tt.store(pos.key(), 0, 1, search::TTFlag::EXACT, 10, m);
 
@@ -43,7 +44,7 @@ TEST_SUITE("TT") {
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
         pos.setFen(fen);
 
-        m = Move(Square::E2, Square::A6, MoveFlag::MOVE_CAPTURE);
+        m = Move(Square{Square::Raw::E2}, Square{Square::Raw::A6}, MoveFlag::MOVE_CAPTURE);
 
         tt.store(pos.key(), 0, 3, search::TTFlag::LOWERBOUND, 100, m);
 
@@ -66,7 +67,8 @@ TEST_SUITE("TT") {
         std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
         pos.setFen(fen);
 
-        const Move m = Move(Square::E2, Square::A6, MoveFlag::MOVE_CAPTURE);
+        const Move m =
+          Move(Square{Square::Raw::E2}, Square{Square::Raw::A6}, MoveFlag::MOVE_CAPTURE);
 
         tt.store(pos.key(), 0, 3, search::TTFlag::EXACT, 100, m);
 

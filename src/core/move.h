@@ -30,7 +30,8 @@ namespace sagittar {
         Move() noexcept :
             m_data(0) {}
         Move(const Square from, const Square to, const MoveFlag flag) noexcept :
-            m_data((flag << 12) | (to << 6) | from) {}
+            m_data((flag << 12) | (static_cast<int>(to.raw()) << 6)
+                   | static_cast<int>(from.raw())) {}
         Move(const u16 data) noexcept :
             m_data(data) {}
         Move(const Move& other) noexcept :
@@ -56,8 +57,8 @@ namespace sagittar {
         inline bool operator==(const Move& rhs) const { return m_data == rhs.m_data; }
         inline bool operator!=(const Move& rhs) const { return m_data != rhs.m_data; }
 
-        [[nodiscard]] inline Square from() const { return static_cast<Square>(m_data & 0x3F); }
-        [[nodiscard]] inline Square to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
+        [[nodiscard]] inline Square   from() const { return Square{m_data & 0x3F}; }
+        [[nodiscard]] inline Square   to() const { return Square{(m_data >> 6) & 0x3F}; }
         [[nodiscard]] inline MoveFlag flag() const {
             return static_cast<MoveFlag>((m_data >> 12) & 0xF);
         }

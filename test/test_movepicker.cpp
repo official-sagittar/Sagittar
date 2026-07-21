@@ -18,7 +18,7 @@ TEST_SUITE("Movepicker") {
         int i                    = 0;
         int capture_move_done_at = -1;
 
-        const Move             pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        const Move pvmove(Square{Square::Raw::E1}, Square{Square::Raw::F2}, MoveFlag::MOVE_CAPTURE);
         search::PieceToHistory history;
 
         std::array<ExtMove, MOVES_MAX> buffer{};
@@ -77,10 +77,10 @@ TEST_SUITE("Movepicker") {
         int killers              = 0;
         int killer_move_done_at  = -1;
 
-        const Move             pvmove(Square::D5, Square::E6, MoveFlag::MOVE_CAPTURE);
+        const Move pvmove(Square{Square::Raw::D5}, Square{Square::Raw::E6}, MoveFlag::MOVE_CAPTURE);
         search::PieceToHistory history;
-        const Move             killers1{Square::F3, Square::D3, MoveFlag::MOVE_QUIET};
-        const Move             killers2{Square::D2, Square::E3, MoveFlag::MOVE_QUIET};
+        const Move killers1{Square{Square::Raw::F3}, Square{Square::Raw::D3}, MoveFlag::MOVE_QUIET};
+        const Move killers2{Square{Square::Raw::D2}, Square{Square::Raw::E3}, MoveFlag::MOVE_QUIET};
 
         std::array<ExtMove, MOVES_MAX> buffer{};
         search::MovePicker move_picker(buffer.data(), pos, pvmove, history, killers1, killers2,
@@ -148,7 +148,7 @@ TEST_SUITE("Movepicker") {
 
         int i = 0;
 
-        const Move             pvmove(Square::E1, Square::F2, MoveFlag::MOVE_CAPTURE);
+        const Move pvmove(Square{Square::Raw::E1}, Square{Square::Raw::F2}, MoveFlag::MOVE_CAPTURE);
         search::PieceToHistory history;
 
         std::array<ExtMove, MOVES_MAX> buffer{};

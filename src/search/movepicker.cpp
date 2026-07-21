@@ -122,7 +122,7 @@ namespace sagittar::search {
             else
             {
                 const Piece piece = pos.pieceOn(move.from());
-                const auto  score = history[piece][move.to()];
+                const auto  score = history[piece][move.to().index()];
                 *quiet_ptr++      = ExtMove{move, score};
             }
         }

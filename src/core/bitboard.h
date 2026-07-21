@@ -8,19 +8,19 @@ namespace sagittar {
     class BitBoard {
        public:
         constexpr BitBoard() noexcept :
-            m_bits(0ULL) { }
+            m_bits(0ULL) {}
 
         constexpr BitBoard(const Square sq) noexcept :
-            m_bits(1ULL << sq) { }
+            m_bits(1ULL << static_cast<int>(sq.raw())) {}
 
         constexpr BitBoard(const u64 bits) noexcept :
-            m_bits(bits) { }
+            m_bits(bits) {}
 
         constexpr BitBoard(const BitBoard& other) noexcept :
-            m_bits(other.m_bits) { }
+            m_bits(other.m_bits) {}
 
         constexpr BitBoard(BitBoard&& other) noexcept :
-            m_bits(other.m_bits) { }
+            m_bits(other.m_bits) {}
 
         inline constexpr BitBoard& operator=(const BitBoard& rhs) noexcept {
             if (this != &rhs)
@@ -228,8 +228,8 @@ namespace sagittar {
     }
 
     inline constexpr bool isAligned(const Square x, const Square y) {
-        const int rx = sq2rank(x), ry = sq2rank(y);
-        const int fx = sq2file(x), fy = sq2file(y);
+        const int rx = x.rank(), ry = y.rank();
+        const int fx = x.file(), fy = y.file();
         return (rx == ry) || (fx == fy) || (rx - fx == ry - fy) || (rx + fx == ry + fy);
     }
 
