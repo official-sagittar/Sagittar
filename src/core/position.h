@@ -43,7 +43,7 @@ namespace sagittar {
         }
         BitBoard occupied() const;
         BitBoard empty() const;
-        Piece    pieceOn(const Square&) const;
+        Piece    pieceOn(const Square) const;
         u8       pieceCount(const PieceType) const;
         u8       pieceCount(const Piece) const;
 

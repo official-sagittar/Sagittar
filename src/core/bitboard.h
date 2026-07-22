@@ -9,7 +9,7 @@ namespace sagittar {
         constexpr BitBoard() noexcept :
             m_bits(0ULL) {}
 
-        constexpr BitBoard(const Square& sq) noexcept :
+        constexpr BitBoard(const Square sq) noexcept :
             m_bits(1ULL << static_cast<int>(sq.raw())) {}
 
         constexpr BitBoard(const u64 bits) noexcept :
@@ -175,7 +175,7 @@ namespace sagittar {
         u64 m_bits{};
     };
 
-    static inline constexpr BitBoard BB(const Square& sq) { return BitBoard(sq); }
+    static inline constexpr BitBoard BB(const Square sq) { return BitBoard(sq); }
     static inline constexpr BitBoard BB(const int sq) { return BitBoard(1ULL << sq); }
 
     static inline constexpr BitBoard RANK_1_BB(0xFFULL);
@@ -230,13 +230,13 @@ namespace sagittar {
                                           : BitBoard{};
     }
 
-    inline constexpr bool isAligned(const Square& x, const Square& y) {
+    inline constexpr bool isAligned(const Square x, const Square y) {
         const int rx = x.rank(), ry = y.rank();
         const int fx = x.file(), fy = y.file();
         return (rx == ry) || (fx == fy) || (rx - fx == ry - fy) || (rx + fx == ry + fy);
     }
 
-    BitBoard ray(const Square&, const Square&);
-    BitBoard line(const Square&, const Square&);
-    BitBoard between(const Square&, const Square&);
+    BitBoard ray(const Square, const Square);
+    BitBoard line(const Square, const Square);
+    BitBoard between(const Square, const Square);
 }  // namespace sagittar

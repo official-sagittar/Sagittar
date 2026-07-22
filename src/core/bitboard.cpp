@@ -6,7 +6,7 @@
 
 namespace sagittar {
 
-    static constexpr BitBoard compute_ray(const Square& x, const Square& y) {
+    static constexpr BitBoard compute_ray(const Square x, const Square y) {
         if (x == y)
         {
             return 0ULL;
@@ -41,7 +41,7 @@ namespace sagittar {
         return ray;
     }
 
-    static constexpr BitBoard compute_between(const Square& x, const Square& y) {
+    static constexpr BitBoard compute_between(const Square x, const Square y) {
         BitBoard ray = compute_ray(x, y);
         if (!ray)
         {
@@ -51,7 +51,7 @@ namespace sagittar {
         return ray & ~(BB(x) | BB(y));
     }
 
-    constexpr BitBoard compute_line(const Square& x, const Square& y) {
+    constexpr BitBoard compute_line(const Square x, const Square y) {
         if (x == y)
         {
             return 0ULL;
@@ -133,10 +133,10 @@ namespace sagittar {
         return bet;
     }();
 
-    BitBoard ray(const Square& x, const Square& y) { return RAY_BB[x.index()][y.index()]; }
+    BitBoard ray(const Square x, const Square y) { return RAY_BB[x.index()][y.index()]; }
 
-    BitBoard line(const Square& x, const Square& y) { return LINE_BB[x.index()][y.index()]; }
+    BitBoard line(const Square x, const Square y) { return LINE_BB[x.index()][y.index()]; }
 
-    BitBoard between(const Square& x, const Square& y) { return BETWEEN_BB[x.index()][y.index()]; }
+    BitBoard between(const Square x, const Square y) { return BETWEEN_BB[x.index()][y.index()]; }
 
 }  // namespace sagittar

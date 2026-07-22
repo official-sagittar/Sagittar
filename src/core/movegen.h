@@ -18,9 +18,9 @@ namespace sagittar {
     void movegen_initialize();
 
     template<PieceType PT>
-    BitBoard attacks(const Square& sq, const BitBoard occupancy, const Color c = Color::WHITE);
+    BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c = Color::WHITE);
 
-    BitBoard squareAttackers(const Position& pos, const Square& sq, const Color attacked_by);
+    BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by);
 
     template<MovegenType T>
     void pseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos);
