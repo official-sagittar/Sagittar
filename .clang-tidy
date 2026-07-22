@@ -8,10 +8,7 @@ Checks: >
   portability-*,
   misc-*,
   -bugprone-easily-swappable-parameters,
-  -portability-avoid-pragma-once,
-  -misc-include-cleaner,
-  -misc-non-private-member-variables-in-classes,
-  -misc-use-anonymous-namespace,
+  -misc-no-recursion
 
 WarningsAsErrors: ''
 
