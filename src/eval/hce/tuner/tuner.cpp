@@ -53,7 +53,7 @@ namespace sagittar::eval::hce::tuner {
 
             if (c == Color::WHITE)
             {
-                trace.psq_counts[pt][SQUARES_MIRRORED[sq.index()]][c]++;
+                trace.psq_counts[pt][sq.flip().index()][c]++;
             }
             else
             {

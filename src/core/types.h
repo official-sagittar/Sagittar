@@ -91,16 +91,21 @@ namespace sagittar {
         // clang-format on
 
         constexpr Square() = default;
-        constexpr Square(Raw value) :
+        constexpr explicit Square(Raw value) :
             m_value(value) {}
-        constexpr Square(int square) :
-            m_value(static_cast<Raw>(square)) {
-            assert(square >= 0 && square < 64);
+
+        static constexpr Square create(int index) {
+            assert(index >= 0 && index < 64);
+            return Square{static_cast<Raw>(index)};
         }
-        constexpr Square(Rank r, File f) :
-            m_value(static_cast<Raw>((8 * r) + f)) {}
-        constexpr Square(int r, int f) :
-            m_value(static_cast<Raw>((8 * r) + f)) {}
+        static constexpr Square create(Rank rank, File file) {
+            return Square{static_cast<Raw>((8 * rank) + file)};
+        }
+        static constexpr Square create(int rank, int file) {
+            assert(rank >= 0 && rank < 8);
+            assert(file >= 0 && file < 8);
+            return Square{static_cast<Raw>((8 * rank) + file)};
+        }
 
         [[nodiscard]] constexpr std::size_t index() const noexcept {
             return static_cast<std::size_t>(m_value);
@@ -115,13 +120,21 @@ namespace sagittar {
         }
 
         [[nodiscard]] constexpr Square flip() const noexcept {
-            return Square{static_cast<int>(m_value) ^ 56};
+            return Square{static_cast<Raw>(static_cast<int>(m_value) ^ 56)};
+        }
+
+        [[nodiscard]] constexpr Square offset(std::int32_t offset) const noexcept {
+            assert(static_cast<int>(m_value) + offset >= 0);
+            assert(static_cast<int>(m_value) + offset < 64);
+            return Square{static_cast<Raw>(static_cast<int>(m_value) + offset)};
         }
 
         [[nodiscard]] static constexpr auto all() noexcept {
             return std::views::iota(0, N_SQUARES)
-                 | std::views::transform([](const int i) { return Square{i}; });
+                 | std::views::transform([](const int i) { return Square{static_cast<Raw>(i)}; });
         }
+
+        [[nodiscard]] constexpr explicit operator bool() const { return m_value != Raw::NONE; }
 
         constexpr bool operator==(const Square& rhs) const noexcept {
             return m_value == rhs.m_value;

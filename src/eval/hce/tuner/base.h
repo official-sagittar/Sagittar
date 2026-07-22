@@ -95,10 +95,10 @@ namespace sagittar::eval::hce::tuner {
         for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
         {
             std::cout << "table[PieceType::" << pt_names[pt] << "] = {\n";
-            for (int sq = Square::A1; sq <= Square::H8; sq++)
+            for (const Square sq : Square::all())
             {
                 print_param_single(params[index++], "\t");
-                if (sq % 8 == 7)
+                if (sq.index() % 8 == 7)
                 {
                     std::cout << std::endl;
                 }

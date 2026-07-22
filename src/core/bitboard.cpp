@@ -2,7 +2,7 @@
 
 namespace sagittar {
 
-    static constexpr BitBoard compute_ray(const Square x, const Square y) {
+    static constexpr BitBoard compute_ray(const Square& x, const Square& y) {
         if (x == y)
         {
             return 0ULL;
@@ -25,19 +25,19 @@ namespace sagittar {
 
         int r = rx, f = fx;
 
-        ray |= BB(Square{r, f});
+        ray |= BB(Square::create(r, f));
 
         while (r != ry || f != fy)
         {
             r += dr;
             f += df;
-            ray |= BB(Square{r, f});
+            ray |= BB(Square::create(r, f));
         }
 
         return ray;
     }
 
-    static constexpr BitBoard compute_between(const Square x, const Square y) {
+    static constexpr BitBoard compute_between(const Square& x, const Square& y) {
         BitBoard ray = compute_ray(x, y);
         if (!ray)
         {
@@ -47,7 +47,7 @@ namespace sagittar {
         return ray & ~(BB(x) | BB(y));
     }
 
-    constexpr BitBoard compute_line(const Square x, const Square y) {
+    constexpr BitBoard compute_line(const Square& x, const Square& y) {
         if (x == y)
         {
             return 0ULL;
@@ -72,14 +72,14 @@ namespace sagittar {
              r >= Rank::RANK_1 && r <= Rank::RANK_8 && f >= File::FILE_A && f <= File::FILE_H;
              r += dr, f += df)
         {
-            bb |= BB(Square{r, f});
+            bb |= BB(Square::create(r, f));
         }
 
         for (int r = rx - dr, f = fx - df;
              r >= Rank::RANK_1 && r <= Rank::RANK_8 && f >= File::FILE_A && f <= File::FILE_H;
              r -= dr, f -= df)
         {
-            bb |= BB(Square{r, f});
+            bb |= BB(Square::create(r, f));
         }
 
         bb |= BB(x);
@@ -129,10 +129,10 @@ namespace sagittar {
         return bet;
     }();
 
-    BitBoard ray(const Square x, const Square y) { return RAY_BB[x.index()][y.index()]; }
+    BitBoard ray(const Square& x, const Square& y) { return RAY_BB[x.index()][y.index()]; }
 
-    BitBoard line(const Square x, const Square y) { return LINE_BB[x.index()][y.index()]; }
+    BitBoard line(const Square& x, const Square& y) { return LINE_BB[x.index()][y.index()]; }
 
-    BitBoard between(const Square x, const Square y) { return BETWEEN_BB[x.index()][y.index()]; }
+    BitBoard between(const Square& x, const Square& y) { return BETWEEN_BB[x.index()][y.index()]; }
 
 }

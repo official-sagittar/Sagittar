@@ -79,7 +79,7 @@ namespace sagittar::search {
             void undoMove();
             void undoNullMove();
 
-            void updateHistory(const Piece, const Square, const i32);
+            void updateHistory(const Piece, const Square&, const i32);
 
             template<NodeType nodeType>
             Score search(const Position& pos,
@@ -99,7 +99,7 @@ namespace sagittar::search {
             size_t nodes{0};
 
             Move                              pvmove{};
-            PieceToHistory                    history{};  // [piece][to.index()]
+            PieceToHistory                    history{};  // [piece][to]
             std::array<StackEntry, MAX_DEPTH> stack{};
         };
 

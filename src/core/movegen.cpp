@@ -40,8 +40,8 @@ namespace sagittar {
         {
             for (int f = File::FILE_A; f <= File::FILE_H; f++)
             {
-                const Square   sq{r, f};
-                const BitBoard b = BB(sq);
+                const Square   sq = Square::create(r, f);
+                const BitBoard b  = BB(sq);
                 const BitBoard attacks =
                   shift<Direction::NORTH_EAST>(b) | shift<Direction::NORTH_WEST>(b);
                 table[Color::WHITE][sq.index()] = attacks;
@@ -53,8 +53,8 @@ namespace sagittar {
         {
             for (int f = File::FILE_A; f <= File::FILE_H; f++)
             {
-                const Square   sq{r, f};
-                const BitBoard b = BB(sq);
+                const Square   sq = Square::create(r, f);
+                const BitBoard b  = BB(sq);
                 const BitBoard attacks =
                   shift<Direction::SOUTH_EAST>(b) | shift<Direction::SOUTH_WEST>(b);
                 table[Color::BLACK][sq.index()] = attacks;
@@ -113,7 +113,7 @@ namespace sagittar {
     static std::array<AttackTable, 512>  ATTACK_TABLE_BISHOP;
     static std::array<AttackTable, 4096> ATTACK_TABLE_ROOK;
 
-    static BitBoard bishopAttacks(const Square sq, const BitBoard blockers) {
+    static BitBoard bishopAttacks(const Square& sq, const BitBoard blockers) {
         int r, f;
 
         const u8 tr = sq.rank();
@@ -123,7 +123,7 @@ namespace sagittar {
 
         for (r = tr + 1, f = tf + 1; r <= Rank::RANK_8 && f <= File::FILE_H; r++, f++)
         {
-            const BitBoard sqb = BB(Square{r, f});
+            const BitBoard sqb = BB(Square::create(r, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -132,7 +132,7 @@ namespace sagittar {
         }
         for (r = tr + 1, f = tf - 1; r <= Rank::RANK_8 && f >= File::FILE_A; r++, f--)
         {
-            const BitBoard sqb = BB(Square{r, f});
+            const BitBoard sqb = BB(Square::create(r, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -141,7 +141,7 @@ namespace sagittar {
         }
         for (r = tr - 1, f = tf + 1; r >= Rank::RANK_1 && f <= File::FILE_H; r--, f++)
         {
-            const BitBoard sqb = BB(Square{r, f});
+            const BitBoard sqb = BB(Square::create(r, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -150,7 +150,7 @@ namespace sagittar {
         }
         for (r = tr - 1, f = tf - 1; r >= Rank::RANK_1 && f >= File::FILE_A; r--, f--)
         {
-            const BitBoard sqb = BB(Square{r, f});
+            const BitBoard sqb = BB(Square::create(r, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -161,7 +161,7 @@ namespace sagittar {
         return attack_mask;
     }
 
-    static BitBoard rookAttacks(const Square sq, const BitBoard blockers) {
+    static BitBoard rookAttacks(const Square& sq, const BitBoard blockers) {
         int r, f;
 
         const u8 tr = sq.rank();
@@ -171,7 +171,7 @@ namespace sagittar {
 
         for (r = tr + 1; r <= Rank::RANK_8; r++)
         {
-            const BitBoard sqb = BB(Square{r, tf});
+            const BitBoard sqb = BB(Square::create(r, tf));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -180,7 +180,7 @@ namespace sagittar {
         }
         for (r = tr - 1; r >= Rank::RANK_1; r--)
         {
-            const BitBoard sqb = BB(Square{r, tf});
+            const BitBoard sqb = BB(Square::create(r, tf));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -189,7 +189,7 @@ namespace sagittar {
         }
         for (f = tf + 1; f <= File::FILE_H; f++)
         {
-            const BitBoard sqb = BB(Square{tr, f});
+            const BitBoard sqb = BB(Square::create(tr, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -198,7 +198,7 @@ namespace sagittar {
         }
         for (f = tf - 1; f >= File::FILE_A; f--)
         {
-            const BitBoard sqb = BB(Square{tr, f});
+            const BitBoard sqb = BB(Square::create(tr, f));
             attack_mask |= sqb;
             if (blockers & sqb)
             {
@@ -312,9 +312,8 @@ namespace sagittar {
         const BitBoard enemies   = pos.pieces(them) ^ king_them;
         const BitBoard empty     = pos.empty();
 
-        const Square   ep_target = pos.epTarget();
-        const BitBoard ep_target_bb =
-          (ep_target != Square::Raw::NONE) ? (BB(ep_target) & ep_target_rank) : BitBoard{};
+        const Square   ep_target    = pos.epTarget();
+        const BitBoard ep_target_bb = (ep_target) ? (BB(ep_target) & ep_target_rank) : BitBoard{};
 
         BitBoard pawns_fwd, sgl_push, dbl_push, fwd_l, fwd_r;
 
@@ -338,7 +337,7 @@ namespace sagittar {
         if constexpr (T == MovegenType::CHECK_EVASIONS)
         {
             BitBoard       checkers   = pos.checkers();
-            const Square   checker_sq = Square{checkers.lsb()};
+            const Square   checker_sq = Square::create(checkers.lsb());
             const BitBoard block_bb   = between(checker_sq, pos.kingSq());
 
             pawns_fwd &= block_bb;
@@ -350,10 +349,9 @@ namespace sagittar {
 
             constexpr int ep_victim_dir = (US == Color::WHITE) ? 8 : -8;
 
-            if (ep_target != Square::Raw::NONE)
+            if (ep_target)
             {
-                if ((checkers & BB(static_cast<int>(ep_target.raw()) - ep_victim_dir))
-                    || (block_bb & ep_target_bb))
+                if ((checkers & BB(ep_target.offset(-ep_victim_dir))) || (block_bb & ep_target_bb))
                 {
                     // En passant Capture checker
                     // Or, En passant Block check
@@ -383,8 +381,8 @@ namespace sagittar {
         dir = (US == Color::WHITE) ? Direction::NORTH_WEST : Direction::SOUTH_EAST;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
@@ -395,8 +393,8 @@ namespace sagittar {
         dir = (US == Color::WHITE) ? Direction::NORTH_EAST : Direction::SOUTH_WEST;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_QUEEN);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_ROOK);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_PROMOTION_BISHOP);
@@ -408,16 +406,16 @@ namespace sagittar {
         bb = capture_l;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
         }
 
         bb = capture_ep_l;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
@@ -426,16 +424,16 @@ namespace sagittar {
         bb = capture_r;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
         }
 
         bb = capture_ep_r;
         while (bb)
         {
-            const Square to{bb.pop_lsb()};
-            const Square from{static_cast<int>(to.raw()) - dir};
+            const Square to   = bb.pop_lsb_to_sq();
+            const Square from = to.offset(-dir);
             moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE_EP);
         }
 
@@ -446,8 +444,8 @@ namespace sagittar {
             bb = quite_promo;
             while (bb)
             {
-                const Square to{bb.pop_lsb()};
-                const Square from{static_cast<int>(to.raw()) - dir};
+                const Square to   = bb.pop_lsb_to_sq();
+                const Square from = to.offset(-dir);
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_QUEEN);
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_ROOK);
                 moves->emplace_back(from, to, MoveFlag::MOVE_PROMOTION_BISHOP);
@@ -457,8 +455,8 @@ namespace sagittar {
             bb = sgl_push;
             while (bb)
             {
-                const Square to{bb.pop_lsb()};
-                const Square from{static_cast<int>(to.raw()) - dir};
+                const Square to   = bb.pop_lsb_to_sq();
+                const Square from = to.offset(-dir);
                 moves->emplace_back(from, to, MoveFlag::MOVE_QUIET);
             }
 
@@ -466,8 +464,8 @@ namespace sagittar {
             dir = (US == Color::WHITE) ? Direction::NORTH_2X : Direction::SOUTH_2X;
             while (bb)
             {
-                const Square to{bb.pop_lsb()};
-                const Square from{static_cast<int>(to.raw()) - dir};
+                const Square to   = bb.pop_lsb_to_sq();
+                const Square from = to.offset(-dir);
                 moves->emplace_back(from, to, MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH);
             }
         }
@@ -485,9 +483,9 @@ namespace sagittar {
         BitBoard block_bb{};
         if constexpr (T == MovegenType::CHECK_EVASIONS)
         {
-            checkers = pos.checkers();
-            const Square checker_sq{checkers.lsb()};
-            block_bb = between(checker_sq, pos.kingSq());
+            checkers                = pos.checkers();
+            const Square checker_sq = Square::create(checkers.lsb());
+            block_bb                = between(checker_sq, pos.kingSq());
         }
 
         const BitBoard occ =
@@ -496,7 +494,7 @@ namespace sagittar {
         BitBoard bb = pos.pieces(US, PT);
         while (bb)
         {
-            const Square   from{bb.pop_lsb()};
+            const Square   from  = bb.pop_lsb_to_sq();
             const BitBoard attks = attacks<PT>(from, occ);
 
             BitBoard captures = attks & enemies;
@@ -506,7 +504,7 @@ namespace sagittar {
             }
             while (captures)
             {
-                const Square to{captures.pop_lsb()};
+                const Square to = captures.pop_lsb_to_sq();
                 moves->emplace_back(from, to, MoveFlag::MOVE_CAPTURE);
             }
 
@@ -519,7 +517,7 @@ namespace sagittar {
                 }
                 while (quites)
                 {
-                    const Square to{quites.pop_lsb()};
+                    const Square to = quites.pop_lsb_to_sq();
                     moves->emplace_back(from, to, MoveFlag::MOVE_QUIET);
                 }
             }
@@ -546,11 +544,11 @@ namespace sagittar {
             return;
         }
 
-        constexpr Color  them = colorFlip(US);
-        constexpr Rank   rank = (US == Color::WHITE) ? Rank::RANK_1 : Rank::RANK_8;
-        constexpr Square k_sq{rank, File::FILE_E};
-        constexpr Square k_sq_r{static_cast<int>(k_sq.raw()) + 1};
-        constexpr Square k_sq_l{static_cast<int>(k_sq.raw()) - 1};
+        constexpr Color  them   = colorFlip(US);
+        constexpr Rank   rank   = (US == Color::WHITE) ? Rank::RANK_1 : Rank::RANK_8;
+        constexpr Square k_sq   = Square::create(rank, File::FILE_E);
+        constexpr Square k_sq_r = k_sq.offset(1);
+        constexpr Square k_sq_l = k_sq.offset(-1);
 
         const BitBoard occ = pos.occupied();
 
@@ -559,9 +557,9 @@ namespace sagittar {
 
         const BitBoard rook_bb   = pos.pieces(US, PieceType::ROOK);
         const BitBoard king_bb   = pos.pieces(US, PieceType::KING);
-        const bool     rook_k_ok = (rook_bb & BB(Square{rank, File::FILE_H}));
-        const bool     rook_q_ok = (rook_bb & BB(Square{rank, File::FILE_A}));
-        const bool     king_ok   = (king_bb & BB(Square{rank, File::FILE_E}));
+        const bool     rook_k_ok = (rook_bb & BB(Square::create(rank, File::FILE_H)));
+        const bool     rook_q_ok = (rook_bb & BB(Square::create(rank, File::FILE_A)));
+        const bool     king_ok   = (king_bb & BB(Square::create(rank, File::FILE_E)));
 
         constexpr BitBoard mask_path_k  = (US == Color::WHITE) ? MASK_WKCA_PATH : MASK_BKCA_PATH;
         const bool         path_k_empty = (occ & mask_path_k).is_empty();
@@ -574,15 +572,15 @@ namespace sagittar {
 
         if (rights_k_ok && king_ok && rook_k_ok && path_k_empty && safe_k_ok)
         {
-            constexpr Square from{rank, File::FILE_E};
-            constexpr Square to{rank, File::FILE_G};
+            constexpr Square from = Square::create(rank, File::FILE_E);
+            constexpr Square to   = Square::create(rank, File::FILE_G);
             moves->emplace_back(from, to, MoveFlag::MOVE_CASTLE_KING_SIDE);
         }
 
         if (rights_q_ok && king_ok && rook_q_ok && path_q_empty && safe_q_ok)
         {
-            constexpr Square from{rank, File::FILE_E};
-            constexpr Square to{rank, File::FILE_C};
+            constexpr Square from = Square::create(rank, File::FILE_E);
+            constexpr Square to   = Square::create(rank, File::FILE_C);
             moves->emplace_back(from, to, MoveFlag::MOVE_CASTLE_QUEEN_SIDE);
         }
     }
@@ -593,7 +591,7 @@ namespace sagittar {
     }
 
     template<PieceType PT>
-    BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c) {
+    BitBoard attacks(const Square& sq, const BitBoard occupancy, const Color c) {
         switch (PT)
         {
             case PieceType::PAWN :
@@ -630,7 +628,7 @@ namespace sagittar {
         return 0ULL;
     }
 
-    BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by) {
+    BitBoard squareAttackers(const Position& pos, const Square& sq, const Color attacked_by) {
         const BitBoard occ  = pos.occupied();
         const BitBoard op_P = pos.pieces(attacked_by, PieceType::PAWN);
         const BitBoard op_N = pos.pieces(attacked_by, PieceType::KNIGHT);
