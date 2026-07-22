@@ -1,8 +1,14 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/types.h"
 #include "eval/hce/defs.h"
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <iostream>
+#include <string>
+#include <vector>
 
 namespace sagittar::eval::hce::tuner {
 
@@ -112,4 +118,4 @@ namespace sagittar::eval::hce::tuner {
         return index;
     }
 
-}
+}  // namespace sagittar::eval::hce::tuner

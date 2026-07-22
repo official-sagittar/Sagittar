@@ -1,10 +1,21 @@
 #include "movegen.h"
+
 #include "arch.h"
-#include "commons/utils.h"
-#include "types.h"
+#include "commons/containers.h"
+#include "core/bitboard.h"
+#include "core/move.h"
+#include "core/position.h"
+#include "core/types.h"
+
+#include <array>
+#include <cassert>
+#include <cstddef>
+#include <span>
 
 #if defined(SAGITTAR_HAS_BMI2)
     #include <immintrin.h>
+#else
+    #include "commons/utils.h"
 #endif
 
 namespace sagittar {
@@ -704,4 +715,4 @@ namespace sagittar {
                                                           const Position&              pos);
     template void pseudolegalMoves<MovegenType::CHECK_EVASIONS>(containers::ArrayList<Move>* moves,
                                                                 const Position&              pos);
-}
+}  // namespace sagittar

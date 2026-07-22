@@ -1,5 +1,10 @@
 #include "tt.h"
+
+#include "core/move.h"
+#include "core/types.h"
 #include "search/search.h"
+
+#include <cstddef>
 
 namespace sagittar::search {
 
@@ -105,4 +110,4 @@ namespace sagittar::search {
         return static_cast<u64>((static_cast<u128>(key) * static_cast<u128>(size)) >> 64);
     }
 
-}
+}  // namespace sagittar::search

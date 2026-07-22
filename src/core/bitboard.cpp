@@ -1,5 +1,9 @@
 #include "bitboard.h"
 
+#include "core/types.h"
+
+#include <array>
+
 namespace sagittar {
 
     static constexpr BitBoard compute_ray(const Square& x, const Square& y) {
@@ -135,4 +139,4 @@ namespace sagittar {
 
     BitBoard between(const Square& x, const Square& y) { return BETWEEN_BB[x.index()][y.index()]; }
 
-}
+}  // namespace sagittar

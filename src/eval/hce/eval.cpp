@@ -1,6 +1,13 @@
 #include "eval.h"
-#include "commons/utils.h"
+
+#include "core/position.h"
+#include "core/types.h"
 #include "eval/hce/defs.h"
+
+#include <array>
+#include <cassert>
+#include <cstddef>
+#include <utility>
 
 namespace sagittar::eval::hce {
 
@@ -94,7 +101,7 @@ namespace sagittar::eval::hce {
             std::array<PawnEvalEntry, SIZE> m_entries{};
         };
 
-    }
+    }  // namespace
 
     Score evaluate(const Position& pos) {
         i32   phase   = TOTAL_PHASE;
@@ -172,4 +179,4 @@ namespace sagittar::eval::hce {
         return false;
     }
 
-}
+}  // namespace sagittar::eval::hce

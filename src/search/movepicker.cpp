@@ -1,5 +1,16 @@
 #include "movepicker.h"
 
+#include "commons/containers.h"
+#include "core/move.h"
+#include "core/movegen.h"
+#include "core/position.h"
+#include "core/types.h"
+#include "search/history.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <span>
+
 namespace sagittar::search {
 
     // clang-format off
@@ -200,4 +211,4 @@ namespace sagittar::search {
         }
     }
 
-}
+}  // namespace sagittar::search

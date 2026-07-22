@@ -1,4 +1,3 @@
-#include "commons/pch.h"
 #include "core/bitboard.h"
 #include "core/types.h"
 #include "doctest/doctest.h"

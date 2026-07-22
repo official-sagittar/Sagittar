@@ -1,5 +1,16 @@
 #include "params.h"
 
+#include "core/types.h"
+
+#include <algorithm>
+#include <cmath>
+
+#ifdef EXTERNAL_TUNE
+    #include <functional>
+    #include <string>
+    #include <string_view>
+#endif
+
 namespace sagittar::search::params {
 
 #ifdef EXTERNAL_TUNE
@@ -86,4 +97,4 @@ namespace sagittar::search::params {
         updateLMRTable();
     }
 
-}
+}  // namespace sagittar::search::params

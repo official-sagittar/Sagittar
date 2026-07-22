@@ -1,7 +1,8 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/types.h"
+
+#include <sstream>
 
 namespace sagittar {
 
@@ -116,4 +117,4 @@ namespace sagittar {
 
         ~ExtMove() noexcept = default;
     };
-}
+}  // namespace sagittar

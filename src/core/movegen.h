@@ -1,7 +1,7 @@
 #pragma once
 
 #include "commons/containers.h"
-#include "commons/pch.h"
+
 #include "core/bitboard.h"
 #include "core/move.h"
 #include "core/position.h"
@@ -25,4 +25,4 @@ namespace sagittar {
     template<MovegenType T>
     void pseudolegalMoves(containers::ArrayList<Move>* moves, const Position& pos);
 
-}
+}  // namespace sagittar

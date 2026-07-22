@@ -1,9 +1,11 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/position.h"
 #include "core/types.h"
+
+#include <cstddef>
+#include <vector>
 
 namespace sagittar::search {
 
@@ -83,4 +85,4 @@ namespace sagittar::search {
         u32                hashfull() const;
     };
 
-}
+}  // namespace sagittar::search

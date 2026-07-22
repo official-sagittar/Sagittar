@@ -1,11 +1,19 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "search/search.h"
 #include "search/types.h"
+
+#include <cstddef>
+#include <functional>
+#include <string>
+#include <vector>
+
+#ifdef EXTERNAL_TUNE
+    #include <filesystem>
+#endif
 
 namespace sagittar {
 
@@ -55,4 +63,4 @@ namespace sagittar {
         void display() const;
     };
 
-}
+}  // namespace sagittar

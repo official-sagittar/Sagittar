@@ -1,7 +1,9 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "engine.h"
+
+#include <future>
+#include <string>
 
 namespace sagittar::comms::uci {
 
@@ -28,4 +30,4 @@ namespace sagittar::comms::uci {
         void start();
     };
 
-}
+}  // namespace sagittar::comms::uci

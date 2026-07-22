@@ -1,6 +1,21 @@
 #include "position.h"
+
 #include "commons/utils.h"
+#include "core/bitboard.h"
+#include "core/move.h"
 #include "core/movegen.h"
+#include "core/types.h"
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <cctype>
+#include <cstddef>
+#include <iostream>
+#include <span>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 namespace sagittar {
 
@@ -766,4 +781,4 @@ namespace sagittar {
 
     bool Position::operator==(Position const& rhs) const { return m_key == rhs.key(); }
 
-}
+}  // namespace sagittar

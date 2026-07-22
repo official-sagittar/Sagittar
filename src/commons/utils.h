@@ -1,12 +1,11 @@
 #pragma once
 
-#include "core/types.h"
-#include "pch.h"
+#include <cstdint>
 
 namespace sagittar::utils {
 
-    u64 prng();
+    std::uint64_t prng();
 
-    u64 currtimeInMilliseconds();
+    std::uint64_t currtimeInMilliseconds();
 
-}
+}  // namespace sagittar::utils

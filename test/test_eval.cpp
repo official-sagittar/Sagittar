@@ -1,5 +1,3 @@
-#include "commons/pch.h"
-#include "commons/utils.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "doctest/doctest.h"

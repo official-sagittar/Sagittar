@@ -1,6 +1,10 @@
 #pragma once
 
-#include "commons/pch.h"
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <ranges>
+#include <string>
 
 namespace sagittar {
 
@@ -175,4 +179,4 @@ namespace sagittar {
     const std::string PIECES_STR = "PNBRQKXXpnbrqk.";
     const std::string COLORS_STR = "wb";
     const std::string FILE_STR   = "abcdefgh";
-}
+}  // namespace sagittar

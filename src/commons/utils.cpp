@@ -1,11 +1,14 @@
 #include "utils.h"
 
+#include <chrono>
+#include <cstdint>
+
 namespace sagittar::utils {
 
-    u64 prng() {
+    std::uint64_t prng() {
         // http://vigna.di.unimi.it/ftp/papers/xorshift.pdf
 
-        static u64 seed = 1070372ULL;
+        static std::uint64_t seed = 1070372ULL;
 
         seed ^= seed >> 12;
         seed ^= seed << 25;
@@ -14,7 +17,7 @@ namespace sagittar::utils {
         return seed * 2685821657736338717ULL;
     }
 
-    u64 currtimeInMilliseconds() {
+    std::uint64_t currtimeInMilliseconds() {
         // Get the current time point
         auto now = std::chrono::system_clock::now();
 
@@ -27,4 +30,4 @@ namespace sagittar::utils {
         return milliseconds;
     }
 
-}
+}  // namespace sagittar::utils

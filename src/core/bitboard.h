@@ -1,7 +1,5 @@
 #pragma once
 
-#include "commons/pch.h"
-#include "core/types.h"
 #include "types.h"
 
 namespace sagittar {
@@ -241,4 +239,4 @@ namespace sagittar {
     BitBoard ray(const Square&, const Square&);
     BitBoard line(const Square&, const Square&);
     BitBoard between(const Square&, const Square&);
-}
+}  // namespace sagittar

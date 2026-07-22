@@ -1,5 +1,10 @@
 #include "move.h"
 
+#include "core/types.h"
+
+#include <iostream>
+#include <sstream>
+
 namespace sagittar {
 
     static const char* PROMOTION_PIECE_STR = "xxxxxxxxnbrqnbrq";
@@ -26,4 +31,4 @@ namespace sagittar {
         std::cout << ss.str() << std::flush;
     }
 
-}
+}  // namespace sagittar

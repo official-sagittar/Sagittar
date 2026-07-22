@@ -1,7 +1,6 @@
 #pragma once
 
 #include "commons/containers.h"
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/movegen.h"
 #include "core/position.h"
@@ -67,4 +66,4 @@ namespace sagittar::search {
         u8     m_index_killers{0};
     };
 
-}
+}  // namespace sagittar::search

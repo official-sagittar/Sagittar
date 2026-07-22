@@ -1,6 +1,12 @@
-#include "commons/pch.h"
+
 #include "comms/uci.h"
 #include "engine.h"
+
+#include <string>
+
+#ifdef EXTERNAL_TUNE
+    #include <filesystem>
+#endif
 
 int main(int argc, char* argv[]) {
     sagittar::Engine engine;

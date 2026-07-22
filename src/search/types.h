@@ -1,8 +1,8 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/types.h"
+#include <vector>
 
 namespace sagittar::search {
 
@@ -41,4 +41,4 @@ namespace sagittar::search {
         Move              bestmove{};
     };
 
-}
+}  // namespace sagittar::search

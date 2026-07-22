@@ -1,7 +1,10 @@
 #pragma once
 
-#include "commons/pch.h"
+#include "core/position.h"
 #include "core/types.h"
+
+#include <algorithm>
+#include <array>
 
 namespace sagittar::eval::hce {
 
@@ -127,4 +130,4 @@ namespace sagittar::eval::hce {
     // clang-format on
 
     constexpr i32 TEMPO_BONUS = S(15, 3);
-}
+}  // namespace sagittar::eval::hce

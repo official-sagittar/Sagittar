@@ -1,10 +1,12 @@
 #pragma once
 
 #include "commons/containers.h"
-#include "commons/pch.h"
 #include "core/bitboard.h"
 #include "core/move.h"
 #include "core/types.h"
+
+#include <array>
+#include <string>
 
 namespace sagittar {
 
@@ -114,4 +116,4 @@ namespace sagittar {
         u64                     m_pawn_key;
     };
 
-}
+}  // namespace sagittar

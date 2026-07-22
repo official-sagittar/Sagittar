@@ -58,7 +58,6 @@ target_compile_options(
             -fno-rtti
             -march=native
 )
-target_precompile_headers(${EXE_NAME} PRIVATE src/commons/pch.h)
 target_include_directories(${EXE_NAME} PRIVATE src)
 
 set_target_properties(${EXE_NAME} PROPERTIES
@@ -70,7 +69,6 @@ set_target_properties(${EXE_NAME} PROPERTIES
 # Source files
 # ----------------------------------------------------------
 file(GLOB_RECURSE CORE_SRC CONFIGURE_DEPENDS src/**.cpp src/**.h)
-list(FILTER CORE_SRC EXCLUDE REGEX "src/commons/pch.cpp")
 list(FILTER CORE_SRC EXCLUDE REGEX "src/eval/hce/tuner/*")
 
 file(GLOB_RECURSE TEST_SRC CONFIGURE_DEPENDS test/*.cpp test/*.h)

@@ -1,9 +1,25 @@
 #include "engine.h"
+
 #include "commons/utils.h"
 #include "core/perft.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "search/params.h"
+#include "search/search.h"
+#include "search/types.h"
+
+#include <array>
+#include <chrono>
+#include <cstddef>
+#include <functional>
+#include <iostream>
+#include <sstream>
+#include <string>
+
 #ifdef EXTERNAL_TUNE
     #include "eval/hce/tuner/tuner.h"
+
+    #include <filesystem>
 #endif
 
 namespace sagittar {
@@ -169,4 +185,4 @@ namespace sagittar {
 
     void Engine::display() const { pos.display(); }
 
-}
+}  // namespace sagittar

@@ -1,10 +1,29 @@
 #include "search.h"
+
 #include "commons/utils.h"
+#include "core/move.h"
 #include "core/movegen.h"
+#include "core/position.h"
+#include "core/types.h"
 #include "eval/hce/eval.h"
+#include "search/history.h"
 #include "search/movepicker.h"
 #include "search/params.h"
 #include "search/timeman.h"
+#include "search/tt.h"
+#include "search/types.h"
+
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <future>
+#include <iterator>
+#include <memory>
+#include <span>
+#include <vector>
 
 namespace sagittar::search {
 
@@ -603,4 +622,4 @@ namespace sagittar::search {
         return best_score;
     }
 
-}
+}  // namespace sagittar::search

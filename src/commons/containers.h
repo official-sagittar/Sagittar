@@ -1,6 +1,6 @@
 #pragma once
 
-#include "commons/pch.h"
+#include <array>
 
 namespace sagittar::containers {
 
@@ -61,4 +61,4 @@ namespace sagittar::containers {
         const_iterator end() const { return std::array<T, Capacity>::begin() + current_size; }
     };
 
-}
+}  // namespace sagittar::containers

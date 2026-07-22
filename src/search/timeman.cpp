@@ -1,7 +1,10 @@
 #include "timeman.h"
+
 #include "commons/utils.h"
+#include "core/position.h"
 #include "core/types.h"
 #include "search/search.h"
+#include "search/types.h"
 
 namespace sagittar::search {
 
@@ -42,4 +45,4 @@ namespace sagittar::search {
         }
     }
 
-}
+}  // namespace sagittar::search

@@ -4,6 +4,8 @@
 #include "doctest/doctest.h"
 #include "search/tt.h"
 
+#include <cstddef>
+
 using namespace sagittar;
 
 TEST_SUITE("TT") {

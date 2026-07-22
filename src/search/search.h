@@ -1,12 +1,19 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "search/history.h"
 #include "search/tt.h"
 #include "search/types.h"
+
+#include <array>
+#include <atomic>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <span>
+#include <vector>
 
 namespace sagittar::search {
 
@@ -108,4 +115,4 @@ namespace sagittar::search {
         std::vector<std::unique_ptr<Worker>> workers;
     };
 
-}
+}  // namespace sagittar::search

@@ -1,8 +1,24 @@
 #include "tuner.h"
 
 #include "core/position.h"
+#include "core/types.h"
+#include "eval/hce/defs.h"
 #include "eval/hce/eval.h"
 #include "eval/hce/tuner/base.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <future>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <thread_pool/thread_pool.h>
+#include <thread_pool/version.h>
+#include <vector>
 
 namespace sagittar::eval::hce::tuner {
 
@@ -449,4 +465,4 @@ namespace sagittar::eval::hce::tuner {
         std::cout << "Tuning complete" << std::endl;
     }
 
-}
+}  // namespace sagittar::eval::hce::tuner

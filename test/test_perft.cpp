@@ -1,8 +1,17 @@
-#include "commons/pch.h"
 #include "core/perft.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "doctest/doctest.h"
+
+#include <array>
+#include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <map>
+#include <regex>
+#include <string>
+#include <utility>
+#include <vector>
 
 using namespace sagittar;
 using pair_type = std::pair<std::string, std::vector<size_t>>;

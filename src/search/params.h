@@ -1,7 +1,12 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/types.h"
+
+#include <array>
+#include <deque>
+#include <functional>
+#include <string>
+#include <string_view>
 
 namespace sagittar::search::params {
 
@@ -78,4 +83,4 @@ namespace sagittar::search::params {
     PARAM(futility_margin_c, 9, 5, 500, 5);
     PARAM(futility_margin_m, 143, 0, 1000, 10);
 
-}
+}  // namespace sagittar::search::params

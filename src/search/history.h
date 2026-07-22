@@ -1,6 +1,5 @@
 #pragma once
 
-#include "commons/pch.h"
 #include "core/types.h"
 
 namespace sagittar::search {
@@ -9,4 +8,4 @@ namespace sagittar::search {
 
     using PieceToHistory = std::array<std::array<i16, 64>, 15>;
 
-}
+}  // namespace sagittar::search

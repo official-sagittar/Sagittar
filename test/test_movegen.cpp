@@ -1,10 +1,11 @@
 #include "commons/containers.h"
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/movegen.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "doctest/doctest.h"
+
+#include <string>
 
 using namespace sagittar;
 

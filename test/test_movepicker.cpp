@@ -1,4 +1,3 @@
-#include "commons/pch.h"
 #include "core/move.h"
 #include "core/movegen.h"
 #include "core/position.h"
@@ -6,6 +5,8 @@
 #include "doctest/doctest.h"
 #include "search/history.h"
 #include "search/movepicker.h"
+
+#include <array>
 
 using namespace sagittar;
 

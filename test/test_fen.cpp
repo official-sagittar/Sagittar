@@ -1,7 +1,8 @@
-#include "commons/pch.h"
 #include "core/position.h"
 #include "core/types.h"
 #include "doctest/doctest.h"
+
+#include <string>
 
 using namespace sagittar;
 

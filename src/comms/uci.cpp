@@ -1,8 +1,18 @@
 #include "uci.h"
-#include "commons/utils.h"
-#include "core/position.h"
-#include "search/params.h"
+
+#include "engine.h"
 #include "search/types.h"
+
+#include <cstddef>
+#include <future>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+#ifdef EXTERNAL_TUNE
+    #include "search/params.h"
+#endif
 
 namespace sagittar::comms::uci {
 
@@ -299,4 +309,4 @@ namespace sagittar::comms::uci {
         }
     }
 
-}
+}  // namespace sagittar::comms::uci
