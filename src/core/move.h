@@ -29,7 +29,7 @@ namespace sagittar {
        public:
         Move() noexcept :
             m_data(0) {}
-        Move(const Square& from, const Square& to, const MoveFlag& flag) noexcept :
+        Move(const Square from, const Square to, const MoveFlag& flag) noexcept :
             m_data((flag << 12) | (static_cast<int>(to.raw()) << 6)
                    | static_cast<int>(from.raw())) {}
         Move(const u16 data) noexcept :

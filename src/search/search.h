@@ -79,7 +79,7 @@ namespace sagittar::search {
             void undoMove();
             void undoNullMove();
 
-            void updateHistory(const Piece, const Square&, const i32);
+            void updateHistory(const Piece, const Square, const i32);
 
             template<NodeType nodeType>
             Score search(const Position& pos,

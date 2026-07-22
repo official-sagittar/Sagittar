@@ -695,7 +695,7 @@ namespace sagittar {
         return ~(m_bb_colors[Color::WHITE] | m_bb_colors[Color::BLACK]);
     }
 
-    Piece Position::pieceOn(const Square& square) const { return m_board[square.index()]; }
+    Piece Position::pieceOn(const Square square) const { return m_board[square.index()]; }
 
     u8 Position::pieceCount(const PieceType pt) const { return m_bb_pieces[pt].count(); }
 

@@ -113,7 +113,7 @@ namespace sagittar {
     static std::array<AttackTable, 512>  ATTACK_TABLE_BISHOP;
     static std::array<AttackTable, 4096> ATTACK_TABLE_ROOK;
 
-    static BitBoard bishopAttacks(const Square& sq, const BitBoard blockers) {
+    static BitBoard bishopAttacks(const Square sq, const BitBoard blockers) {
         int r, f;
 
         const u8 tr = sq.rank();
@@ -161,7 +161,7 @@ namespace sagittar {
         return attack_mask;
     }
 
-    static BitBoard rookAttacks(const Square& sq, const BitBoard blockers) {
+    static BitBoard rookAttacks(const Square sq, const BitBoard blockers) {
         int r, f;
 
         const u8 tr = sq.rank();
@@ -591,7 +591,7 @@ namespace sagittar {
     }
 
     template<PieceType PT>
-    BitBoard attacks(const Square& sq, const BitBoard occupancy, const Color c) {
+    BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c) {
         switch (PT)
         {
             case PieceType::PAWN :
@@ -628,7 +628,7 @@ namespace sagittar {
         return 0ULL;
     }
 
-    BitBoard squareAttackers(const Position& pos, const Square& sq, const Color attacked_by) {
+    BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by) {
         const BitBoard occ  = pos.occupied();
         const BitBoard op_P = pos.pieces(attacked_by, PieceType::PAWN);
         const BitBoard op_N = pos.pieces(attacked_by, PieceType::KNIGHT);
