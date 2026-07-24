@@ -325,7 +325,7 @@ namespace sagittar::search {
             }
         }
 
-        StackEntry& ss = stack[ply];
+        StackEntry& ss = stack[index(ply)];
 
         Score  best_score = -INF;
         Move   best_move_so_far;
@@ -543,7 +543,7 @@ namespace sagittar::search {
         const MovegenType movegen_type =
           is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
 
-        StackEntry& ss = stack[ply];
+        StackEntry& ss = stack[index(ply)];
 
         std::array<ExtMove, MOVES_MAX> buffer{};
         MovePicker move_picker(buffer.data(), pos, ttmove, history, ss.killers[0], ss.killers[1],

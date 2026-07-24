@@ -7,6 +7,8 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <future>
@@ -15,6 +17,7 @@
 #include <span>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 #ifdef EXTERNAL_TUNE
     #include <deque>

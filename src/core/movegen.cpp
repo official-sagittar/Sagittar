@@ -43,7 +43,7 @@ namespace sagittar {
                 const BitBoard b  = BB(sq);
                 const BitBoard attacks =
                   shift<Direction::NORTH_EAST>(b) | shift<Direction::NORTH_WEST>(b);
-                table[Color::WHITE][sq] = attacks;
+                table[Color::WHITE][index(sq)] = attacks;
             }
         }
 
@@ -56,7 +56,7 @@ namespace sagittar {
                 const BitBoard b  = BB(sq);
                 const BitBoard attacks =
                   shift<Direction::SOUTH_EAST>(b) | shift<Direction::SOUTH_WEST>(b);
-                table[Color::BLACK][sq] = attacks;
+                table[Color::BLACK][index(sq)] = attacks;
             }
         }
 
@@ -80,7 +80,7 @@ namespace sagittar {
             attacks |= (b & ~(FILE_A_BB | FILE_B_BB)) >> 10;
             attacks |= (b & ~FILE_A_BB) >> 17;
 
-            table[sq] = attacks;
+            table[index(sq)] = attacks;
         }
 
         return table;
@@ -103,7 +103,7 @@ namespace sagittar {
             attacks |= shift<Direction::SOUTH_WEST>(b);
             attacks |= shift<Direction::NORTH_WEST>(b);
 
-            table[sq] = attacks;
+            table[index(sq)] = attacks;
         }
 
         return table;
@@ -234,10 +234,10 @@ namespace sagittar {
         {
             const Square square = static_cast<Square>(sq);
 
-            const BitBoard edges = ((RANK_1_BB | RANK_8_BB) & ~RANK_BB(sq2rank(sq)))
-                                 | ((FILE_A_BB | FILE_H_BB) & ~FILE_BB(sq2file(sq)));
+            const BitBoard edges = ((RANK_1_BB | RANK_8_BB) & ~RANK_BB(sq2rank(index(sq))))
+                                 | ((FILE_A_BB | FILE_H_BB) & ~FILE_BB(sq2file(index(sq))));
 
-            Magic& m = magic_table[sq];
+            Magic& m = magic_table[index(sq)];
 
             m.mask          = (PT == PieceType::BISHOP) ? (bishopAttacks(square, 0ULL) & ~edges)
                             : (PT == PieceType::ROOK)   ? (rookAttacks(square, 0ULL) & ~edges)
@@ -293,8 +293,8 @@ namespace sagittar {
 
             for (size_t i = 0; i < (1 << bits); i++)
             {
-                const auto index        = m.index(occupancies[i]);
-                attack_table[index][sq] = attacks[i];
+                const auto idx               = m.index(occupancies[i]);
+                attack_table[idx][index(sq)] = attacks[i];
             }
         }
     }

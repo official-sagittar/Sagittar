@@ -32,7 +32,7 @@ namespace sagittar::eval::hce {
 
         for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
         {
-            phase -= pos.pieceCount(static_cast<PieceType>(pt)) * PHASE_WEIGHTS[pt];
+            phase -= pos.pieceCount(static_cast<PieceType>(index(pt))) * PHASE_WEIGHTS[index(pt)];
         }
 
         phase = std_phase(phase);

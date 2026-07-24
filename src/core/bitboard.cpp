@@ -1,4 +1,5 @@
 #include "bitboard.h"
+#include "commons/utils.h"
 
 namespace sagittar {
 
@@ -94,7 +95,8 @@ namespace sagittar {
         {
             for (int y = Square::A1; y <= Square::H8; ++y)
             {
-                rays[x][y] = compute_ray(static_cast<Square>(x), static_cast<Square>(y));
+                rays[index(x)][index(y)] =
+                  compute_ray(static_cast<Square>(x), static_cast<Square>(y));
             }
         }
 
@@ -108,7 +110,8 @@ namespace sagittar {
         {
             for (int y = Square::A1; y <= Square::H8; ++y)
             {
-                lines[x][y] = compute_line(static_cast<Square>(x), static_cast<Square>(y));
+                lines[index(x)][index(y)] =
+                  compute_line(static_cast<Square>(x), static_cast<Square>(y));
             }
         }
 
@@ -122,7 +125,8 @@ namespace sagittar {
         {
             for (int y = Square::A1; y <= Square::H8; ++y)
             {
-                bet[x][y] = compute_between(static_cast<Square>(x), static_cast<Square>(y));
+                bet[index(x)][index(y)] =
+                  compute_between(static_cast<Square>(x), static_cast<Square>(y));
             }
         }
 

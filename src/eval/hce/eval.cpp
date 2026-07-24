@@ -13,8 +13,12 @@ namespace sagittar::eval::hce {
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {
-                    table[pt][MG][sq] = mg_score(PIECE_SCORES[pt]) + mg_score(PSQT_SCORES[pt][sq]);
-                    table[pt][EG][sq] = eg_score(PIECE_SCORES[pt]) + eg_score(PSQT_SCORES[pt][sq]);
+                    table[index(pt)][index(MG)][index(sq)] =
+                      mg_score(PIECE_SCORES[index(pt)])
+                      + mg_score(PSQT_SCORES[index(pt)][index(sq)]);
+                    table[index(pt)][index(EG)][index(sq)] =
+                      eg_score(PIECE_SCORES[index(pt)])
+                      + eg_score(PSQT_SCORES[index(pt)][index(sq)]);
                 }
             }
 
@@ -28,8 +32,10 @@ namespace sagittar::eval::hce {
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {
-                    table[pt][MG][sq] = psqt_b[pt][MG][SQUARES_MIRRORED[sq]];
-                    table[pt][EG][sq] = psqt_b[pt][EG][SQUARES_MIRRORED[sq]];
+                    table[index(pt)][index(MG)][index(sq)] =
+                      psqt_b[index(pt)][index(MG)][SQUARES_MIRRORED[index(sq)]];
+                    table[index(pt)][index(EG)][index(sq)] =
+                      psqt_b[index(pt)][index(EG)][index(SQUARES_MIRRORED[index(sq)])];
                 }
             }
 
@@ -46,8 +52,8 @@ namespace sagittar::eval::hce {
                 while (w_p_bb)
                 {
                     const auto sq = w_p_bb.pop_lsb();
-                    eval_mg += psqt_w[PieceType::PAWN][MG][sq];
-                    eval_eg += psqt_w[PieceType::PAWN][EG][sq];
+                    eval_mg += psqt_w[index(PieceType::PAWN)][index(MG)][index(sq)];
+                    eval_eg += psqt_w[index(PieceType::PAWN)][index(EG)][index(sq)];
                 }
             }
 
@@ -57,8 +63,8 @@ namespace sagittar::eval::hce {
                 while (b_p_bb)
                 {
                     const auto sq = b_p_bb.pop_lsb();
-                    eval_mg -= psqt_b[PieceType::PAWN][MG][sq];
-                    eval_eg -= psqt_b[PieceType::PAWN][EG][sq];
+                    eval_mg -= psqt_b[index(PieceType::PAWN)][index(MG)][index(sq)];
+                    eval_eg -= psqt_b[index(PieceType::PAWN)][index(EG)][index(sq)];
                 }
             }
 
@@ -117,19 +123,19 @@ namespace sagittar::eval::hce {
             auto pt_bb_w = pt_bb & w_p;
             while (pt_bb_w)
             {
-                phase -= PHASE_WEIGHTS[pt];
+                phase -= PHASE_WEIGHTS[index(pt)];
                 const auto sq = pt_bb_w.pop_lsb();
-                eval_mg += psqt_w[pt][MG][sq];
-                eval_eg += psqt_w[pt][EG][sq];
+                eval_mg += psqt_w[index(pt)][index(MG)][index(sq)];
+                eval_eg += psqt_w[index(pt)][index(EG)][index(sq)];
             }
             // BLACK
             auto pt_bb_b = pt_bb & b_p;
             while (pt_bb_b)
             {
-                phase -= PHASE_WEIGHTS[pt];
+                phase -= PHASE_WEIGHTS[index(pt)];
                 const auto sq = pt_bb_b.pop_lsb();
-                eval_mg -= psqt_b[pt][MG][sq];
-                eval_eg -= psqt_b[pt][EG][sq];
+                eval_mg -= psqt_b[index(pt)][index(MG)][index(sq)];
+                eval_eg -= psqt_b[index(pt)][index(EG)][index(sq)];
             }
         }
 

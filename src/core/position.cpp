@@ -1,6 +1,7 @@
 #include "position.h"
 #include "commons/utils.h"
 #include "core/movegen.h"
+#include <cstddef>
 
 namespace sagittar {
 
@@ -729,7 +730,7 @@ namespace sagittar {
 
         for (i32 i = m_ply_count - 2; i >= start; i -= 2)
         {
-            if (key == key_history[i])
+            if (key == key_history[index(i)])
             {
                 return true;
             }
