@@ -27,6 +27,12 @@ namespace sagittar::search {
             move(Move()) {}
     };
 
+    static_assert(sizeof(TTData) == 16);
+    static_assert(std::is_trivially_copyable_v<TTData>);
+    static_assert(std::is_trivially_copy_constructible_v<TTData>);
+    static_assert(std::is_trivially_copy_assignable_v<TTData>);
+    static_assert(std::is_trivially_destructible_v<TTData>);
+
     class TranspositionTable {
        private:
         struct TTEntry {
@@ -57,6 +63,12 @@ namespace sagittar::search {
                 return static_cast<u8>(flag | (pv << 2) | (age << 3));
             }
         };
+
+        static_assert(sizeof(TTEntry) == 16);
+        static_assert(std::is_trivially_copyable_v<TTEntry>);
+        static_assert(std::is_trivially_copy_constructible_v<TTEntry>);
+        static_assert(std::is_trivially_copy_assignable_v<TTEntry>);
+        static_assert(std::is_trivially_destructible_v<TTEntry>);
 
         static constexpr u8 AGE_CYCLE_LEN = 1 << TTEntry::AGE_BITS;
 

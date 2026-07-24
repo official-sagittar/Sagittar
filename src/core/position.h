@@ -114,4 +114,10 @@ namespace sagittar {
         u64                     m_pawn_key;
     };
 
+    static_assert(sizeof(Position) == 168);
+    static_assert(std::is_trivially_copyable_v<Position>);
+    static_assert(std::is_trivially_copy_constructible_v<Position>);
+    static_assert(std::is_trivially_copy_assignable_v<Position>);
+    static_assert(std::is_trivially_destructible_v<Position>);
+
 }

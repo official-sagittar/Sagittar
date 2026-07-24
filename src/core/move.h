@@ -27,44 +27,30 @@ namespace sagittar {
 
     class Move final {
        public:
-        Move() noexcept :
-            m_data(0) {}
-        Move(const Square from, const Square to, const MoveFlag flag) noexcept :
-            m_data((flag << 12) | (to << 6) | from) {}
-        Move(const u16 data) noexcept :
+        constexpr Move() noexcept = default;
+        explicit constexpr Move(const Square from, const Square to, const MoveFlag flag) noexcept :
+            m_data(static_cast<u16>((flag << 12) | (to << 6) | from)) {}
+        explicit constexpr Move(const u16 data) noexcept :
             m_data(data) {}
-        Move(const Move& other) noexcept :
-            m_data(other.m_data) {}
-        Move(Move&& other) noexcept :
-            m_data(other.m_data) {}
-        inline Move& operator=(const Move& rhs) noexcept {
-            if (this != &rhs)
-            {
-                m_data = rhs.m_data;
-            }
-            return *this;
-        }
-        inline Move& operator=(const Move&& rhs) noexcept {
-            if (this != &rhs)
-            {
-                m_data = rhs.m_data;
-            }
-            return *this;
-        }
-        ~Move() noexcept = default;
 
-        inline bool operator==(const Move& rhs) const { return m_data == rhs.m_data; }
-        inline bool operator!=(const Move& rhs) const { return m_data != rhs.m_data; }
+        constexpr bool operator==(const Move& rhs) const noexcept { return m_data == rhs.m_data; }
+        constexpr bool operator!=(const Move& rhs) const noexcept { return m_data != rhs.m_data; }
 
-        [[nodiscard]] inline Square from() const { return static_cast<Square>(m_data & 0x3F); }
-        [[nodiscard]] inline Square to() const { return static_cast<Square>((m_data >> 6) & 0x3F); }
-        [[nodiscard]] inline MoveFlag flag() const {
+        [[nodiscard]] constexpr Square from() const noexcept {
+            return static_cast<Square>(m_data & 0x3F);
+        }
+        [[nodiscard]] constexpr Square to() const noexcept {
+            return static_cast<Square>((m_data >> 6) & 0x3F);
+        }
+        [[nodiscard]] constexpr MoveFlag flag() const noexcept {
             return static_cast<MoveFlag>((m_data >> 12) & 0xF);
         }
-        [[nodiscard]] inline u16 id() const { return m_data; }
+        [[nodiscard]] constexpr u16 id() const noexcept { return m_data; }
 
-        [[nodiscard]] inline bool isCapture() const { return MOVE_IS_CAPTURE(flag()); }
-        [[nodiscard]] inline bool isPromotion() const { return MOVE_IS_PROMOTION(flag()); }
+        [[nodiscard]] constexpr bool isCapture() const noexcept { return MOVE_IS_CAPTURE(flag()); }
+        [[nodiscard]] constexpr bool isPromotion() const noexcept {
+            return MOVE_IS_PROMOTION(flag());
+        }
 
         void toString(std::ostringstream&) const;
         void display() const;
@@ -73,46 +59,28 @@ namespace sagittar {
         u16 m_data{0};
     };
 
+    static_assert(sizeof(Move) == 2);
+    static_assert(std::is_trivially_copyable_v<Move>);
+    static_assert(std::is_trivially_copy_constructible_v<Move>);
+    static_assert(std::is_trivially_copy_assignable_v<Move>);
+    static_assert(std::is_trivially_destructible_v<Move>);
+
     const Move NULL_MOVE = Move{};
 
     struct ExtMove final {
         Move move{};
-        i16  score;
+        i16  score{0};
 
-        ExtMove() noexcept :
-            move(),
-            score(0) {}
+        constexpr ExtMove() noexcept = default;
 
-        ExtMove(const Move& m, i16 s) noexcept :
+        explicit constexpr ExtMove(const Move& m, i16 s) noexcept :
             move(m),
             score(s) {}
-
-        ExtMove(const ExtMove& other) noexcept :
-            move(other.move),
-            score(other.score) {}
-
-        ExtMove(ExtMove&& other) noexcept :
-            move(std::move(other.move)),
-            score(other.score) {}
-
-        ExtMove& operator=(const ExtMove& other) noexcept {
-            if (this != &other)
-            {
-                move  = other.move;
-                score = other.score;
-            }
-            return *this;
-        }
-
-        ExtMove& operator=(ExtMove&& other) noexcept {
-            if (this != &other)
-            {
-                move  = std::move(other.move);
-                score = other.score;
-            }
-            return *this;
-        }
-
-        ~ExtMove() noexcept = default;
     };
+
+    static_assert(sizeof(ExtMove) == 4);
+    static_assert(std::is_trivially_copyable_v<ExtMove>);
+    static_assert(std::is_trivially_copy_constructible_v<ExtMove>);
+    static_assert(std::is_trivially_copy_assignable_v<ExtMove>);
+    static_assert(std::is_trivially_destructible_v<ExtMove>);
 }

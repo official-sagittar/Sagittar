@@ -62,7 +62,7 @@ namespace sagittar::search {
             void stop();
 
            private:
-            enum class NodeType {
+            enum class NodeType : u8 {
                 NON_PV,
                 ROOT,
                 PV

@@ -7,38 +7,13 @@ namespace sagittar {
 
     class BitBoard {
        public:
-        constexpr BitBoard() noexcept :
-            m_bits(0ULL) { }
+        constexpr BitBoard() noexcept = default;
 
         constexpr BitBoard(const Square sq) noexcept :
-            m_bits(1ULL << sq) { }
+            m_bits(1ULL << sq) {}
 
         constexpr BitBoard(const u64 bits) noexcept :
-            m_bits(bits) { }
-
-        constexpr BitBoard(const BitBoard& other) noexcept :
-            m_bits(other.m_bits) { }
-
-        constexpr BitBoard(BitBoard&& other) noexcept :
-            m_bits(other.m_bits) { }
-
-        inline constexpr BitBoard& operator=(const BitBoard& rhs) noexcept {
-            if (this != &rhs)
-            {
-                m_bits = rhs.m_bits;
-            }
-            return *this;
-        }
-
-        inline constexpr BitBoard& operator=(const BitBoard&& rhs) noexcept {
-            if (this != &rhs)
-            {
-                m_bits = rhs.m_bits;
-            }
-            return *this;
-        }
-
-        ~BitBoard() noexcept = default;
+            m_bits(bits) {}
 
         [[nodiscard]] constexpr u64 raw() const noexcept { return m_bits; }
 
@@ -169,8 +144,14 @@ namespace sagittar {
         }
 
        private:
-        u64 m_bits{};
+        u64 m_bits{0ULL};
     };
+
+    static_assert(sizeof(BitBoard) == 8);
+    static_assert(std::is_trivially_copyable_v<BitBoard>);
+    static_assert(std::is_trivially_copy_constructible_v<BitBoard>);
+    static_assert(std::is_trivially_copy_assignable_v<BitBoard>);
+    static_assert(std::is_trivially_destructible_v<BitBoard>);
 
     static inline constexpr BitBoard BB(const Square sq) { return BitBoard(sq); }
     static inline constexpr BitBoard BB(const int sq) { return BitBoard(1ULL << sq); }
