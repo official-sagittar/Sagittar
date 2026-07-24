@@ -3,6 +3,7 @@
 #include "commons/pch.h"
 #include "core/types.h"
 #include "eval/hce/defs.h"
+#include <cstddef>
 
 namespace sagittar::eval::hce::tuner {
 
@@ -105,6 +106,42 @@ namespace sagittar::eval::hce::tuner {
             }
             std::cout << "};" << std::endl;
         }
+
+        std::cout << "return table;\n";
+        std::cout << "}();" << std::endl;
+
+        return index;
+    }
+
+    size_t print_mobility(ParameterVector& params, const size_t start) {
+        size_t index = start;
+
+        std::cout << "constexpr std::array<std::array<i32, 28>, 4> MOBILITY_BONUS = []() {\n";
+        std::cout << "std::array<std::array<i32, 28>, 4> table{};" << std::endl;
+
+        int n_terms = 9;
+        std::cout << "table[0] = {" << std::endl;
+        print_param_array(params, index, index + n_terms);
+        std::cout << "};" << std::endl;
+        index += n_terms;
+
+        n_terms = 14;
+        std::cout << "table[1] = {" << std::endl;
+        print_param_array(params, index, index + n_terms);
+        std::cout << "};" << std::endl;
+        index += n_terms;
+
+        n_terms = 15;
+        std::cout << "table[2] = {" << std::endl;
+        print_param_array(params, index, index + n_terms);
+        std::cout << "};" << std::endl;
+        index += n_terms;
+
+        n_terms = 28;
+        std::cout << "table[3] = {" << std::endl;
+        print_param_array(params, index, index + n_terms);
+        std::cout << "};" << std::endl;
+        index += n_terms;
 
         std::cout << "return table;\n";
         std::cout << "}();" << std::endl;

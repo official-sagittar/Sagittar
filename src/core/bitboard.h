@@ -8,19 +8,19 @@ namespace sagittar {
     class BitBoard {
        public:
         constexpr BitBoard() noexcept :
-            m_bits(0ULL) { }
+            m_bits(0ULL) {}
 
         constexpr BitBoard(const Square sq) noexcept :
-            m_bits(1ULL << sq) { }
+            m_bits(1ULL << sq) {}
 
         constexpr BitBoard(const u64 bits) noexcept :
-            m_bits(bits) { }
+            m_bits(bits) {}
 
         constexpr BitBoard(const BitBoard& other) noexcept :
-            m_bits(other.m_bits) { }
+            m_bits(other.m_bits) {}
 
         constexpr BitBoard(BitBoard&& other) noexcept :
-            m_bits(other.m_bits) { }
+            m_bits(other.m_bits) {}
 
         inline constexpr BitBoard& operator=(const BitBoard& rhs) noexcept {
             if (this != &rhs)
