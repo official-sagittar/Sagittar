@@ -138,6 +138,21 @@ namespace sagittar::eval::hce {
         assert(phase == pos_phase(pos));
 #endif
 
+        // Bishop pair
+        const auto b_bb   = pos.pieces(PieceType::BISHOP);
+        const auto w_b_bb = b_bb & w_p;
+        const auto b_b_bb = b_bb & b_p;
+        if (w_b_bb.has_multiple())
+        {
+            eval_mg += mg_score(BISHOP_PAIR);
+            eval_eg += eg_score(BISHOP_PAIR);
+        }
+        if (b_b_bb.has_multiple())
+        {
+            eval_mg -= mg_score(BISHOP_PAIR);
+            eval_eg -= eg_score(BISHOP_PAIR);
+        }
+
         Score eval = scale_eval(eval_mg, eval_eg, phase);
 
         const auto stm = 1 - (2 * pos.stm());
