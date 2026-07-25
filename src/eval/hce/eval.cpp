@@ -112,7 +112,8 @@ namespace sagittar::eval::hce {
 
         for (int pt = PieceType::KNIGHT; pt <= PieceType::KING; pt++)
         {
-            const auto pt_bb = pos.pieces(static_cast<PieceType>(pt));
+            const PieceType piece_type = static_cast<PieceType>(pt);
+            const auto      pt_bb      = pos.pieces(piece_type);
             // WHITE
             auto pt_bb_w = pt_bb & w_p;
             while (pt_bb_w)
@@ -121,6 +122,16 @@ namespace sagittar::eval::hce {
                 const auto sq = pt_bb_w.pop_lsb();
                 eval_mg += psqt_w[pt][MG][sq];
                 eval_eg += psqt_w[pt][EG][sq];
+
+                // Mobility
+                if (piece_type != PieceType::KING)
+                {
+                    const auto mobility_count =
+                      mobility<Color::WHITE>(pos, piece_type, static_cast<Square>(sq));
+                    const auto mobility_bonus = MOBILITY_BONUS[pt - 1][mobility_count];
+                    eval_mg += mg_score(mobility_bonus);
+                    eval_eg += eg_score(mobility_bonus);
+                }
             }
             // BLACK
             auto pt_bb_b = pt_bb & b_p;
@@ -130,6 +141,16 @@ namespace sagittar::eval::hce {
                 const auto sq = pt_bb_b.pop_lsb();
                 eval_mg -= psqt_b[pt][MG][sq];
                 eval_eg -= psqt_b[pt][EG][sq];
+
+                // Mobility
+                if (piece_type != PieceType::KING)
+                {
+                    const auto mobility_count =
+                      mobility<Color::BLACK>(pos, piece_type, static_cast<Square>(sq));
+                    const auto mobility_bonus = MOBILITY_BONUS[pt - 1][mobility_count];
+                    eval_mg -= mg_score(mobility_bonus);
+                    eval_eg -= eg_score(mobility_bonus);
+                }
             }
         }
 

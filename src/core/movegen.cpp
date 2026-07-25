@@ -629,6 +629,13 @@ namespace sagittar {
         return 0ULL;
     }
 
+    template BitBoard attacks<PieceType::PAWN>(const Square, const BitBoard, const Color);
+    template BitBoard attacks<PieceType::KNIGHT>(const Square, const BitBoard, const Color);
+    template BitBoard attacks<PieceType::BISHOP>(const Square, const BitBoard, const Color);
+    template BitBoard attacks<PieceType::ROOK>(const Square, const BitBoard, const Color);
+    template BitBoard attacks<PieceType::QUEEN>(const Square, const BitBoard, const Color);
+    template BitBoard attacks<PieceType::KING>(const Square, const BitBoard, const Color);
+
     BitBoard squareAttackers(const Position& pos, const Square sq, const Color attacked_by) {
         const BitBoard occ  = pos.occupied();
         const BitBoard op_P = pos.pieces(attacked_by, PieceType::PAWN);
