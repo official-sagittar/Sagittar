@@ -1,5 +1,6 @@
 #include "eval.h"
 #include "commons/utils.h"
+#include "core/bitboard.h"
 #include "eval/hce/defs.h"
 
 namespace sagittar::eval::hce {
@@ -49,6 +50,22 @@ namespace sagittar::eval::hce {
                     eval_mg += psqt_w[PieceType::PAWN][MG][sq];
                     eval_eg += psqt_w[PieceType::PAWN][EG][sq];
                 }
+
+                // doubled pawns
+                {
+                    const auto doubled_pawns       = w_p_bb & (shift<Direction::NORTH>(w_p_bb));
+                    const auto doubled_pawns_count = doubled_pawns.count();
+                    eval_mg += mg_score(PAWN_DOUBLED) * doubled_pawns_count;
+                    eval_eg += eg_score(PAWN_DOUBLED) * doubled_pawns_count;
+                }
+
+                // doubled pawns with a square gap
+                {
+                    const auto doubled_pawns2       = w_p_bb & (shift<Direction::NORTH_2X>(w_p_bb));
+                    const auto doubled_pawns2_count = doubled_pawns2.count();
+                    eval_mg += mg_score(PAWN_DOUBLED2) * doubled_pawns2_count;
+                    eval_eg += eg_score(PAWN_DOUBLED2) * doubled_pawns2_count;
+                }
             }
 
             // BLACK
@@ -59,6 +76,22 @@ namespace sagittar::eval::hce {
                     const auto sq = b_p_bb.pop_lsb();
                     eval_mg -= psqt_b[PieceType::PAWN][MG][sq];
                     eval_eg -= psqt_b[PieceType::PAWN][EG][sq];
+                }
+
+                // doubled pawns
+                {
+                    const auto doubled_pawns       = b_p_bb & (shift<Direction::SOUTH>(b_p_bb));
+                    const auto doubled_pawns_count = doubled_pawns.count();
+                    eval_mg -= mg_score(PAWN_DOUBLED) * doubled_pawns_count;
+                    eval_eg -= eg_score(PAWN_DOUBLED) * doubled_pawns_count;
+                }
+
+                // doubled pawns with a square gap
+                {
+                    const auto doubled_pawns2       = b_p_bb & (shift<Direction::SOUTH_2X>(b_p_bb));
+                    const auto doubled_pawns2_count = doubled_pawns2.count();
+                    eval_mg -= mg_score(PAWN_DOUBLED2) * doubled_pawns2_count;
+                    eval_eg -= eg_score(PAWN_DOUBLED2) * doubled_pawns2_count;
                 }
             }
 

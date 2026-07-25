@@ -16,12 +16,16 @@ namespace sagittar::eval::hce::tuner {
     constexpr size_t N_PARAMS = NB_PIECETYPE                // Piece Scores
                               + (NB_PIECETYPE * NB_SQUARE)  // PSQT
                               + (9 + 14 + 15 + 28)          // Mobility
-                              + 1;                          // Bishop Pair
+                              + 1                           // Bishop Pair
+                              + 2;                          // Doubled Pawns
+
     struct EvalTrace {
         i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
         i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
         i32 mobility[4][28][NB_COLOR]                     = {};
         i32 bishop_pair[NB_COLOR]                         = {};
+        i32 pawn_doubled[NB_COLOR]                        = {};
+        i32 pawn_doubled2[NB_COLOR]                       = {};
     };
 
     static ParameterVector init_parameters() {
@@ -34,6 +38,8 @@ namespace sagittar::eval::hce::tuner {
         init_param_array(params, MOBILITY_BONUS[PieceType::ROOK - 1], 15);
         init_param_array(params, MOBILITY_BONUS[PieceType::QUEEN - 1], 28);
         init_param_single(params, BISHOP_PAIR);
+        init_param_single(params, PAWN_DOUBLED);
+        init_param_single(params, PAWN_DOUBLED2);
 
         if (params.size() != N_PARAMS)
         {
@@ -94,6 +100,29 @@ namespace sagittar::eval::hce::tuner {
             trace.bishop_pair[Color::BLACK]++;
         }
 
+        // Doubled pawns
+        {
+            // White
+            {
+                const auto w_p_bb         = pos.pieces(Color::WHITE, PieceType::PAWN);
+                const auto doubled_pawns  = w_p_bb & (shift<Direction::NORTH>(w_p_bb));
+                const auto doubled_pawns2 = w_p_bb & (shift<Direction::NORTH_2X>(w_p_bb));
+
+                trace.pawn_doubled[Color::WHITE] += doubled_pawns.count();
+                trace.pawn_doubled2[Color::WHITE] += doubled_pawns2.count();
+            }
+
+            // Black
+            {
+                const auto b_p_bb         = pos.pieces(Color::BLACK, PieceType::PAWN);
+                const auto doubled_pawns  = b_p_bb & (shift<Direction::SOUTH>(b_p_bb));
+                const auto doubled_pawns2 = b_p_bb & (shift<Direction::SOUTH_2X>(b_p_bb));
+
+                trace.pawn_doubled[Color::BLACK] += doubled_pawns.count();
+                trace.pawn_doubled2[Color::BLACK] += doubled_pawns2.count();
+            }
+        }
+
         return trace;
     }
 
@@ -106,6 +135,8 @@ namespace sagittar::eval::hce::tuner {
         init_coeff_array(e, trace.mobility[PieceType::ROOK - 1], 15, index);
         init_coeff_array(e, trace.mobility[PieceType::QUEEN - 1], 28, index);
         init_coeff_single(e, trace.bishop_pair, index++);
+        init_coeff_single(e, trace.pawn_doubled, index++);
+        init_coeff_single(e, trace.pawn_doubled2, index++);
     }
 
     static double extract_wdl(std::string_view fen) {
@@ -432,6 +463,8 @@ namespace sagittar::eval::hce::tuner {
         auto next = print_psqt(params, NB_PIECETYPE);
         next      = print_mobility(params, next);
         print_param_single(params[next++]);
+        print_param_single(params[next++]);
+        print_param_single(params[next++]);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
         if (!check_entries_eval(entries, params))
@@ -481,6 +514,8 @@ namespace sagittar::eval::hce::tuner {
         print_param_array(params, 0, NB_PIECETYPE);
         next = print_psqt(params, NB_PIECETYPE);
         next = print_mobility(params, next);
+        print_param_single(params[next++]);
+        print_param_single(params[next++]);
         print_param_single(params[next++]);
 
         std::cout << "Tuning complete" << std::endl;
