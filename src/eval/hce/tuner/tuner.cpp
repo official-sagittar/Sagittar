@@ -15,20 +15,12 @@ namespace sagittar::eval::hce::tuner {
 
     constexpr size_t N_PARAMS = NB_PIECETYPE                // Piece Scores
                               + (NB_PIECETYPE * NB_SQUARE)  // PSQT
-<<<<<<< HEAD
                               + (9 + 14 + 15 + 28)          // Mobility
                               + 1;                          // Bishop Pair
     struct EvalTrace {
         i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
         i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
         i32 mobility[4][28][NB_COLOR]                     = {};
-=======
-                              + 1;                          // Bishop Pair
-
-    struct EvalTrace {
-        i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
-        i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
->>>>>>> main
         i32 bishop_pair[NB_COLOR]                         = {};
     };
 
@@ -37,13 +29,10 @@ namespace sagittar::eval::hce::tuner {
 
         init_param_array(params, PIECE_SCORES, NB_PIECETYPE);
         init_param_array_2d(params, PSQT_SCORES, NB_PIECETYPE, NB_SQUARE);
-<<<<<<< HEAD
         init_param_array(params, MOBILITY_BONUS[PieceType::KNIGHT - 1], 9);
         init_param_array(params, MOBILITY_BONUS[PieceType::BISHOP - 1], 14);
         init_param_array(params, MOBILITY_BONUS[PieceType::ROOK - 1], 15);
         init_param_array(params, MOBILITY_BONUS[PieceType::QUEEN - 1], 28);
-=======
->>>>>>> main
         init_param_single(params, BISHOP_PAIR);
 
         if (params.size() != N_PARAMS)
@@ -112,13 +101,10 @@ namespace sagittar::eval::hce::tuner {
         size_t index = 0;
         init_coeff_array(e, trace.piece_counts, NB_PIECETYPE, index);
         init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE, index);
-<<<<<<< HEAD
         init_coeff_array(e, trace.mobility[PieceType::KNIGHT - 1], 9, index);
         init_coeff_array(e, trace.mobility[PieceType::BISHOP - 1], 14, index);
         init_coeff_array(e, trace.mobility[PieceType::ROOK - 1], 15, index);
         init_coeff_array(e, trace.mobility[PieceType::QUEEN - 1], 28, index);
-=======
->>>>>>> main
         init_coeff_single(e, trace.bishop_pair, index++);
     }
 
@@ -444,10 +430,7 @@ namespace sagittar::eval::hce::tuner {
         std::cout << "Initial Parameters:\n" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
         auto next = print_psqt(params, NB_PIECETYPE);
-<<<<<<< HEAD
         next      = print_mobility(params, next);
-=======
->>>>>>> main
         print_param_single(params[next++]);
         std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
 
@@ -497,10 +480,7 @@ namespace sagittar::eval::hce::tuner {
         std::cout << "Tuned Parameters:" << std::endl;
         print_param_array(params, 0, NB_PIECETYPE);
         next = print_psqt(params, NB_PIECETYPE);
-<<<<<<< HEAD
         next = print_mobility(params, next);
-=======
->>>>>>> main
         print_param_single(params[next++]);
 
         std::cout << "Tuning complete" << std::endl;
