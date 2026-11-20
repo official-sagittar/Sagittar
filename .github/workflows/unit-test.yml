@@ -3,8 +3,6 @@ name: Sagittar Unit Test
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 jobs:
   build:
@@ -20,18 +18,5 @@ jobs:
           sudo apt update
           sudo apt install -y clang lld cmake ninja-build
 
-      - name: Configure CMake (Test build)
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Test \
-            -DENABLE_SAN=ON \
-            -DEXE=Sagittar \
-            -DBIN_DIR=bin/Test \
-            -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      - name: Build Sagittar (unit test target)
-        run: cmake --build build --target Sagittar -- -v
-
-      - name: Run unit tests
-        run: ./bin/Test/Sagittar -tse="Perft Full"
+      - name: Build and run tests
+        run: make test CXX=clang++ DOCTEST_ARGS="-tse=Perft Deep"

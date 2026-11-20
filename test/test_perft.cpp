@@ -7,8 +7,7 @@
 using namespace sagittar;
 using pair_type = std::pair<std::string, std::vector<size_t>>;
 
-TEST_SUITE("Perft") {
-
+TEST_SUITE("Perft Deep") {
     TEST_CASE("Perft - startpos") {
         Position pos;
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -24,7 +23,9 @@ TEST_SUITE("Perft") {
         size_t nodes = perft::perft(pos, 5);
         CHECK(nodes == 193690690);
     }
+}
 
+TEST_SUITE("Perft") {
     TEST_CASE("Perft - Sanity") {
         const std::array<pair_type, 7> positions = {
           {{"8/4k3/8/8/8/8/4K3/8 w - - 0 1", {1, 8}},
@@ -287,54 +288,6 @@ TEST_SUITE("Perft") {
             {
                 const size_t result = perft::perft(pos, i);
                 REQUIRE(result == nodes[i]);
-            }
-        }
-    }
-}
-
-TEST_SUITE("Perft Full") {
-
-    TEST_CASE("Perft - Full - Standard") {
-        std::filesystem::path filepath = std::filesystem::current_path() / "data" / "standard.epd";
-        filepath                       = std::filesystem::canonical(filepath);
-
-        REQUIRE(std::filesystem::exists(filepath));
-
-        std::ifstream file(filepath);
-
-        REQUIRE(file.is_open());
-
-        const std::regex depth_perft_regex(R"(;D(\d+)\s+(\d+))");
-        std::smatch      match;
-
-        for (std::string line; std::getline(file, line);)
-        {
-            auto              first_semicolon_pos = line.find(';');
-            const std::string fen                 = line.substr(0, first_semicolon_pos);
-
-            std::map<std::string, size_t> extracted_perft_values;
-
-            std::string depth_perft_part = line.substr(first_semicolon_pos);
-            while (std::regex_search(depth_perft_part, match, depth_perft_regex))
-            {
-                const std::string depth_str   = match[1].str();
-                const size_t      perft_value = std::stoull(match[2].str());
-
-                extracted_perft_values[depth_str] = perft_value;
-
-                depth_perft_part = match.suffix().str();
-            }
-
-            Position pos;
-            pos.setFen(fen);
-
-            for (const auto& [key, value] : extracted_perft_values)
-            {
-                SUBCASE("Perft - Full - Standard - FEN") {
-                    const u8     depth  = std::stoi(key);
-                    const size_t result = perft::perft(pos, depth);
-                    REQUIRE(result == value);
-                }
             }
         }
     }

@@ -23,11 +23,4 @@
     #include <thread_pool/thread_pool.h>
     #include <thread_pool/version.h>
 #endif
-#ifdef TEST
-    #include <filesystem>
-    #include <fstream>
-    #include <map>
-    #include <regex>
-#endif
-
 #endif
