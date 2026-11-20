@@ -13,7 +13,7 @@ namespace sagittar::search {
         Queen         101    201    301    401    501    601
         King          100    200    300    400    500    600
     */
-    static const i16 MVV_LVA_TABLE[36] = {
+    static const I16 k_MVV_LVA_TABLE[36] = {
         105, 205, 305, 405, 505, 605,
         104, 204, 304, 404, 504, 604,
         103, 203, 303, 403, 503, 603,
@@ -27,13 +27,13 @@ namespace sagittar::search {
         return (attacker * 6) + victim;
     }
 
-    static const auto cmp = [](const ExtMove& a, const ExtMove& b) {
+    static const auto k_CMP = [](const ExtMove& a, const ExtMove& b) {
         if (a.score != b.score)
             return a.score > b.score;
         return a.move.id() < b.move.id();
     };
 
-    constexpr i16 MVVLVA_SCORE_OFFSET = 10000;
+    constexpr I16 k_MVVLVA_SCORE_OFFSET = 10000;
 
     MovePicker::MovePicker(ExtMove*              buffer,
                            const Position&       pos,
@@ -82,7 +82,7 @@ namespace sagittar::search {
 
         for (const auto& move : moves)
         {
-            if ((move == ttmove) && (ttmove != NULL_MOVE))
+            if ((move == ttmove) && (ttmove != k_NULL_MOVE))
             {
                 m_tt_move = move;
                 continue;
@@ -95,7 +95,7 @@ namespace sagittar::search {
                                            ? PieceType::PAWN
                                            : pieceTypeOf(pos.pieceOn(move.to()));
                 const auto      idx      = mvvlvaIdx(attacker, victim);
-                const auto      score = static_cast<i16>(MVV_LVA_TABLE[idx] + MVVLVA_SCORE_OFFSET);
+                const auto score = static_cast<I16>(k_MVV_LVA_TABLE[idx] + k_MVVLVA_SCORE_OFFSET);
                 buffer[capture_count++] = ExtMove{move, score};
             }
         }
@@ -132,8 +132,8 @@ namespace sagittar::search {
         m_captures = std::span<ExtMove>(buffer, capture_count);
         m_quiets   = std::span<ExtMove>(buffer + capture_count, quiet_count);
 
-        std::ranges::sort(m_captures, cmp);
-        std::ranges::sort(m_quiets, cmp);
+        std::ranges::sort(m_captures, k_CMP);
+        std::ranges::sort(m_quiets, k_CMP);
 
         m_it_caps   = m_captures.data();
         m_it_quiets = m_quiets.data();
@@ -150,7 +150,7 @@ namespace sagittar::search {
         {
             case MovePickerPhase::TT_MOVE : {
                 m_phase = MovePickerPhase::CAPTURES;
-                if (m_tt_move != NULL_MOVE)
+                if (m_tt_move != k_NULL_MOVE)
                 {
                     ++m_index;
                     return m_tt_move;
@@ -172,7 +172,7 @@ namespace sagittar::search {
                 while (m_index_killers < 2)
                 {
                     const auto& move = m_killers[m_index_killers++];
-                    if (move != NULL_MOVE)
+                    if (move != k_NULL_MOVE)
                     {
                         ++m_index;
                         return move;
@@ -196,7 +196,7 @@ namespace sagittar::search {
                 [[fallthrough]];
 
             default :
-                return NULL_MOVE;
+                return k_NULL_MOVE;
         }
     }
 

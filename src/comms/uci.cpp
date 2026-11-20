@@ -7,11 +7,11 @@
 namespace sagittar::comms::uci {
 
     UCIHandler::UCIHandler(Engine& engine) :
-        engine(engine) {}
+        m_engine(engine) { }
 
     void UCIHandler::handleUCI() {
         std::ostringstream ss;
-        ss << "id name " << engine.getName() << "\n";
+        ss << "id name " << m_engine.getName() << "\n";
         ss << "id author the Sagittar developers (see AUTHORS file)\n";
         ss << "option name Hash type spin default 16 min 1 max 512\n";
         ss << "option name Threads type spin default 1 min 1 max 4\n";
@@ -32,7 +32,7 @@ namespace sagittar::comms::uci {
 
     void UCIHandler::handleIsReady() { std::cout << "readyok" << std::endl; }
 
-    void UCIHandler::handleUCINewgame() { engine.reset(); }
+    void UCIHandler::handleUCINewgame() { m_engine.reset(); }
 
     void UCIHandler::handleSetOption(std::string& input) {
         std::istringstream ss(input);
@@ -45,7 +45,7 @@ namespace sagittar::comms::uci {
             const std::size_t ttsize = static_cast<std::size_t>(std::stoi(value));
             if (ttsize >= 1 && ttsize <= 512)
             {
-                engine.setTranspositionTableSize(ttsize);
+                m_engine.setTranspositionTableSize(ttsize);
             }
         }
         else if (id == "Threads")
@@ -53,7 +53,7 @@ namespace sagittar::comms::uci {
             const std::size_t threads = static_cast<std::size_t>(std::stoi(value));
             if (threads >= 1 && threads <= 4)
             {
-                engine.setThreadCount(threads);
+                m_engine.setThreadCount(threads);
             }
         }
 #ifdef EXTERNAL_TUNE
@@ -79,7 +79,7 @@ namespace sagittar::comms::uci {
         ss >> segment;
         if (segment == "startpos")
         {
-            engine.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            m_engine.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         }
         else if (segment == "fen")
         {
@@ -88,7 +88,7 @@ namespace sagittar::comms::uci {
             // clang-format off
                 try
                 {
-                    engine.setPosition(segment);
+                    m_engine.setPosition(segment);
                 }
                 catch (const std::invalid_argument& e)
                 {
@@ -105,7 +105,7 @@ namespace sagittar::comms::uci {
             std::string       move;
             while (movesss >> move)
             {
-                if (!engine.doMove(move)) [[unlikely]]
+                if (!m_engine.doMove(move)) [[unlikely]]
                 {
                     std::cerr << "Invalid Move!" << std::endl;
                 }
@@ -129,7 +129,7 @@ namespace sagittar::comms::uci {
                 ss >> depth;
 
                 std::future<void> f =
-                  std::async(std::launch::async, [this, depth] { engine.perft(depth); });
+                  std::async(std::launch::async, [this, depth] { m_engine.perft(depth); });
 
                 return f;
             }
@@ -181,7 +181,7 @@ namespace sagittar::comms::uci {
             }
         }
 
-        auto searchProgressReportHandler = [](const search::SearchResult& result) {
+        auto search_progress_report_handler = [](const search::SearchResult& result) {
             std::ostringstream ss;
             ss << "info score ";
             if (result.is_mate)
@@ -206,22 +206,23 @@ namespace sagittar::comms::uci {
             std::cout << ss.str() << std::endl;
         };
 
-        auto searchCompleteReportHander = [](const search::SearchResult& result) {
+        auto search_complete_report_hander = [](const search::SearchResult& result) {
             std::ostringstream ss;
             result.bestmove.toString(ss);
             std::cout << "bestmove " << ss.str() << std::endl;
         };
 
         std::future<void> f =
-          std::async(std::launch::async, [this, info, searchProgressReportHandler,
-                                          searchCompleteReportHander] {
-              (void) engine.search(info, searchProgressReportHandler, searchCompleteReportHander);
-          });
+          std::async(std::launch::async,
+                     [this, info, search_progress_report_handler, search_complete_report_hander] {
+                         (void) m_engine.search(info, search_progress_report_handler,
+                                                search_complete_report_hander);
+                     });
 
         return f;
     }
 
-    void UCIHandler::handleDisplay() { engine.display(); }
+    void UCIHandler::handleDisplay() { m_engine.display(); }
 
 #ifdef EXTERNAL_TUNE
     void UCIHandler::handleDisplayParams() {
@@ -268,7 +269,7 @@ namespace sagittar::comms::uci {
             }
             else if (input.rfind("position", 0) == 0)
             {
-                engine.resetForSearch();
+                m_engine.resetForSearch();
                 handlePosition(input);
             }
             else if (input.rfind("go", 0) == 0)
@@ -281,7 +282,7 @@ namespace sagittar::comms::uci {
             }
             else if (input == "stop")
             {
-                engine.stopSearch();
+                m_engine.stopSearch();
                 if (uci_go_future.valid())
                 {
                     uci_go_future.wait();
@@ -289,7 +290,7 @@ namespace sagittar::comms::uci {
             }
             else if (input == "quit")
             {
-                engine.stopSearch();
+                m_engine.stopSearch();
                 if (uci_go_future.valid())
                 {
                     uci_go_future.wait();

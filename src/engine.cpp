@@ -9,58 +9,58 @@
 namespace sagittar {
 
     Engine::Engine() {
-        name = "Sagittar v0.1.0";
+        m_name = "Sagittar v0.1.0";
         Position::initialize();
         search::params::init();
-        key_history.reserve(1024);
-        key_history.shrink_to_fit();
-        key_history.clear();
+        m_key_history.reserve(1024);
+        m_key_history.shrink_to_fit();
+        m_key_history.clear();
     }
 
-    Engine::~Engine() {}
+    Engine::~Engine() { }
 
-    std::string Engine::getName() const { return name; }
+    std::string Engine::getName() const { return m_name; }
 
     void Engine::reset() {
-        pos.reset();
-        searcher.reset();
-        key_history.reserve(1024);
-        key_history.shrink_to_fit();
-        key_history.clear();
+        m_pos.reset();
+        m_searcher.reset();
+        m_key_history.reserve(1024);
+        m_key_history.shrink_to_fit();
+        m_key_history.clear();
     }
 
     void Engine::resetForSearch() {
-        searcher.resetForSearch();
-        key_history.reserve(1024);
-        key_history.shrink_to_fit();
-        key_history.clear();
+        m_searcher.resetForSearch();
+        m_key_history.reserve(1024);
+        m_key_history.shrink_to_fit();
+        m_key_history.clear();
     }
 
     void Engine::setTranspositionTableSize(const std::size_t size) {
-        searcher.setTranspositionTableSize(size);
+        m_searcher.setTranspositionTableSize(size);
     }
 
-    void Engine::setThreadCount(const std::size_t n) { searcher.setThreadCount(n); }
+    void Engine::setThreadCount(const std::size_t n) { m_searcher.setThreadCount(n); }
 
-    void Engine::setPosition(std::string fen) { pos.setFen(fen); }
+    void Engine::setPosition(std::string fen) { m_pos.setFen(fen); }
 
     bool Engine::doMove(const std::string& move) {
-        const auto curr_key      = pos.key();
-        Position   pos_copy      = pos;
+        const auto curr_key      = m_pos.key();
+        Position   pos_copy      = m_pos;
         const bool is_legal_move = pos_copy.doMove(move);
         if (is_legal_move)
         {
-            key_history.push_back(curr_key);
-            pos = pos_copy;
+            m_key_history.push_back(curr_key);
+            m_pos = pos_copy;
         }
         return is_legal_move;
     }
 
     void Engine::perft(const Depth d) const {
-        using clock = std::chrono::high_resolution_clock;
-        auto start  = clock::now();
-        auto nodes  = perft::divide(pos, d);
-        auto end    = clock::now();
+        using Clock = std::chrono::high_resolution_clock;
+        auto start  = Clock::now();
+        auto nodes  = perft::divide(m_pos, d);
+        auto end    = Clock::now();
         auto elapsed_ms =
           std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         std::cout << "Elapsed = " << elapsed_ms
@@ -68,18 +68,18 @@ namespace sagittar {
     }
 
     search::SearchResult Engine::search(search::SearchInfo info) {
-        return searcher.startSearch(pos, key_history, info);
+        return m_searcher.startSearch(m_pos, m_key_history, info);
     }
 
     search::SearchResult
     Engine::search(search::SearchInfo                               info,
-                   std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-                   std::function<void(const search::SearchResult&)> searchCompleteReportHander) {
-        return searcher.startSearch(pos, key_history, info, searchProgressReportHandler,
-                                    searchCompleteReportHander);
+                   std::function<void(const search::SearchResult&)> search_progress_report_handler,
+                   std::function<void(const search::SearchResult&)> search_complete_report_hander) {
+        return m_searcher.startSearch(m_pos, m_key_history, info, search_progress_report_handler,
+                                      search_complete_report_hander);
     }
 
-    void Engine::stopSearch() { searcher.stopSearch(); }
+    void Engine::stopSearch() { m_searcher.stopSearch(); }
 
     void Engine::bench() {
         std::array<std::string, 50> positions = {
@@ -134,9 +134,9 @@ namespace sagittar {
           "3br1k1/p1pn3p/1p3n2/5pNq/2P1p3/1PN3PP/P2Q1PB1/4R1K1 w - - 0 23",
           "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"};
 
-        u64 total_nodes = 0ULL;
+        U64 total_nodes = 0ULL;
 
-        const u64 starttime = utils::currtimeInMilliseconds();
+        const U64 starttime = utils::currtimeInMilliseconds();
         for (const auto& fen : positions)
         {
             setPosition(fen);
@@ -144,13 +144,13 @@ namespace sagittar {
             search::SearchInfo info;
             info.depth = 4;
 
-            searcher.reset();
+            m_searcher.reset();
             const search::SearchResult result = search(info);
 
             total_nodes += result.nodes;
         }
-        const u64 stoptime = utils::currtimeInMilliseconds();
-        const u64 time     = stoptime - starttime;
+        const U64 stoptime = utils::currtimeInMilliseconds();
+        const U64 time     = stoptime - starttime;
 
         std::ostringstream ss;
 
@@ -167,6 +167,6 @@ namespace sagittar {
     }
 #endif
 
-    void Engine::display() const { pos.display(); }
+    void Engine::display() const { m_pos.display(); }
 
 }

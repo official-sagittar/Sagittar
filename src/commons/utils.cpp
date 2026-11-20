@@ -2,10 +2,10 @@
 
 namespace sagittar::utils {
 
-    u64 prng() {
+    U64 prng() {
         // http://vigna.di.unimi.it/ftp/papers/xorshift.pdf
 
-        static u64 seed = 1070372ULL;
+        static U64 seed = 1070372ULL;
 
         seed ^= seed >> 12;
         seed ^= seed << 25;
@@ -14,7 +14,7 @@ namespace sagittar::utils {
         return seed * 2685821657736338717ULL;
     }
 
-    u64 currtimeInMilliseconds() {
+    U64 currtimeInMilliseconds() {
         // Get the current time point
         auto now = std::chrono::system_clock::now();
 

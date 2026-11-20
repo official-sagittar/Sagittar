@@ -42,17 +42,17 @@ namespace sagittar::search::params {
 
 #endif
 
-    void updateLMPTresholdPct() { lmp_treshold_pct = lmp_treshold() / 10.0; }
+    void updateLMPTresholdPct() { g_lmp_treshold_pct = lmpTreshold() / 10.0; }
 
     void updateLMRTable() {
-        const float lmr_alpha_t = static_cast<float>(lmr_alpha_tactical()) / 100.0f;
-        const float lmr_beta_t  = static_cast<float>(lmr_beta_tactical()) / 100.0f;
-        const float lmr_alpha_q = static_cast<float>(lmr_alpha_quiet()) / 100.0f;
-        const float lmr_beta_q  = static_cast<float>(lmr_beta_quiet()) / 100.0f;
-        u8          r;
-        for (u8 depth = 0; depth < 64; depth++)
+        const float lmr_alpha_t = static_cast<float>(lmrAlphaTactical()) / 100.0f;
+        const float lmr_beta_t  = static_cast<float>(lmrBetaTactical()) / 100.0f;
+        const float lmr_alpha_q = static_cast<float>(lmrAlphaQuiet()) / 100.0f;
+        const float lmr_beta_q  = static_cast<float>(lmrBetaQuiet()) / 100.0f;
+        U8          r;
+        for (U8 depth = 0; depth < 64; depth++)
         {
-            for (u8 move = 0; move < 64; move++)
+            for (U8 move = 0; move < 64; move++)
             {
                 const int max_r = depth > 0 ? depth - 1 : 0;
 
@@ -63,9 +63,9 @@ namespace sagittar::search::params {
                     r_f = lmr_alpha_t + std::log(depth) * std::log(move) / lmr_beta_t;
                 }
                 int r_i = std::isfinite(r_f) ? static_cast<int>(r_f) : 0;
-                r       = static_cast<u8>(std::clamp(r_i, 0, max_r));
+                r       = static_cast<U8>(std::clamp(r_i, 0, max_r));
 
-                lmr_r_table_tactical[move][depth] = r;
+                g_lmr_r_table_tactical[move][depth] = r;
 
                 // Update LMR Quiet table
                 r_f = 0.0;
@@ -74,9 +74,9 @@ namespace sagittar::search::params {
                     r_f = lmr_alpha_q + std::log(depth) * std::log(move) / lmr_beta_q;
                 }
                 r_i = std::isfinite(r_f) ? static_cast<int>(r_f) : 0;
-                r   = static_cast<u8>(std::clamp(r_i, 0, max_r));
+                r   = static_cast<U8>(std::clamp(r_i, 0, max_r));
 
-                lmr_r_table_quiet[move][depth] = r;
+                g_lmr_r_table_quiet[move][depth] = r;
             }
         }
     }

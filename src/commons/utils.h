@@ -5,8 +5,8 @@
 
 namespace sagittar::utils {
 
-    u64 prng();
+    U64 prng();
 
-    u64 currtimeInMilliseconds();
+    U64 currtimeInMilliseconds();
 
 }

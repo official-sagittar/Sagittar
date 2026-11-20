@@ -7,7 +7,7 @@
 
 namespace sagittar::search {
 
-    enum TTFlag : u8 {
+    enum TTFlag : U8 {
         NONE,
         LOWERBOUND,
         UPPERBOUND,
@@ -24,28 +24,28 @@ namespace sagittar::search {
             depth(0),
             flag(TTFlag::NONE),
             score(0),
-            move(Move()) {}
+            move(Move()) { }
     };
 
     class TranspositionTable {
        private:
         struct TTEntry {
-            static constexpr u8 AGE_BITS = 5;
+            static constexpr U8 k_AGE_BITS = 5;
 
-            u64 key;
-            i16 score;
-            u16 move_id;
-            i8  depth;
-            u8  age_flag_pv;
+            U64 key;
+            I16 score;
+            U16 move_id;
+            I8  depth;
+            U8  age_flag_pv;
 
             TTEntry() :
                 key(0ULL),
                 score(0),
                 move_id(Move().id()),
                 depth(0),
-                age_flag_pv(0) {}
+                age_flag_pv(0) { }
 
-            u8 age() const { return static_cast<u8>(age_flag_pv >> 3); }
+            U8 age() const { return static_cast<U8>(age_flag_pv >> 3); }
 
             TTFlag flag() const { return static_cast<TTFlag>(age_flag_pv & 3); }
 
@@ -53,19 +53,19 @@ namespace sagittar::search {
 
             Move move() const { return Move(move_id); }
 
-            static u8 foldAgeFlagPV(u8 age, TTFlag flag, bool pv) {
-                return static_cast<u8>(flag | (pv << 2) | (age << 3));
+            static U8 foldAgeFlagPV(U8 age, TTFlag flag, bool pv) {
+                return static_cast<U8>(flag | (pv << 2) | (age << 3));
             }
         };
 
-        static constexpr u8 AGE_CYCLE_LEN = 1 << TTEntry::AGE_BITS;
+        static constexpr U8 k_AGE_CYCLE_LEN = 1 << TTEntry::k_AGE_BITS;
 
-        std::vector<TTEntry> entries;
-        std::size_t          size;
-        u8                   currentage;
+        std::vector<TTEntry> m_entries;
+        std::size_t          m_size;
+        U8                   m_currentage;
 
        private:
-        [[nodiscard]] inline u64 getIndex(const u64 key) const;
+        [[nodiscard]] inline U64 getIndex(const U64 key) const;
 
        public:
         explicit TranspositionTable(const std::size_t mb);
@@ -73,14 +73,14 @@ namespace sagittar::search {
         std::size_t        getSize() const;
         void               clear();
         void               resetForSearch();
-        void               store(const u64    hash,
-                                 const i32    ply,
+        void               store(const U64    hash,
+                                 const I32    ply,
                                  const Depth  depth,
                                  const TTFlag flag,
                                  Score        value,
                                  const Move&  move);
-        [[nodiscard]] bool probe(TTData* entry, const u64 hash) const;
-        u32                hashfull() const;
+        [[nodiscard]] bool probe(TTData* entry, const U64 hash) const;
+        U32                hashfull() const;
     };
 
 }

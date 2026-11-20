@@ -42,23 +42,23 @@ namespace sagittar {
         BitBoard occupied() const;
         BitBoard empty() const;
         Piece    pieceOn(const Square) const;
-        u8       pieceCount(const PieceType) const;
-        u8       pieceCount(const Piece) const;
+        U8       pieceCount(const PieceType) const;
+        U8       pieceCount(const Piece) const;
 
         inline BitBoard checkers() const { return m_checkers; }
         inline Square   kingSq() const { return m_king_sq; }
 
         Color  stm() const;
-        u8     caRights() const;
+        U8     caRights() const;
         Square epTarget() const;
-        u8     halfmoves() const;
-        u8     fullmoves() const;
-        u64    key() const;
-        u64    pawn_key() const;
+        U8     halfmoves() const;
+        U8     fullmoves() const;
+        U64    key() const;
+        U64    pawnKey() const;
 
         bool isValid() const;
         bool isInCheck() const;
-        bool isDrawn(std::span<u64> key_history) const;
+        bool isDrawn(std::span<U64> key_history) const;
 
         void display() const;
 
@@ -74,7 +74,7 @@ namespace sagittar {
         using ApplyMoveFn = bool (Position::*)(const Move&);
 
         template<Color US>
-        static constexpr std::array<ApplyMoveFn<US>, 16> apply_move_dispatch_table = []() {
+        static constexpr std::array<ApplyMoveFn<US>, 16> k_APPLY_MOVE_DISPATCH_TABLE = []() {
             std::array<ApplyMoveFn<US>, 16> table{};
 
             table[MOVE_QUIET]               = &Position::applyMove<US, MOVE_QUIET>;
@@ -105,13 +105,13 @@ namespace sagittar {
         BitBoard                m_checkers;
         Square                  m_king_sq;
         Color                   m_stm;
-        u8                      m_ca_rights;
+        U8                      m_ca_rights;
         Square                  m_ep_target;
-        u8                      m_halfmoves;
-        u8                      m_fullmoves;
-        i32                     m_ply_count;
-        u64                     m_key;
-        u64                     m_pawn_key;
+        U8                      m_halfmoves;
+        U8                      m_fullmoves;
+        I32                     m_ply_count;
+        U64                     m_key;
+        U64                     m_pawn_key;
     };
 
 }

@@ -7,7 +7,7 @@ namespace sagittar::comms::uci {
 
     class UCIHandler {
        private:
-        Engine& engine;
+        Engine& m_engine;
 
        private:
         // Standard UCI commands

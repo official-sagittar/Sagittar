@@ -5,7 +5,7 @@
 
 namespace sagittar {
 
-    enum MoveFlag : u8 {
+    enum MoveFlag : U8 {
         MOVE_QUIET,
         MOVE_QUIET_PAWN_DBL_PUSH,
         MOVE_CASTLE_KING_SIDE,
@@ -22,21 +22,21 @@ namespace sagittar {
         MOVE_CAPTURE_PROMOTION_QUEEN,
     };
 
-    inline constexpr bool MOVE_IS_CAPTURE(const MoveFlag f) { return static_cast<bool>(f & 0x4); }
-    inline constexpr bool MOVE_IS_PROMOTION(const MoveFlag f) { return static_cast<bool>(f & 0x8); }
+    inline constexpr bool moveIsCapture(const MoveFlag f) { return static_cast<bool>(f & 0x4); }
+    inline constexpr bool moveIsPromotion(const MoveFlag f) { return static_cast<bool>(f & 0x8); }
 
     class Move final {
        public:
         Move() noexcept :
-            m_data(0) {}
+            m_data(0) { }
         Move(const Square from, const Square to, const MoveFlag flag) noexcept :
-            m_data((flag << 12) | (to << 6) | from) {}
-        Move(const u16 data) noexcept :
-            m_data(data) {}
+            m_data((flag << 12) | (to << 6) | from) { }
+        Move(const U16 data) noexcept :
+            m_data(data) { }
         Move(const Move& other) noexcept :
-            m_data(other.m_data) {}
+            m_data(other.m_data) { }
         Move(Move&& other) noexcept :
-            m_data(other.m_data) {}
+            m_data(other.m_data) { }
         inline Move& operator=(const Move& rhs) noexcept {
             if (this != &rhs)
             {
@@ -61,39 +61,39 @@ namespace sagittar {
         [[nodiscard]] inline MoveFlag flag() const {
             return static_cast<MoveFlag>((m_data >> 12) & 0xF);
         }
-        [[nodiscard]] inline u16 id() const { return m_data; }
+        [[nodiscard]] inline U16 id() const { return m_data; }
 
-        [[nodiscard]] inline bool isCapture() const { return MOVE_IS_CAPTURE(flag()); }
-        [[nodiscard]] inline bool isPromotion() const { return MOVE_IS_PROMOTION(flag()); }
+        [[nodiscard]] inline bool isCapture() const { return moveIsCapture(flag()); }
+        [[nodiscard]] inline bool isPromotion() const { return moveIsPromotion(flag()); }
 
         void toString(std::ostringstream&) const;
         void display() const;
 
        private:
-        u16 m_data{0};
+        U16 m_data{0};
     };
 
-    const Move NULL_MOVE = Move{};
+    const Move k_NULL_MOVE = Move{};
 
     struct ExtMove final {
         Move move{};
-        i16  score;
+        I16  score;
 
         ExtMove() noexcept :
             move(),
-            score(0) {}
+            score(0) { }
 
-        ExtMove(const Move& m, i16 s) noexcept :
+        ExtMove(const Move& m, I16 s) noexcept :
             move(m),
-            score(s) {}
+            score(s) { }
 
         ExtMove(const ExtMove& other) noexcept :
             move(other.move),
-            score(other.score) {}
+            score(other.score) { }
 
         ExtMove(ExtMove&& other) noexcept :
             move(std::move(other.move)),
-            score(other.score) {}
+            score(other.score) { }
 
         ExtMove& operator=(const ExtMove& other) noexcept {
             if (this != &other)

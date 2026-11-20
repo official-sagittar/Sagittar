@@ -2,21 +2,21 @@
 
 namespace sagittar {
 
-    static const char* PROMOTION_PIECE_STR = "xxxxxxxxnbrqnbrq";
+    static const char* g_promotion_piece_str = "xxxxxxxxnbrqnbrq";
 
     void Move::toString(std::ostringstream& ss) const {
         const auto from_sq = from();
         const auto to_sq   = to();
         const auto f       = flag();
 
-        ss << (char) FILE_STR[sq2file(from_sq)];
+        ss << (char) k_FILE_STR[sq2file(from_sq)];
         ss << (int) (sq2rank(from_sq) + 1);
-        ss << (char) FILE_STR[sq2file(to_sq)];
+        ss << (char) k_FILE_STR[sq2file(to_sq)];
         ss << (int) (sq2rank(to_sq) + 1);
 
         if (isPromotion())
         {
-            ss << (char) PROMOTION_PIECE_STR[f];
+            ss << (char) g_promotion_piece_str[f];
         }
     }
 

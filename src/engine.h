@@ -11,10 +11,10 @@ namespace sagittar {
 
     class Engine {
        private:
-        std::string      name;
-        Position         pos;
-        search::Searcher searcher;
-        std::vector<u64> key_history;
+        std::string      m_name;
+        Position         m_pos;
+        search::Searcher m_searcher;
+        std::vector<U64> m_key_history;
 
        public:
         Engine();
@@ -41,8 +41,8 @@ namespace sagittar {
 
         search::SearchResult
         search(search::SearchInfo,
-               std::function<void(const search::SearchResult&)> searchProgressReportHandler,
-               std::function<void(const search::SearchResult&)> searchCompleteReportHander);
+               std::function<void(const search::SearchResult&)> search_progress_report_handler,
+               std::function<void(const search::SearchResult&)> search_complete_report_hander);
 
         void stopSearch();
 

@@ -9,33 +9,33 @@ namespace sagittar::eval::hce::tuner {
 
     using ThreadPool = dp::thread_pool<>;
 
-    constexpr size_t NB_COLOR     = 2;
-    constexpr size_t NB_PIECETYPE = 6;
-    constexpr size_t NB_SQUARE    = 64;
+    constexpr size_t k_NB_COLOR     = 2;
+    constexpr size_t k_NB_PIECETYPE = 6;
+    constexpr size_t k_NB_SQUARE    = 64;
 
-    constexpr size_t N_PARAMS = NB_PIECETYPE                // Piece Scores
-                              + (NB_PIECETYPE * NB_SQUARE)  // PSQT
-                              + (9 + 14 + 15 + 28)          // Mobility
-                              + 1;                          // Bishop Pair
+    constexpr size_t k_N_PARAMS = k_NB_PIECETYPE                  // Piece Scores
+                                + (k_NB_PIECETYPE * k_NB_SQUARE)  // PSQT
+                                + (9 + 14 + 15 + 28)              // Mobility
+                                + 1;                              // Bishop Pair
     struct EvalTrace {
-        i32 piece_counts[NB_PIECETYPE][NB_COLOR]          = {};
-        i32 psq_counts[NB_PIECETYPE][NB_SQUARE][NB_COLOR] = {};
-        i32 mobility[4][28][NB_COLOR]                     = {};
-        i32 bishop_pair[NB_COLOR]                         = {};
+        I32 piece_counts[k_NB_PIECETYPE][k_NB_COLOR]            = {};
+        I32 psq_counts[k_NB_PIECETYPE][k_NB_SQUARE][k_NB_COLOR] = {};
+        I32 mobility[4][28][k_NB_COLOR]                         = {};
+        I32 bishop_pair[k_NB_COLOR]                             = {};
     };
 
-    static ParameterVector init_parameters() {
+    static ParameterVector initParameters() {
         ParameterVector params{};
 
-        init_param_array(params, PIECE_SCORES, NB_PIECETYPE);
-        init_param_array_2d(params, PSQT_SCORES, NB_PIECETYPE, NB_SQUARE);
-        init_param_array(params, MOBILITY_BONUS[PieceType::KNIGHT - 1], 9);
-        init_param_array(params, MOBILITY_BONUS[PieceType::BISHOP - 1], 14);
-        init_param_array(params, MOBILITY_BONUS[PieceType::ROOK - 1], 15);
-        init_param_array(params, MOBILITY_BONUS[PieceType::QUEEN - 1], 28);
-        init_param_single(params, BISHOP_PAIR);
+        initParamArray(params, k_PIECE_SCORES, k_NB_PIECETYPE);
+        initParamArray2d(params, k_PSQT_SCORES, k_NB_PIECETYPE, k_NB_SQUARE);
+        initParamArray(params, k_MOBILITY_BONUS[PieceType::KNIGHT - 1], 9);
+        initParamArray(params, k_MOBILITY_BONUS[PieceType::BISHOP - 1], 14);
+        initParamArray(params, k_MOBILITY_BONUS[PieceType::ROOK - 1], 15);
+        initParamArray(params, k_MOBILITY_BONUS[PieceType::QUEEN - 1], 28);
+        initParamSingle(params, k_BISHOP_PAIR);
 
-        if (params.size() != N_PARAMS)
+        if (params.size() != k_N_PARAMS)
         {
             throw std::runtime_error("ParameterVector size mismatch");
         }
@@ -43,7 +43,7 @@ namespace sagittar::eval::hce::tuner {
         return params;
     }
 
-    static EvalTrace create_eval_trace(const Position& pos) {
+    static EvalTrace createEvalTrace(const Position& pos) {
         EvalTrace trace{};
 
         for (int sq = Square::A1; sq <= Square::H8; sq++)
@@ -62,7 +62,7 @@ namespace sagittar::eval::hce::tuner {
 
             if (c == Color::WHITE)
             {
-                trace.psq_counts[pt][SQUARES_MIRRORED[sq]][c]++;
+                trace.psq_counts[pt][k_SQUARES_MIRRORED[sq]][c]++;
 
                 if ((pt != PieceType::PAWN) && (pt != PieceType::KING))
                 {
@@ -85,11 +85,11 @@ namespace sagittar::eval::hce::tuner {
         }
 
         // Bishop Pair
-        if (pos.pieces(Color::WHITE, PieceType::BISHOP).has_multiple())
+        if (pos.pieces(Color::WHITE, PieceType::BISHOP).hasMultiple())
         {
             trace.bishop_pair[Color::WHITE]++;
         }
-        if (pos.pieces(Color::BLACK, PieceType::BISHOP).has_multiple())
+        if (pos.pieces(Color::BLACK, PieceType::BISHOP).hasMultiple())
         {
             trace.bishop_pair[Color::BLACK]++;
         }
@@ -97,18 +97,18 @@ namespace sagittar::eval::hce::tuner {
         return trace;
     }
 
-    static void init_entry_coeffs(Entry& e, const EvalTrace& trace) {
+    static void initEntryCoeffs(Entry& e, const EvalTrace& trace) {
         size_t index = 0;
-        init_coeff_array(e, trace.piece_counts, NB_PIECETYPE, index);
-        init_coeff_array_2d(e, trace.psq_counts, NB_PIECETYPE, NB_SQUARE, index);
-        init_coeff_array(e, trace.mobility[PieceType::KNIGHT - 1], 9, index);
-        init_coeff_array(e, trace.mobility[PieceType::BISHOP - 1], 14, index);
-        init_coeff_array(e, trace.mobility[PieceType::ROOK - 1], 15, index);
-        init_coeff_array(e, trace.mobility[PieceType::QUEEN - 1], 28, index);
-        init_coeff_single(e, trace.bishop_pair, index++);
+        initCoeffArray(e, trace.piece_counts, k_NB_PIECETYPE, index);
+        initCoeffArray2d(e, trace.psq_counts, k_NB_PIECETYPE, k_NB_SQUARE, index);
+        initCoeffArray(e, trace.mobility[PieceType::KNIGHT - 1], 9, index);
+        initCoeffArray(e, trace.mobility[PieceType::BISHOP - 1], 14, index);
+        initCoeffArray(e, trace.mobility[PieceType::ROOK - 1], 15, index);
+        initCoeffArray(e, trace.mobility[PieceType::QUEEN - 1], 28, index);
+        initCoeffSingle(e, trace.bishop_pair, index++);
     }
 
-    static double extract_wdl(std::string_view fen) {
+    static double extractWdl(std::string_view fen) {
         if (fen.find("[1.0]") != (size_t) std::string::npos)
         {
             return 1.0;
@@ -125,30 +125,30 @@ namespace sagittar::eval::hce::tuner {
         throw std::runtime_error("Could not find WDL marker");
     }
 
-    static Entry create_entry(const std::string& fen) {
+    static Entry createEntry(const std::string& fen) {
         Position pos{};
         pos.setFen(fen);
 
-        const EvalTrace trace = create_eval_trace(pos);
+        const EvalTrace trace = createEvalTrace(pos);
 
         Entry e{};
         e.coefficients.reserve(32);
 
-        init_entry_coeffs(e, trace);
+        initEntryCoeffs(e, trace);
 
         e.stm = pos.stm();
 
-        e.phase        = pos_phase(pos);  // 0 => MG; 256 => EG
+        e.phase        = posPhase(pos);  // 0 => MG; 256 => EG
         e.pfactors[MG] = 1.0 - (e.phase / 256.0);
         e.pfactors[EG] = e.phase / 256.0;
 
-        e.wdl   = extract_wdl(fen);
+        e.wdl   = extractWdl(fen);
         e.seval = evaluate(pos);
 
         return e;
     }
 
-    static double linear_eval(const Entry& entry, const ParameterVector& params) {
+    static double linearEval(const Entry& entry, const ParameterVector& params) {
         // -INFINITY    => BLACK WINNING
         // 0            => DRAW
         // +INFINITY    => WHITE WINNING
@@ -167,17 +167,16 @@ namespace sagittar::eval::hce::tuner {
         const double eval = eval_mg * entry.pfactors[MG] + eval_eg * entry.pfactors[EG];
 
         const double tempo_bonus =
-          mg_score(TEMPO_BONUS) * entry.pfactors[MG] + eg_score(TEMPO_BONUS) * entry.pfactors[EG];
+          mgScore(k_TEMPO_BONUS) * entry.pfactors[MG] + egScore(k_TEMPO_BONUS) * entry.pfactors[EG];
 
         return eval + (entry.stm == Color::WHITE ? tempo_bonus : -tempo_bonus);
     }
 
-    static bool check_entries_eval(const std::vector<Entry>& entries,
-                                   const ParameterVector&    params) {
+    static bool checkEntriesEval(const std::vector<Entry>& entries, const ParameterVector& params) {
         for (const Entry& entry : entries)
         {
             const Score seval_w_pov = (entry.stm == Color::WHITE) ? entry.seval : -entry.seval;
-            const Score coeff_eval  = static_cast<Score>(std::llround(linear_eval(entry, params)));
+            const Score coeff_eval  = static_cast<Score>(std::llround(linearEval(entry, params)));
             if (std::abs(seval_w_pov - coeff_eval) > 2)
             {
                 std::cerr << "Eval mismatch: Eval WHITE PoV =" << seval_w_pov
@@ -222,7 +221,7 @@ namespace sagittar::eval::hce::tuner {
                 for (size_t i = start; i < end; ++i)
                 {
                     const auto&  entry = entries[i];
-                    const double eval  = linear_eval(entry, params);
+                    const double eval  = linearEval(entry, params);
                     const double sig   = sigmoid(K, eval);
                     const double diff  = entry.wdl - sig;
                     local += diff * diff;
@@ -240,12 +239,12 @@ namespace sagittar::eval::hce::tuner {
         return total_error / static_cast<double>(n);
     }
 
-    static void update_gradient_single(ParameterVector&       gradient,
-                                       const Entry&           entry,
-                                       const ParameterVector& params,
-                                       const double           K) {
+    static void updateGradientSingle(ParameterVector&       gradient,
+                                     const Entry&           entry,
+                                     const ParameterVector& params,
+                                     const double           K) {
         // Forward pass: eval -> sigmoid -> residual w.r.t target WDL
-        const double eval = linear_eval(entry, params);
+        const double eval = linearEval(entry, params);
         const double sig  = sigmoid(K, eval);
 
         // Backprop
@@ -262,18 +261,18 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static void compute_gradient(ThreadPool&               pool,
-                                 const size_t              nthreads,
-                                 ParameterVector&          gradient,
-                                 const std::vector<Entry>& entries,
-                                 const ParameterVector&    params,
-                                 const double              K) {
+    static void computeGradient(ThreadPool&               pool,
+                                const size_t              nthreads,
+                                ParameterVector&          gradient,
+                                const std::vector<Entry>& entries,
+                                const ParameterVector&    params,
+                                const double              K) {
         if (entries.empty())
         {
             return;
         }
 
-        std::vector<ParameterVector> thread_gradients(nthreads, ParameterVector(N_PARAMS));
+        std::vector<ParameterVector> thread_gradients(nthreads, ParameterVector(k_N_PARAMS));
 
         const size_t n = entries.size();
 
@@ -286,7 +285,7 @@ namespace sagittar::eval::hce::tuner {
                 auto& g = thread_gradients[tid];
                 for (size_t i = start; i < end; ++i)
                 {
-                    update_gradient_single(g, entries[i], params, K);
+                    updateGradientSingle(g, entries[i], params, K);
                 }
             });
         }
@@ -297,7 +296,7 @@ namespace sagittar::eval::hce::tuner {
         for (size_t tid = 0; tid < nthreads; ++tid)
         {
             const auto& tg = thread_gradients[tid];
-            for (size_t p = 0; p < N_PARAMS; ++p)
+            for (size_t p = 0; p < k_N_PARAMS; ++p)
             {
                 gradient[p][MG] += tg[p][MG];
                 gradient[p][EG] += tg[p][EG];
@@ -305,29 +304,29 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static double compute_optimal_K(ThreadPool&               pool,
-                                    const size_t              nthreads,
-                                    const std::vector<Entry>& entries,
-                                    const ParameterVector&    params,
-                                    const double              K_init) {
+    static double computeOptimalK(ThreadPool&               pool,
+                                  const size_t              nthreads,
+                                  const std::vector<Entry>& entries,
+                                  const ParameterVector&    params,
+                                  const double              K_init) {
         constexpr double rate           = 10;
         constexpr double delta          = 1e-5;
         constexpr double deviation_goal = 1e-6;
 
-        double K         = K_init;
+        double k         = K_init;
         double deviation = 1;
 
         while (std::fabs(deviation) > deviation_goal)
         {
-            const double err_up   = mse(pool, nthreads, entries, params, K + delta);
-            const double err_down = mse(pool, nthreads, entries, params, K - delta);
+            const double err_up   = mse(pool, nthreads, entries, params, k + delta);
+            const double err_down = mse(pool, nthreads, entries, params, k - delta);
             deviation             = (err_up - err_down) / (2.0 * delta);
-            std::cout << "Current K: " << K << ", Error Up: " << err_up
+            std::cout << "Current K: " << k << ", Error Up: " << err_up
                       << ", Error Down: " << err_down << ", Deviation: " << deviation << std::endl;
-            K -= deviation * rate;
+            k -= deviation * rate;
         }
 
-        return K;
+        return k;
     }
 
     static void run(ThreadPool&               pool,
@@ -340,21 +339,21 @@ namespace sagittar::eval::hce::tuner {
         if (entries.empty())
             return;
 
-        ParameterVector momentum(N_PARAMS);
-        ParameterVector velocity(N_PARAMS);
+        ParameterVector momentum(k_N_PARAMS);
+        ParameterVector velocity(k_N_PARAMS);
 
         double learning_rate = settings.learning_rate_init;
 
         for (size_t i = 1; i <= settings.epochs; i++)
         {
-            ParameterVector gradient(N_PARAMS);
-            compute_gradient(pool, nthreads, gradient, entries, params, K);
+            ParameterVector gradient(k_N_PARAMS);
+            computeGradient(pool, nthreads, gradient, entries, params, K);
 
             // Adam bias-correction factors (depend only on epoch index i)
             const double bias_correction1 = 1.0 - std::pow(settings.beta1, static_cast<double>(i));
             const double bias_correction2 = 1.0 - std::pow(settings.beta2, static_cast<double>(i));
 
-            for (size_t param = 0; param < N_PARAMS; param++)
+            for (size_t param = 0; param < k_N_PARAMS; param++)
             {
                 // Scale raw gradients by K factor and average over batch
                 const double mg_grad = (-K / 200.0) * gradient[param][MG] / entries.size();
@@ -397,7 +396,7 @@ namespace sagittar::eval::hce::tuner {
         }
     }
 
-    static void read_epd(std::vector<Entry>& entries, const std::filesystem::path& epd_path) {
+    static void readEpd(std::vector<Entry>& entries, const std::filesystem::path& epd_path) {
         std::ifstream file(epd_path);
 
         if (!file.is_open())
@@ -414,27 +413,27 @@ namespace sagittar::eval::hce::tuner {
                 continue;
             }
 
-            entries.emplace_back(create_entry(line));
+            entries.emplace_back(createEntry(line));
         }
     }
 
     void tune(const std::filesystem::path& epd_path, const TunerSettings& settings) {
         std::cout << "Reading .epd file: " << epd_path << std::endl;
         std::vector<Entry> entries{};
-        read_epd(entries, epd_path);
+        readEpd(entries, epd_path);
         std::cout << "Found " << (size_t) entries.size() << " Entries" << std::endl;
 
         std::cout << "Reading initial params" << std::endl;
-        ParameterVector params = init_parameters();
+        ParameterVector params = initParameters();
 
         std::cout << "Initial Parameters:\n" << std::endl;
-        print_param_array(params, 0, NB_PIECETYPE);
-        auto next = print_psqt(params, NB_PIECETYPE);
-        next      = print_mobility(params, next);
-        print_param_single(params[next++]);
-        std::cout << "No. of Parameters: " << (size_t) N_PARAMS << std::endl;
+        printParamArray(params, 0, k_NB_PIECETYPE);
+        auto next = printPsqt(params, k_NB_PIECETYPE);
+        next      = printMobility(params, next);
+        printParamSingle(params[next++]);
+        std::cout << "No. of Parameters: " << (size_t) k_N_PARAMS << std::endl;
 
-        if (!check_entries_eval(entries, params))
+        if (!checkEntriesEval(entries, params))
         {
             std::cerr << "Eval check failed!" << std::endl;
             return;
@@ -444,13 +443,13 @@ namespace sagittar::eval::hce::tuner {
         if (settings.retune_from_zero)
         {
             std::cout << "Resetting Parameters to zero" << std::endl;
-            for (size_t i = 0; i < N_PARAMS; i++)
+            for (size_t i = 0; i < k_N_PARAMS; i++)
             {
                 params[i][MG] = params[i][EG] = 0;
             }
             std::cout << "Zero-ed Parameters:\n" << std::endl;
-            print_param_array(params, 0, NB_PIECETYPE);
-            print_psqt(params, NB_PIECETYPE);
+            printParamArray(params, 0, k_NB_PIECETYPE);
+            printPsqt(params, k_NB_PIECETYPE);
         }
 
         std::cout << "Using dp::thread-pool version " << THREADPOOL_VERSION << '\n';
@@ -461,27 +460,27 @@ namespace sagittar::eval::hce::tuner {
 
         ThreadPool pool(nthreads);
 
-        double K = 0.0;
+        double k = 0.0;
         if (settings.compute_k)
         {
             std::cout << "Computing Optimal K" << std::endl;
-            K = compute_optimal_K(pool, nthreads, entries, params, settings.K);
-            std::cout << "Optimal K = " << (double) K << std::endl;
+            k = computeOptimalK(pool, nthreads, entries, params, settings.K);
+            std::cout << "Optimal K = " << (double) k << std::endl;
         }
         else
         {
-            K = settings.K;
-            std::cout << "Using K = " << (double) K << std::endl;
+            k = settings.K;
+            std::cout << "Using K = " << (double) k << std::endl;
         }
 
         std::cout << "Beginning to tune" << std::endl;
-        run(pool, nthreads, params, entries, K, settings);
+        run(pool, nthreads, params, entries, k, settings);
 
         std::cout << "Tuned Parameters:" << std::endl;
-        print_param_array(params, 0, NB_PIECETYPE);
-        next = print_psqt(params, NB_PIECETYPE);
-        next = print_mobility(params, next);
-        print_param_single(params[next++]);
+        printParamArray(params, 0, k_NB_PIECETYPE);
+        next = printPsqt(params, k_NB_PIECETYPE);
+        next = printMobility(params, next);
+        printParamSingle(params[next++]);
 
         std::cout << "Tuning complete" << std::endl;
     }

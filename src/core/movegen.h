@@ -15,7 +15,7 @@ namespace sagittar {
         CHECK_EVASIONS
     };
 
-    void movegen_initialize();
+    void movegenInitialize();
 
     template<PieceType PT>
     BitBoard attacks(const Square sq, const BitBoard occupancy, const Color c = Color::WHITE);

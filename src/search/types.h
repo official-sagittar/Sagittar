@@ -9,11 +9,11 @@ namespace sagittar::search {
     struct SearchInfo {
         // Inputs
         bool  infinite;
-        u32   wtime, btime, winc, binc, movetime, movestogo;
+        U32   wtime, btime, winc, binc, movetime, movestogo;
         Depth depth;
         // Set by timeman
         bool timeset;
-        u64  starttime, stoptime;
+        U64  starttime, stoptime;
 
         SearchInfo() :
             infinite(false),
@@ -26,17 +26,17 @@ namespace sagittar::search {
             depth(0),
             timeset(false),
             starttime(0ULL),
-            stoptime(0ULL) {}
+            stoptime(0ULL) { }
     };
 
     struct SearchResult {
         Score             score;
         bool              is_mate;
-        i8                mate_in;
+        I8                mate_in;
         Depth             depth;
         size_t            nodes;
-        u64               time;
-        u32               hashfull;
+        U64               time;
+        U32               hashfull;
         std::vector<Move> pv;
         Move              bestmove{};
     };
