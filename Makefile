@@ -8,6 +8,12 @@ CMAKE = cmake
 BUILD_ROOT = build
 BIN_ROOT = bin
 
+ifeq ($(OS),Windows_NT)
+    EXE_SUFFIX := .exe
+else
+    EXE_SUFFIX :=
+endif
+
 .PHONY: all release debug test tune openbench clean
 
 all: release
@@ -44,14 +50,10 @@ tune:
 		-DEXE="$(EXE)"
 	$(CMAKE) --build $(BUILD_ROOT)/Tune --parallel
 
-openbench:
-	$(CMAKE) -S . -B $(BUILD_ROOT)/OpenBench \
-		-G Ninja \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_CXX_COMPILER=$(CXX) \
-		-DEXE="$(EXE)" \
-		-DBIN_DIR="$(PROJECT_ROOT)"
-	$(CMAKE) --build $(BUILD_ROOT)/OpenBench --parallel
+openbench: release
+	$(CMAKE) -E copy \
+		"$(BIN_ROOT)/Release/$(EXE)$(EXE_SUFFIX)" \
+		"$(PROJECT_ROOT)"
 
 clean:
 	$(CMAKE) -E rm -rf $(BUILD_ROOT) $(BIN_ROOT)
