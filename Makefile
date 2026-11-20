@@ -1,5 +1,6 @@
 EXE ?= Sagittar
 CXX	?= clang++
+DOCTEST_ARGS ?=
 
 PROJECT_EXE := Sagittar
 PROJECT_ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
@@ -37,8 +38,13 @@ test:
 	$(CMAKE) -S . -B $(BUILD_ROOT)/Test \
 		-G Ninja \
 		-DCMAKE_BUILD_TYPE=Test \
-		-DCMAKE_CXX_COMPILER=$(CXX)
+		-DCMAKE_CXX_COMPILER=$(CXX) \
+		-DDOCTEST_ARGS="$(DOCTEST_ARGS)"
 	$(CMAKE) --build $(BUILD_ROOT)/Test --parallel
+	ctest --test-dir $(BUILD_ROOT)/Test \
+		--timeout 120 \
+		--output-on-failure \
+		--verbose
 
 tune:
 	$(CMAKE) -S . -B $(BUILD_ROOT)/Tune \

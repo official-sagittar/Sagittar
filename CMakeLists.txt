@@ -8,6 +8,7 @@ project(Sagittar LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SUPPORTED_CONFIGS Debug Release Test Tune)
+set(DOCTEST_ARGS "" CACHE STRING "Arguments passed to doctest")
 
 # ----------------------------------------------------------
 # Disallow MSVC
@@ -46,12 +47,12 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wpedantic
     -march=native
 
-    $<$<CONFIG:Debug>:-g;-O0;-fsanitize=address,undefined>
-    $<$<CONFIG:Release,Test,Tune>:-O3;-Werror>
+    $<$<CONFIG:Debug,Test>:-g;-O0;-fsanitize=address,undefined>
+    $<$<CONFIG:Release,Tune>:-O3;-Werror>
 )
 
 target_link_options(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:-fsanitize=address,undefined>
+    $<$<CONFIG:Debug,Test>:-fsanitize=address,undefined>
 )
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
@@ -64,7 +65,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Debug,Test>:DEBUG>
-    $<$<CONFIG:Test>:TEST>
     $<$<CONFIG:Tune>:EXTERNAL_TUNE>
     $<$<CONFIG:Release,Tune>:NDEBUG>
 )
@@ -155,13 +155,21 @@ endif()
 # ----------------------------------------------------------
 # Testing (CTest)
 # ----------------------------------------------------------
+
 if(CMAKE_BUILD_TYPE STREQUAL "Test")
     enable_testing()
 
-    add_test(
-        NAME SagittarTests
-        COMMAND $<TARGET_FILE:${PROJECT_NAME}>
-    )
+    if(DOCTEST_ARGS)
+        add_test(
+            NAME SagittarTests
+            COMMAND $<TARGET_FILE:${PROJECT_NAME}> "${DOCTEST_ARGS}"
+        )
+    else()
+        add_test(
+            NAME SagittarTests
+            COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+        )
+    endif()
 endif()
 
 # ----------------------------------------------------------
