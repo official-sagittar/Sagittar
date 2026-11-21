@@ -6,6 +6,13 @@
 
 namespace sagittar::search {
 
+#ifndef NDEBUG
+    struct InstrumentationStore {
+        size_t lmpEligible = 0;
+        size_t lmpPruned   = 0;
+    };
+#endif
+
     struct SearchInfo {
         // Inputs
         bool  infinite;
@@ -39,6 +46,9 @@ namespace sagittar::search {
         U32               hashfull;
         std::vector<Move> pv;
         Move              bestmove{};
+#ifndef NDEBUG
+        InstrumentationStore instrumentation{};
+#endif
     };
 
 }

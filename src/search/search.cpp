@@ -143,6 +143,10 @@ namespace sagittar::search {
         {
             m_nodes = 0;
 
+#ifndef NDEBUG
+            m_instrumentation_store = {};
+#endif
+
             const U64 starttime = utils::currtimeInMilliseconds();
             Score     score     = search<NodeType::ROOT>(pos, currdepth, alpha, beta, 0, true);
             const U64 time      = utils::currtimeInMilliseconds() - starttime;
@@ -192,6 +196,10 @@ namespace sagittar::search {
             result.hashfull = m_tt.hashfull();
             result.bestmove = m_pvmove;
             result.pv       = {result.bestmove};
+
+#ifndef NDEBUG
+            result.instrumentation = m_instrumentation_store;
+#endif
 
             onProgress(result);
 
@@ -374,10 +382,18 @@ namespace sagittar::search {
                 // Late Move Pruning
                 if (depth <= 8 && move_piece_type != PieceType::PAWN)
                 {
+
+#ifndef NDEBUG
+                    m_instrumentation_store.lmpEligible++;
+#endif
+
                     const U32 lmp_move_cutoff =
                       n_moves * (1 - (params::g_lmp_treshold_pct - (0.1 * depth)));
                     if (moves_searched >= lmp_move_cutoff)
                     {
+#ifndef NDEBUG
+                        m_instrumentation_store.lmpPruned++;
+#endif
                         undoMove();
                         continue;
                     }

@@ -3,6 +3,7 @@
 #include "core/position.h"
 #include "search/params.h"
 #include "search/types.h"
+#include <cstddef>
 
 namespace sagittar::comms::uci {
 
@@ -203,6 +204,12 @@ namespace sagittar::comms::uci {
                 m.toString(ss);
                 ss << " ";
             }
+
+#ifndef NDEBUG
+            ss << " lmpEligible " << (size_t) result.instrumentation.lmpEligible;
+            ss << " lmpPruned " << (size_t) result.instrumentation.lmpPruned;
+#endif
+
             std::cout << ss.str() << std::endl;
         };
 

@@ -101,6 +101,9 @@ namespace sagittar::search {
             Move                                m_pvmove{};
             PieceToHistory                      m_history{};  // [piece][to]
             std::array<StackEntry, k_MAX_DEPTH> m_stack{};
+#ifndef NDEBUG
+            InstrumentationStore m_instrumentation_store{};
+#endif
         };
 
         TranspositionTable                   m_tt{k_DEFAULT_TT_SIZE_MB};
