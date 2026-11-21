@@ -13,15 +13,15 @@ TEST_SUITE("Eval") {
         Position pos;
 
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-        CHECK(eval::hce::pos_phase(pos) == 0);
+        CHECK(eval::hce::posPhase(pos) == 0);
 
         pos.setFen("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
-        CHECK(eval::hce::pos_phase(pos) == 256);
+        CHECK(eval::hce::posPhase(pos) == 256);
     }
 
-    TEST_CASE("eval::std_phase") {
-        const auto raw_phase = [](const Position pos) -> i32 {
-            i32 phase = eval::hce::TOTAL_PHASE;
+    TEST_CASE("eval::stdPhase") {
+        const auto raw_phase = [](const Position pos) -> I32 {
+            I32 phase = eval::hce::k_TOTAL_PHASE;
 
             const auto w_p = pos.pieces(Color::WHITE);
             const auto b_p = pos.pieces(Color::BLACK);
@@ -33,15 +33,15 @@ TEST_SUITE("Eval") {
                 auto pt_bb_w = pt_bb & w_p;
                 while (pt_bb_w)
                 {
-                    phase -= eval::hce::PHASE_WEIGHTS[pt];
-                    (void) pt_bb_w.pop_lsb();
+                    phase -= eval::hce::k_PHASE_WEIGHTS[pt];
+                    (void) pt_bb_w.popLsb();
                 }
                 // BLACK
                 auto pt_bb_b = pt_bb & b_p;
                 while (pt_bb_b)
                 {
-                    phase -= eval::hce::PHASE_WEIGHTS[pt];
-                    (void) pt_bb_b.pop_lsb();
+                    phase -= eval::hce::k_PHASE_WEIGHTS[pt];
+                    (void) pt_bb_b.popLsb();
                 }
             }
 
@@ -53,26 +53,26 @@ TEST_SUITE("Eval") {
         // Startpos
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        i32 phase = raw_phase(pos);
-        phase     = eval::hce::std_phase(phase);
+        I32 phase = raw_phase(pos);
+        phase     = eval::hce::stdPhase(phase);
 
         CHECK(phase == 0);
-        CHECK(phase == eval::hce::pos_phase(pos));
+        CHECK(phase == eval::hce::posPhase(pos));
 
         // End Game
         pos.setFen("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
 
         phase = raw_phase(pos);
-        phase = eval::hce::std_phase(phase);
+        phase = eval::hce::stdPhase(phase);
 
         CHECK(phase == 256);
-        CHECK(phase == eval::hce::pos_phase(pos));
+        CHECK(phase == eval::hce::posPhase(pos));
     }
 
-    TEST_CASE("eval::scale_eval") {
-        CHECK(eval::hce::scale_eval(100, 200, 0) == 100);
-        CHECK(eval::hce::scale_eval(100, 200, 256) == 200);
-        CHECK(eval::hce::scale_eval(100, 200, 128) == 150);
+    TEST_CASE("eval::scaleEval") {
+        CHECK(eval::hce::scaleEval(100, 200, 0) == 100);
+        CHECK(eval::hce::scaleEval(100, 200, 256) == 200);
+        CHECK(eval::hce::scaleEval(100, 200, 128) == 150);
     }
 
     TEST_CASE("eval::phase_factors") {
@@ -81,7 +81,7 @@ TEST_SUITE("Eval") {
         // Startpos
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        i32    phase = eval::hce::pos_phase(pos);
+        I32    phase = eval::hce::posPhase(pos);
         double w_eg  = phase / 256.0;
         double w_mg  = 1.0 - w_eg;
 
@@ -91,7 +91,7 @@ TEST_SUITE("Eval") {
         // Eng Game
         pos.setFen("4k3/8/8/8/8/8/8/4K3 w - - 0 1");
 
-        phase = eval::hce::pos_phase(pos);
+        phase = eval::hce::posPhase(pos);
         w_eg  = phase / 256.0;
         w_mg  = 1.0 - w_eg;
 
@@ -100,9 +100,9 @@ TEST_SUITE("Eval") {
     }
 
     TEST_CASE("eval::mg_eg_score") {
-        i32 score = eval::hce::S(100, 200);
+        I32 score = eval::hce::s(100, 200);
 
-        CHECK(eval::hce::mg_score(score) == 100);
-        CHECK(eval::hce::eg_score(score) == 200);
+        CHECK(eval::hce::mgScore(score) == 100);
+        CHECK(eval::hce::egScore(score) == 200);
     }
 }

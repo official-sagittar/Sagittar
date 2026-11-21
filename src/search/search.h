@@ -10,13 +10,13 @@
 
 namespace sagittar::search {
 
-    constexpr Score INF        = 15000;
-    constexpr Score MATE_VALUE = 14000;
-    constexpr Score MATE_SCORE = 13000;
-    constexpr Score WIN_SCORE  = 12000;
-    constexpr Depth MAX_DEPTH  = 64;
+    constexpr Score k_INF        = 15000;
+    constexpr Score k_MATE_VALUE = 14000;
+    constexpr Score k_MATE_SCORE = 13000;
+    constexpr Score k_WIN_SCORE  = 12000;
+    constexpr Depth k_MAX_DEPTH  = 64;
 
-    constexpr std::size_t DEFAULT_TT_SIZE_MB = 16;
+    constexpr std::size_t k_DEFAULT_TT_SIZE_MB = 16;
 
     class Searcher {
        public:
@@ -34,13 +34,13 @@ namespace sagittar::search {
         void setThreadCount(const std::size_t);
 
         [[nodiscard]] SearchResult startSearch(const Position&                          pos,
-                                               std::span<u64>                           key_history,
+                                               std::span<U64>                           key_history,
                                                SearchInfo                               info,
                                                std::function<void(const SearchResult&)> onProgress,
                                                std::function<void(const SearchResult&)> onComplete);
 
         [[nodiscard]] SearchResult
-        startSearch(const Position& pos, std::span<u64> key_history, SearchInfo info);
+        startSearch(const Position& pos, std::span<U64> key_history, SearchInfo info);
 
         void stopSearch();
 
@@ -48,7 +48,7 @@ namespace sagittar::search {
         class Worker {
            public:
             Worker() = delete;
-            Worker(std::span<u64>, const SearchInfo&, TranspositionTable&);
+            Worker(std::span<U64>, const SearchInfo&, TranspositionTable&);
             Worker(const Worker&)            = delete;
             Worker(Worker&&)                 = delete;
             Worker& operator=(const Worker&) = delete;
@@ -79,33 +79,33 @@ namespace sagittar::search {
             void undoMove();
             void undoNullMove();
 
-            void updateHistory(const Piece, const Square, const i32);
+            void updateHistory(const Piece, const Square, const I32);
 
             template<NodeType nodeType>
             Score search(const Position& pos,
                          Depth           depth,
                          Score           alpha,
                          Score           beta,
-                         const i32       ply,
+                         const I32       ply,
                          const bool      do_null);
 
-            Score quiescencesearch(const Position& pos, Score alpha, Score beta, const i32 ply);
+            Score quiescencesearch(const Position& pos, Score alpha, Score beta, const I32 ply);
 
-            std::atomic_bool    should_stop{false};
-            std::vector<u64>    key_history{};
-            SearchInfo          info{};
-            TranspositionTable& tt;
+            std::atomic_bool    m_should_stop{false};
+            std::vector<U64>    m_key_history{};
+            SearchInfo          m_info{};
+            TranspositionTable& m_tt;
 
-            size_t nodes{0};
+            size_t m_nodes{0};
 
-            Move                              pvmove{};
-            PieceToHistory                    history{};  // [piece][to]
-            std::array<StackEntry, MAX_DEPTH> stack{};
+            Move                                m_pvmove{};
+            PieceToHistory                      m_history{};  // [piece][to]
+            std::array<StackEntry, k_MAX_DEPTH> m_stack{};
         };
 
-        TranspositionTable                   tt{DEFAULT_TT_SIZE_MB};
-        size_t                               n_threads{1};
-        std::vector<std::unique_ptr<Worker>> workers;
+        TranspositionTable                   m_tt{k_DEFAULT_TT_SIZE_MB};
+        size_t                               m_n_threads{1};
+        std::vector<std::unique_ptr<Worker>> m_workers;
     };
 
 }

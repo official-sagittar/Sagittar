@@ -6,6 +6,10 @@ PROJECT_EXE := Sagittar
 PROJECT_ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 CMAKE = cmake
+CLANG_TIDY = clang-tidy
+
+rwildcard = $(foreach path,$(wildcard $1*),$(call rwildcard,$(path)/,$2) $(filter $(subst *,%,$2),$(path)))
+TIDY_SOURCES := $(call rwildcard,src/,*.cpp)
 
 BUILD_ROOT = build
 BIN_ROOT = bin
@@ -16,7 +20,7 @@ else
     EXE_SUFFIX :=
 endif
 
-.PHONY: all release debug test tune openbench clean
+.PHONY: all release debug test tune openbench tidy clean
 
 all: release
 
@@ -57,6 +61,12 @@ openbench: release
 	$(CMAKE) -E copy_if_different \
 		"$(BIN_ROOT)/Release/$(PROJECT_EXE)$(EXE_SUFFIX)" \
 		"$(PROJECT_ROOT)/$(EXE)$(EXE_SUFFIX)"
+
+tidy: tune
+	$(CLANG_TIDY) \
+		-p $(BUILD_ROOT)/Tune \
+		$(TIDY_SOURCES) \
+		> $(BUILD_ROOT)/clang-tidy.log 2>&1
 
 clean:
 	$(CMAKE) -E rm -rf $(BUILD_ROOT) $(BIN_ROOT)

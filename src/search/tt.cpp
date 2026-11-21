@@ -4,54 +4,56 @@
 namespace sagittar::search {
 
     TranspositionTable::TranspositionTable(const std::size_t mb) :
-        size(0),
-        currentage(0) {
+        m_size(0),
+        m_currentage(0) {
         setSize(mb);
     }
 
     void TranspositionTable::setSize(const std::size_t mb) {
-        size = (mb * 0x100000) / sizeof(TTEntry);
-        size -= sizeof(TTEntry);
-        entries.clear();
-        entries.resize(size);
-        entries.shrink_to_fit();
-        currentage = 0;
+        m_size = (mb * 0x100000) / sizeof(TTEntry);
+        m_size -= sizeof(TTEntry);
+        m_entries.clear();
+        m_entries.resize(m_size);
+        m_entries.shrink_to_fit();
+        m_currentage = 0;
     }
 
-    std::size_t TranspositionTable::getSize() const { return size; }
+    std::size_t TranspositionTable::getSize() const { return m_size; }
 
     void TranspositionTable::clear() {
-        for (u32 i = 0; i < size; i++)
+        for (U32 i = 0; i < m_size; i++)
         {
-            entries.at(i) = TTEntry();
+            m_entries.at(i) = TTEntry();
         }
-        currentage = 0;
+        m_currentage = 0;
     }
 
-    void TranspositionTable::resetForSearch() { currentage = (currentage + 1) % AGE_CYCLE_LEN; }
+    void TranspositionTable::resetForSearch() {
+        m_currentage = (m_currentage + 1) % k_AGE_CYCLE_LEN;
+    }
 
-    void TranspositionTable::store(const u64    hash,
-                                   const i32    ply,
+    void TranspositionTable::store(const U64    hash,
+                                   const I32    ply,
                                    const Depth  depth,
                                    const TTFlag flag,
                                    Score        value,
                                    const Move&  move) {
-        const u64     index     = getIndex(hash);
-        const TTEntry currentry = entries.at(index);
+        const U64     index     = getIndex(hash);
+        const TTEntry currentry = m_entries.at(index);
 
         // Only handles empty indices or stale entires
-        const bool replace =
-          (currentry.key == 0ULL) || (currentry.age() != currentage) || (currentry.depth <= depth);
+        const bool replace = (currentry.key == 0ULL) || (currentry.age() != m_currentage)
+                          || (currentry.depth <= depth);
         if (!replace)
         {
             return;
         }
 
-        if (value < -MATE_SCORE)
+        if (value < -k_MATE_SCORE)
         {
             value -= ply;
         }
-        else if (value > MATE_SCORE)
+        else if (value > k_MATE_SCORE)
         {
             value += ply;
         }
@@ -66,17 +68,17 @@ namespace sagittar::search {
 
         TTEntry newentry;
         newentry.key         = hash;
-        newentry.score       = static_cast<i16>(value);
+        newentry.score       = static_cast<I16>(value);
         newentry.move_id     = move_to_replace.id();
-        newentry.depth       = static_cast<i8>(depth);
-        newentry.age_flag_pv = TTEntry::foldAgeFlagPV(currentage, flag, false);
+        newentry.depth       = static_cast<I8>(depth);
+        newentry.age_flag_pv = TTEntry::foldAgeFlagPV(m_currentage, flag, false);
 
-        entries.at(index) = newentry;
+        m_entries.at(index) = newentry;
     }
 
-    bool TranspositionTable::probe(TTData* ttdata, const u64 hash) const {
-        const u64     index     = getIndex(hash);
-        const TTEntry currentry = entries.at(index);
+    bool TranspositionTable::probe(TTData* ttdata, const U64 hash) const {
+        const U64     index     = getIndex(hash);
+        const TTEntry currentry = m_entries.at(index);
 
         if (currentry.key == hash)
         {
@@ -90,19 +92,19 @@ namespace sagittar::search {
         return false;
     }
 
-    u32 TranspositionTable::hashfull() const {
-        u32 used = 0;
-        for (u16 i = 0; i < 1000; i++)
+    U32 TranspositionTable::hashfull() const {
+        U32 used = 0;
+        for (U16 i = 0; i < 1000; i++)
         {
-            const TTEntry& e = entries.at(i);
-            used += (e.flag() != TTFlag::NONE) && (e.age() == currentage);
+            const TTEntry& e = m_entries.at(i);
+            used += (e.flag() != TTFlag::NONE) && (e.age() == m_currentage);
         }
         return used;
     }
 
-    [[nodiscard]] inline u64 TranspositionTable::getIndex(const u64 key) const {
+    [[nodiscard]] inline U64 TranspositionTable::getIndex(const U64 key) const {
         // this emits a single mul on both x64 and arm64
-        return static_cast<u64>((static_cast<u128>(key) * static_cast<u128>(size)) >> 64);
+        return static_cast<U64>((static_cast<U128>(key) * static_cast<U128>(m_size)) >> 64);
     }
 
 }

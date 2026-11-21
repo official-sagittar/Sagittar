@@ -6,37 +6,39 @@ namespace sagittar::eval::hce {
 
     namespace {
 
-        constexpr std::array<std::array<PSQT, 2>, 6> psqt_b = []() {
+        constexpr std::array<std::array<PSQT, 2>, 6> k_PSQT_B = []() {
             std::array<std::array<PSQT, 2>, 6> table{};
 
             for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {
-                    table[pt][MG][sq] = mg_score(PIECE_SCORES[pt]) + mg_score(PSQT_SCORES[pt][sq]);
-                    table[pt][EG][sq] = eg_score(PIECE_SCORES[pt]) + eg_score(PSQT_SCORES[pt][sq]);
+                    table[pt][MG][sq] =
+                      mgScore(k_PIECE_SCORES[pt]) + mgScore(k_PSQT_SCORES[pt][sq]);
+                    table[pt][EG][sq] =
+                      egScore(k_PIECE_SCORES[pt]) + egScore(k_PSQT_SCORES[pt][sq]);
                 }
             }
 
             return table;
         }();
 
-        constexpr std::array<std::array<PSQT, 2>, 6> psqt_w = []() {
+        constexpr std::array<std::array<PSQT, 2>, 6> k_PSQT_W = []() {
             std::array<std::array<PSQT, 2>, 6> table{};
 
             for (int pt = PieceType::PAWN; pt <= PieceType::KING; pt++)
             {
                 for (int sq = Square::A1; sq <= Square::H8; sq++)
                 {
-                    table[pt][MG][sq] = psqt_b[pt][MG][SQUARES_MIRRORED[sq]];
-                    table[pt][EG][sq] = psqt_b[pt][EG][SQUARES_MIRRORED[sq]];
+                    table[pt][MG][sq] = k_PSQT_B[pt][MG][k_SQUARES_MIRRORED[sq]];
+                    table[pt][EG][sq] = k_PSQT_B[pt][EG][k_SQUARES_MIRRORED[sq]];
                 }
             }
 
             return table;
         }();
 
-        std::pair<Score, Score> evaluate_pawns(const Position& pos) {
+        std::pair<Score, Score> evaluatePawns(const Position& pos) {
             Score eval_mg = 0;
             Score eval_eg = 0;
 
@@ -45,9 +47,9 @@ namespace sagittar::eval::hce {
                 auto w_p_bb = pos.pieces(Color::WHITE, PieceType::PAWN);
                 while (w_p_bb)
                 {
-                    const auto sq = w_p_bb.pop_lsb();
-                    eval_mg += psqt_w[PieceType::PAWN][MG][sq];
-                    eval_eg += psqt_w[PieceType::PAWN][EG][sq];
+                    const auto sq = w_p_bb.popLsb();
+                    eval_mg += k_PSQT_W[PieceType::PAWN][MG][sq];
+                    eval_eg += k_PSQT_W[PieceType::PAWN][EG][sq];
                 }
             }
 
@@ -56,9 +58,9 @@ namespace sagittar::eval::hce {
                 auto b_p_bb = pos.pieces(Color::BLACK, PieceType::PAWN);
                 while (b_p_bb)
                 {
-                    const auto sq = b_p_bb.pop_lsb();
-                    eval_mg -= psqt_b[PieceType::PAWN][MG][sq];
-                    eval_eg -= psqt_b[PieceType::PAWN][EG][sq];
+                    const auto sq = b_p_bb.popLsb();
+                    eval_mg -= k_PSQT_B[PieceType::PAWN][MG][sq];
+                    eval_eg -= k_PSQT_B[PieceType::PAWN][EG][sq];
                 }
             }
 
@@ -68,13 +70,13 @@ namespace sagittar::eval::hce {
         class PawnCache {
            public:
             [[nodiscard]] std::pair<Score, Score> probe(const Position& pos) noexcept {
-                const u64 pawn_key = pos.pawn_key();
+                const U64 pawn_key = pos.pawnKey();
 
-                auto& entry = m_entries[static_cast<std::size_t>(pawn_key % SIZE)];
+                auto& entry = m_entries[static_cast<std::size_t>(pawn_key % k_SIZE)];
 
                 if (entry.pawn_key != pawn_key)
                 {
-                    entry.eval     = evaluate_pawns(pos);
+                    entry.eval     = evaluatePawns(pos);
                     entry.pawn_key = pawn_key;
                 }
 
@@ -82,20 +84,20 @@ namespace sagittar::eval::hce {
             }
 
            private:
-            static constexpr std::size_t SIZE = 128 * 1024;
+            static constexpr std::size_t k_SIZE = 128 * 1024;
 
             struct PawnEvalEntry {
-                u64                     pawn_key{};
+                U64                     pawn_key{};
                 std::pair<Score, Score> eval{};
             };
 
-            std::array<PawnEvalEntry, SIZE> m_entries{};
+            std::array<PawnEvalEntry, k_SIZE> m_entries{};
         };
 
     }
 
     Score evaluate(const Position& pos) {
-        i32   phase   = TOTAL_PHASE;
+        I32   phase   = k_TOTAL_PHASE;
         Score eval_mg = 0;
         Score eval_eg = 0;
 
@@ -118,70 +120,70 @@ namespace sagittar::eval::hce {
             auto pt_bb_w = pt_bb & w_p;
             while (pt_bb_w)
             {
-                phase -= PHASE_WEIGHTS[pt];
-                const auto sq = pt_bb_w.pop_lsb();
-                eval_mg += psqt_w[pt][MG][sq];
-                eval_eg += psqt_w[pt][EG][sq];
+                phase -= k_PHASE_WEIGHTS[pt];
+                const auto sq = pt_bb_w.popLsb();
+                eval_mg += k_PSQT_W[pt][MG][sq];
+                eval_eg += k_PSQT_W[pt][EG][sq];
 
                 // Mobility
                 if (piece_type != PieceType::KING)
                 {
                     const auto mobility_count =
                       mobility<Color::WHITE>(pos, piece_type, static_cast<Square>(sq));
-                    const auto mobility_bonus = MOBILITY_BONUS[pt - 1][mobility_count];
-                    eval_mg += mg_score(mobility_bonus);
-                    eval_eg += eg_score(mobility_bonus);
+                    const auto mobility_bonus = k_MOBILITY_BONUS[pt - 1][mobility_count];
+                    eval_mg += mgScore(mobility_bonus);
+                    eval_eg += egScore(mobility_bonus);
                 }
             }
             // BLACK
             auto pt_bb_b = pt_bb & b_p;
             while (pt_bb_b)
             {
-                phase -= PHASE_WEIGHTS[pt];
-                const auto sq = pt_bb_b.pop_lsb();
-                eval_mg -= psqt_b[pt][MG][sq];
-                eval_eg -= psqt_b[pt][EG][sq];
+                phase -= k_PHASE_WEIGHTS[pt];
+                const auto sq = pt_bb_b.popLsb();
+                eval_mg -= k_PSQT_B[pt][MG][sq];
+                eval_eg -= k_PSQT_B[pt][EG][sq];
 
                 // Mobility
                 if (piece_type != PieceType::KING)
                 {
                     const auto mobility_count =
                       mobility<Color::BLACK>(pos, piece_type, static_cast<Square>(sq));
-                    const auto mobility_bonus = MOBILITY_BONUS[pt - 1][mobility_count];
-                    eval_mg -= mg_score(mobility_bonus);
-                    eval_eg -= eg_score(mobility_bonus);
+                    const auto mobility_bonus = k_MOBILITY_BONUS[pt - 1][mobility_count];
+                    eval_mg -= mgScore(mobility_bonus);
+                    eval_eg -= egScore(mobility_bonus);
                 }
             }
         }
 
-        phase = std_phase(phase);
+        phase = stdPhase(phase);
 #ifdef DEBUG
-        assert(phase == pos_phase(pos));
+        assert(phase == posPhase(pos));
 #endif
 
         // Bishop pair
         const auto b_bb   = pos.pieces(PieceType::BISHOP);
         const auto w_b_bb = b_bb & w_p;
         const auto b_b_bb = b_bb & b_p;
-        if (w_b_bb.has_multiple())
+        if (w_b_bb.hasMultiple())
         {
-            eval_mg += mg_score(BISHOP_PAIR);
-            eval_eg += eg_score(BISHOP_PAIR);
+            eval_mg += mgScore(k_BISHOP_PAIR);
+            eval_eg += egScore(k_BISHOP_PAIR);
         }
-        if (b_b_bb.has_multiple())
+        if (b_b_bb.hasMultiple())
         {
-            eval_mg -= mg_score(BISHOP_PAIR);
-            eval_eg -= eg_score(BISHOP_PAIR);
+            eval_mg -= mgScore(k_BISHOP_PAIR);
+            eval_eg -= egScore(k_BISHOP_PAIR);
         }
 
-        Score eval = scale_eval(eval_mg, eval_eg, phase);
+        Score eval = scaleEval(eval_mg, eval_eg, phase);
 
         const auto stm = 1 - (2 * pos.stm());
 
         eval *= stm;
 
         // Tempo Bonus
-        const Score tempo_bonus = scale_eval(mg_score(TEMPO_BONUS), eg_score(TEMPO_BONUS), phase);
+        const Score tempo_bonus = scaleEval(mgScore(k_TEMPO_BONUS), egScore(k_TEMPO_BONUS), phase);
         eval += tempo_bonus;
 
         return eval;

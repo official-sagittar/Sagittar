@@ -6,7 +6,7 @@ namespace sagittar {
 
     // Little-Endian Rank-File Mapping
     // clang-format off
-    static const u8 CASTLE_RIGHTS_MODIFIERS[64] = {
+    static const U8 k_CASTLE_RIGHTS_MODIFIERS[64] = {
         13, 15, 15, 15, 12, 15, 15, 14,
         15, 15, 15, 15, 15, 15, 15, 15,
         15, 15, 15, 15, 15, 15, 15, 15,
@@ -18,29 +18,29 @@ namespace sagittar {
     };
     // clang-format on
 
-    static std::array<std::array<u64, 64>, 15> ZOBRIST_TABLE;  // [Piece][Square]
-    static std::array<u64, 16>                 ZOBRIST_CA;
-    static u64                                 ZOBRIST_SIDE;
-    static int constexpr ZOBRIST_EP_IDX = 14;
+    static std::array<std::array<U64, 64>, 15> g_zobrist_table;  // [Piece][Square]
+    static std::array<U64, 16>                 g_zobrist_ca;
+    static U64                                 g_zobrist_side;
+    static int constexpr k_ZOBRIST_EP_IDX = 14;
 
     void Position::initialize() {
 
-        for (u8 p = Piece::WHITE_PAWN; p <= Piece::NO_PIECE; p++)
+        for (U8 p = Piece::WHITE_PAWN; p <= Piece::NO_PIECE; p++)
         {
-            for (u8 sq = Square::A1; sq <= Square::H8; sq++)
+            for (U8 sq = Square::A1; sq <= Square::H8; sq++)
             {
-                ZOBRIST_TABLE[p][sq] = utils::prng();
+                g_zobrist_table[p][sq] = utils::prng();
             }
         }
 
-        for (u8 i = 0; i < 16; i++)
+        for (U8 i = 0; i < 16; i++)
         {
-            ZOBRIST_CA[i] = utils::prng();
+            g_zobrist_ca[i] = utils::prng();
         }
 
-        ZOBRIST_SIDE = utils::prng();
+        g_zobrist_side = utils::prng();
 
-        movegen_initialize();
+        movegenInitialize();
     }
 
     Position::Position() :
@@ -68,20 +68,20 @@ namespace sagittar {
         // Side to move
         if (m_stm == Color::WHITE)
         {
-            m_key ^= ZOBRIST_SIDE;
+            m_key ^= g_zobrist_side;
         }
 
         // Castling Rights
-        m_key ^= ZOBRIST_CA[m_ca_rights];
+        m_key ^= g_zobrist_ca[m_ca_rights];
 
         // EP Target
         if (m_ep_target != Square::NO_SQ)
         {
-            m_key ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
+            m_key ^= g_zobrist_table[k_ZOBRIST_EP_IDX][m_ep_target];
         }
 
         // Piece placement
-        for (u8 sq = Square::A1; sq <= Square::H8; sq++)
+        for (U8 sq = Square::A1; sq <= Square::H8; sq++)
         {
             const Piece p = m_board[sq];
 
@@ -90,11 +90,11 @@ namespace sagittar {
                 continue;
             }
 
-            m_key ^= ZOBRIST_TABLE[p][sq];
+            m_key ^= g_zobrist_table[p][sq];
 
             if (pieceTypeOf(p) == PieceType::PAWN)
             {
-                m_pawn_key ^= ZOBRIST_TABLE[p][sq];
+                m_pawn_key ^= g_zobrist_table[p][sq];
             }
         }
     }
@@ -107,8 +107,8 @@ namespace sagittar {
         reset();
 
         // Parse Piece placement data
-        u8 rank = Rank::RANK_8;
-        u8 file = File::FILE_A;
+        U8 rank = Rank::RANK_8;
+        U8 file = File::FILE_A;
         ss >> segment;
         for (const char& ch : segment)
         {
@@ -119,7 +119,7 @@ namespace sagittar {
             }
             else if (isdigit(ch))
             {
-                const u8 empty_squares = ch - '0';
+                const U8 empty_squares = ch - '0';
                 if (empty_squares < 1 || empty_squares > 8) [[unlikely]]
                 {
                     throw std::invalid_argument("Invalid FEN!");
@@ -139,10 +139,10 @@ namespace sagittar {
                 {
                     throw std::invalid_argument("Invalid FEN!");
                 }
-                const Color    c     = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
-                                                          || (ch == 'r') || (ch == 'q') || (ch == 'k'));
+                const Color    c = static_cast<Color>((ch == 'p') || (ch == 'n') || (ch == 'b')
+                                                      || (ch == 'r') || (ch == 'q') || (ch == 'k'));
                 const Square   sq    = rf2sq(rank, file);
-                const BitBoard sq_bb = BB(sq);
+                const BitBoard sq_bb = bb(sq);
                 m_bb_pieces[pt] |= sq_bb;
                 m_bb_colors[c] |= sq_bb;
                 m_board[sq] = pieceCreate(pt, c);
@@ -223,7 +223,7 @@ namespace sagittar {
             m_ep_target     = rf2sq(rank, file);
         }
 
-        // Parse Halfmove clock
+        // Parse Halfmove Clock
         ss >> segment;
         if (!full || segment.empty() || segment == "-")
         {
@@ -247,7 +247,7 @@ namespace sagittar {
 
         // Set King Square & checkers
         BitBoard king_bb = m_bb_pieces[PieceType::KING] & m_bb_colors[m_stm];
-        m_king_sq        = static_cast<Square>(king_bb.pop_lsb());
+        m_king_sq        = static_cast<Square>(king_bb.popLsb());
         m_checkers       = squareAttackers(*this, m_king_sq, colorFlip(m_stm));
 
         // Reset Hash
@@ -258,10 +258,10 @@ namespace sagittar {
         std::ostringstream oss;
 
         // Piece placement data
-        for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
+        for (I8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
         {
-            u8 empty = 0;
-            for (u8 file = File::FILE_A; file <= File::FILE_H; file++)
+            U8 empty = 0;
+            for (U8 file = File::FILE_A; file <= File::FILE_H; file++)
             {
                 const Square sq    = rf2sq(rank, file);
                 const Piece  piece = m_board[sq];
@@ -272,7 +272,7 @@ namespace sagittar {
                         oss << (int) empty;
                         empty = 0;
                     }
-                    oss << PIECES_STR[piece];
+                    oss << k_PIECES_STR[piece];
                 }
                 else
                 {
@@ -336,11 +336,11 @@ namespace sagittar {
         {
             const File file = sq2file(m_ep_target);
             const Rank rank = sq2rank(m_ep_target);
-            oss << FILE_STR[file] << (int) rank + 1;
+            oss << k_FILE_STR[file] << (int) rank + 1;
         }
         oss << " ";
 
-        // Halfmove clock
+        // Halfmove Clock
         oss << (int) m_halfmoves << " ";
 
         // Fullmove number
@@ -351,15 +351,15 @@ namespace sagittar {
 
     template<Color US, MoveFlag F>
     bool Position::applyMove(const Move& move) noexcept {
-        constexpr bool  is_capture   = MOVE_IS_CAPTURE(F);
-        constexpr bool  is_promotion = MOVE_IS_PROMOTION(F);
+        constexpr bool  is_capture   = moveIsCapture(F);
+        constexpr bool  is_promotion = moveIsPromotion(F);
         constexpr Color them         = colorFlip(US);
 
-        u64 key_local      = m_key;
-        u64 pawn_key_local = m_pawn_key;
+        U64 key_local      = m_key;
+        U64 pawn_key_local = m_pawn_key;
 
         key_local ^=
-          (m_ep_target == Square::NO_SQ) ? 0ULL : ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
+          (m_ep_target == Square::NO_SQ) ? 0ULL : g_zobrist_table[k_ZOBRIST_EP_IDX][m_ep_target];
 
         m_ep_target = Square::NO_SQ;
         ++m_halfmoves;
@@ -374,20 +374,20 @@ namespace sagittar {
 
         const Piece captured_p = m_board[to];
 
-        const BitBoard move_mask_to = BB(to);
-        const BitBoard move_mask    = BB(from) | move_mask_to;
+        const BitBoard move_mask_to = bb(to);
+        const BitBoard move_mask    = bb(from) | move_mask_to;
 
         m_bb_pieces[move_pt] ^= move_mask;
         m_bb_colors[US] ^= move_mask;
         m_board[from] = Piece::NO_PIECE;
         m_board[to]   = move_p;
 
-        key_local ^= ZOBRIST_TABLE[move_p][from];
-        key_local ^= ZOBRIST_TABLE[move_p][to];
+        key_local ^= g_zobrist_table[move_p][from];
+        key_local ^= g_zobrist_table[move_p][to];
         if (move_pt == PieceType::PAWN)
         {
-            pawn_key_local ^= ZOBRIST_TABLE[move_p][from];
-            pawn_key_local ^= ZOBRIST_TABLE[move_p][to];
+            pawn_key_local ^= g_zobrist_table[move_p][from];
+            pawn_key_local ^= g_zobrist_table[move_p][to];
         }
 
         if constexpr ((F == MoveFlag::MOVE_CASTLE_KING_SIDE)
@@ -402,20 +402,20 @@ namespace sagittar {
               (F == MoveFlag::MOVE_CASTLE_KING_SIDE) ? File::FILE_F : File::FILE_D;
             constexpr Square   ca_r_from_sq   = rf2sq(rank, from_file);
             constexpr Square   ca_r_to_sq     = rf2sq(rank, to_file);
-            constexpr BitBoard move_mask_ca_r = (BB(ca_r_from_sq) | BB(ca_r_to_sq));
+            constexpr BitBoard move_mask_ca_r = (bb(ca_r_from_sq) | bb(ca_r_to_sq));
             m_bb_pieces[PieceType::ROOK] ^= move_mask_ca_r;
             m_bb_colors[US] ^= move_mask_ca_r;
             m_board[ca_r_from_sq] = Piece::NO_PIECE;
             m_board[ca_r_to_sq]   = rook;
-            key_local ^= ZOBRIST_TABLE[rook][ca_r_from_sq];
-            key_local ^= ZOBRIST_TABLE[rook][ca_r_to_sq];
+            key_local ^= g_zobrist_table[rook][ca_r_from_sq];
+            key_local ^= g_zobrist_table[rook][ca_r_to_sq];
         }
         else if constexpr (F == MoveFlag::MOVE_QUIET_PAWN_DBL_PUSH)
         {
             assert(move_pt == PieceType::PAWN);
-            constexpr i8 dir = (US == Color::WHITE) ? 8 : -8;
+            constexpr I8 dir = (US == Color::WHITE) ? 8 : -8;
             m_ep_target      = static_cast<Square>(from + dir);
-            key_local ^= ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
+            key_local ^= g_zobrist_table[k_ZOBRIST_EP_IDX][m_ep_target];
         }
         else if constexpr (is_capture || is_promotion)
         {
@@ -426,14 +426,14 @@ namespace sagittar {
                     assert(move_pt == PieceType::PAWN);
                     assert(captured_p == Piece::NO_PIECE);
                     constexpr Piece ep_victim       = pieceCreate(PieceType::PAWN, them);
-                    constexpr i8    dir             = (US == Color::WHITE) ? 8 : -8;
+                    constexpr I8    dir             = (US == Color::WHITE) ? 8 : -8;
                     const Square    ep_victim_sq    = static_cast<Square>(to - dir);
-                    const BitBoard  ep_victim_sq_bb = BB(ep_victim_sq);
+                    const BitBoard  ep_victim_sq_bb = bb(ep_victim_sq);
                     m_bb_pieces[PieceType::PAWN] ^= ep_victim_sq_bb;
                     m_bb_colors[them] ^= ep_victim_sq_bb;
                     m_board[ep_victim_sq] = Piece::NO_PIECE;
-                    key_local ^= ZOBRIST_TABLE[ep_victim][ep_victim_sq];
-                    pawn_key_local ^= ZOBRIST_TABLE[ep_victim][ep_victim_sq];
+                    key_local ^= g_zobrist_table[ep_victim][ep_victim_sq];
+                    pawn_key_local ^= g_zobrist_table[ep_victim][ep_victim_sq];
                 }
                 else
                 {
@@ -441,10 +441,10 @@ namespace sagittar {
                     const PieceType captured_pt = pieceTypeOf(captured_p);
                     m_bb_pieces[captured_pt] ^= move_mask_to;
                     m_bb_colors[them] ^= move_mask_to;
-                    key_local ^= ZOBRIST_TABLE[captured_p][to];
+                    key_local ^= g_zobrist_table[captured_p][to];
                     if (captured_pt == PieceType::PAWN)
                     {
-                        pawn_key_local ^= ZOBRIST_TABLE[captured_p][to];
+                        pawn_key_local ^= g_zobrist_table[captured_p][to];
                     }
                 }
             }
@@ -472,18 +472,18 @@ namespace sagittar {
                 m_bb_pieces[PieceType::PAWN] ^= move_mask_to;
                 m_bb_pieces[promoted_pt] ^= move_mask_to;
                 m_board[to] = promoted;
-                key_local ^= ZOBRIST_TABLE[move_p][to];
-                key_local ^= ZOBRIST_TABLE[promoted][to];
-                pawn_key_local ^= ZOBRIST_TABLE[move_p][to];
+                key_local ^= g_zobrist_table[move_p][to];
+                key_local ^= g_zobrist_table[promoted][to];
+                pawn_key_local ^= g_zobrist_table[move_p][to];
             }
         }
 
         m_halfmoves *= !(is_capture || (move_pt == PieceType::PAWN));
 
-        key_local ^= ZOBRIST_CA[m_ca_rights];
-        m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[from];
-        m_ca_rights &= CASTLE_RIGHTS_MODIFIERS[to];
-        key_local ^= ZOBRIST_CA[m_ca_rights];
+        key_local ^= g_zobrist_ca[m_ca_rights];
+        m_ca_rights &= k_CASTLE_RIGHTS_MODIFIERS[from];
+        m_ca_rights &= k_CASTLE_RIGHTS_MODIFIERS[to];
+        key_local ^= g_zobrist_ca[m_ca_rights];
 
         const BitBoard k_bb = m_bb_pieces[PieceType::KING];
 
@@ -491,21 +491,21 @@ namespace sagittar {
         const Square   king_sq_us  = static_cast<Square>(king_bb_us.lsb());
         const BitBoard checkers_us = squareAttackers(*this, king_sq_us, them);
 
-        const bool is_valid_move = checkers_us.is_empty();
+        const bool is_valid_move = checkers_us.isEmpty();
 
         const BitBoard king_bb_them = k_bb & m_bb_colors[them];
         m_king_sq                   = static_cast<Square>(king_bb_them.lsb());
         m_checkers                  = squareAttackers(*this, m_king_sq, US);
 
         m_stm = colorFlip(m_stm);
-        key_local ^= ZOBRIST_SIDE;
+        key_local ^= g_zobrist_side;
 
         m_key      = key_local;
         m_pawn_key = pawn_key_local;
 
 #ifdef DEBUG
-        const u64 curr_key      = m_key;
-        const u64 curr_pawn_key = m_pawn_key;
+        const U64 curr_key      = m_key;
+        const U64 curr_pawn_key = m_pawn_key;
         resetHash();
         assert(m_key == curr_key);
         assert(m_pawn_key == curr_pawn_key);
@@ -517,8 +517,8 @@ namespace sagittar {
     [[nodiscard]] bool Position::doMove(const Move& move) noexcept {
         const bool is_valid = (pieceColorOf(pieceOn(move.from())) == m_stm);
         return (m_stm == Color::WHITE)
-               ? is_valid && (this->*apply_move_dispatch_table<Color::WHITE>[move.flag()])(move)
-               : is_valid && (this->*apply_move_dispatch_table<Color::BLACK>[move.flag()])(move);
+               ? is_valid && (this->*k_APPLY_MOVE_DISPATCH_TABLE<Color::WHITE>[move.flag()])(move)
+               : is_valid && (this->*k_APPLY_MOVE_DISPATCH_TABLE<Color::BLACK>[move.flag()])(move);
     }
 
     [[nodiscard]] bool Position::doMove(const std::string& move_str) noexcept {
@@ -528,10 +528,10 @@ namespace sagittar {
             return false;
         }
 
-        const u8 from_file = move_str[0] - 'a';
-        const u8 from_rank = (move_str[1] - '0') - 1;
-        const u8 to_file   = move_str[2] - 'a';
-        const u8 to_rank   = (move_str[3] - '0') - 1;
+        const U8 from_file = move_str[0] - 'a';
+        const U8 from_rank = (move_str[1] - '0') - 1;
+        const U8 to_file   = move_str[2] - 'a';
+        const U8 to_rank   = (move_str[3] - '0') - 1;
 
         if (from_file < File::FILE_A || from_file > File::FILE_H)
         {
@@ -669,11 +669,12 @@ namespace sagittar {
     }
 
     void Position::doNullMove() {
-        m_key ^= (m_ep_target == Square::NO_SQ) ? 0ULL : ZOBRIST_TABLE[ZOBRIST_EP_IDX][m_ep_target];
+        m_key ^=
+          (m_ep_target == Square::NO_SQ) ? 0ULL : g_zobrist_table[k_ZOBRIST_EP_IDX][m_ep_target];
         m_checkers  = 0ULL;
         m_ep_target = Square::NO_SQ;
         m_stm       = colorFlip(m_stm);
-        m_key ^= ZOBRIST_SIDE;
+        m_key ^= g_zobrist_side;
     }
 
     BitBoard Position::pieces(const Color c) const { return m_bb_colors[c]; }
@@ -694,40 +695,40 @@ namespace sagittar {
 
     Piece Position::pieceOn(const Square square) const { return m_board[square]; }
 
-    u8 Position::pieceCount(const PieceType pt) const { return m_bb_pieces[pt].count(); }
+    U8 Position::pieceCount(const PieceType pt) const { return m_bb_pieces[pt].count(); }
 
-    u8 Position::pieceCount(const Piece piece) const {
+    U8 Position::pieceCount(const Piece piece) const {
         return (m_bb_pieces[pieceTypeOf(piece)] & m_bb_colors[pieceColorOf(piece)]).count();
     }
 
     Color Position::stm() const { return m_stm; }
 
-    u8 Position::caRights() const { return m_ca_rights; }
+    U8 Position::caRights() const { return m_ca_rights; }
 
     Square Position::epTarget() const { return m_ep_target; }
 
-    u8 Position::halfmoves() const { return m_halfmoves; }
+    U8 Position::halfmoves() const { return m_halfmoves; }
 
-    u8 Position::fullmoves() const { return m_fullmoves; }
+    U8 Position::fullmoves() const { return m_fullmoves; }
 
-    u64 Position::key() const { return m_key; }
+    U64 Position::key() const { return m_key; }
 
-    u64 Position::pawn_key() const { return m_pawn_key; }
+    U64 Position::pawnKey() const { return m_pawn_key; }
 
     bool Position::isValid() const {
         return (m_bb_pieces[PieceType::KING].count() == 2)
-            && ((m_bb_pieces[PieceType::PAWN] & RANK_1_AND_8_BB).is_empty());
+            && ((m_bb_pieces[PieceType::PAWN] & k_RANK_1_AND_8_BB).isEmpty());
     }
 
-    bool Position::isInCheck() const { return !m_checkers.is_empty(); }
+    bool Position::isInCheck() const { return !m_checkers.isEmpty(); }
 
-    bool Position::isDrawn(std::span<u64> key_history) const {
+    bool Position::isDrawn(std::span<U64> key_history) const {
         assert(key_history.size() == static_cast<size_t>(m_ply_count));
 
-        const u64 key   = m_key;
-        const i32 start = std::max(m_ply_count - m_halfmoves, 0);
+        const U64 key   = m_key;
+        const I32 start = std::max(m_ply_count - m_halfmoves, 0);
 
-        for (i32 i = m_ply_count - 2; i >= start; i -= 2)
+        for (I32 i = m_ply_count - 2; i >= start; i -= 2)
         {
             if (key == key_history[i])
             {
@@ -740,17 +741,17 @@ namespace sagittar {
     void Position::display() const {
         std::ostringstream ss;
 
-        for (i8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
+        for (I8 rank = Rank::RANK_8; rank >= Rank::RANK_1; rank--)
         {
-            for (u8 file = File::FILE_A; file <= File::FILE_H; file++)
+            for (U8 file = File::FILE_A; file <= File::FILE_H; file++)
             {
                 const Square sq = rf2sq(rank, file);
-                ss << (char) PIECES_STR[this->m_board[sq]] << " ";
+                ss << (char) k_PIECES_STR[this->m_board[sq]] << " ";
             }
             ss << "\n";
         }
 
-        ss << "\n" << (char) COLORS_STR[m_stm];
+        ss << "\n" << (char) k_COLORS_STR[m_stm];
         ss << " " << (int) m_ca_rights;
         ss << " " << (int) m_ep_target;
         ss << " " << (int) m_halfmoves;

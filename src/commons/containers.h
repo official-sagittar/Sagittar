@@ -7,58 +7,58 @@ namespace sagittar::containers {
     template<typename T, std::size_t Capacity = 256>
     class ArrayList: public std::array<T, Capacity> {
        private:
-        std::size_t current_size = 0;
+        std::size_t m_current_size = 0;
 
        public:
         template<typename... Args>
         void emplace(size_t position, Args&&... args) {
-            if (position > current_size || current_size >= Capacity)
+            if (position > m_current_size || m_current_size >= Capacity)
             {
                 throw std::out_of_range("Invalid position or ArrayList is full.");
             }
 
             // Shift elements to the right to make space for the new element
-            for (size_t i = current_size; i > position; --i)
+            for (size_t i = m_current_size; i > position; --i)
             {
                 (*this)[i] = std::move((*this)[i - 1]);
             }
 
             // Construct the new element in place
             (*this)[position] = T(std::forward<Args>(args)...);
-            ++current_size;
+            ++m_current_size;
         }
 
         template<typename... Args>
-        void emplace_back(Args&&... args) {
-            if (current_size >= Capacity)
+        void emplaceBack(Args&&... args) {
+            if (m_current_size >= Capacity)
             {
                 throw std::out_of_range("ArrayList is full: Cannot emplace_back.");
             }
 
             // Construct the new element at the back
-            (*this)[current_size++] = T(std::forward<Args>(args)...);
+            (*this)[m_current_size++] = T(std::forward<Args>(args)...);
         }
 
         void push(T t) {
-            if (current_size >= Capacity)
+            if (m_current_size >= Capacity)
             {
                 throw std::out_of_range("ArrayList is full: Cannot push.");
             }
-            (*this)[current_size++] = t;
+            (*this)[m_current_size++] = t;
         }
 
-        size_t size() const { return current_size; }
+        size_t size() const { return m_current_size; }
 
-        typedef typename std::array<T, Capacity>::iterator       iterator;
-        typedef typename std::array<T, Capacity>::const_iterator const_iterator;
+        typedef typename std::array<T, Capacity>::iterator       Iterator_t;
+        typedef typename std::array<T, Capacity>::const_iterator ConstIterator_t;
 
-        iterator begin() { return std::array<T, Capacity>::begin(); }
+        Iterator_t begin() { return std::array<T, Capacity>::begin(); }
 
-        iterator end() { return std::array<T, Capacity>::begin() + current_size; }
+        Iterator_t end() { return std::array<T, Capacity>::begin() + m_current_size; }
 
-        const_iterator begin() const { return std::array<T, Capacity>::begin(); }
+        ConstIterator_t begin() const { return std::array<T, Capacity>::begin(); }
 
-        const_iterator end() const { return std::array<T, Capacity>::begin() + current_size; }
+        ConstIterator_t end() const { return std::array<T, Capacity>::begin() + m_current_size; }
     };
 
 }

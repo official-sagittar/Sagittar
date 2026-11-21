@@ -6,7 +6,7 @@
 namespace sagittar::search {
 
     void setSearchHardBoundTime(SearchInfo* info, const Position& pos) {
-        u32 time = 0, inc = 0;
+        U32 time = 0, inc = 0;
 
         if (info->movetime > 0)
         {
@@ -27,7 +27,7 @@ namespace sagittar::search {
             }
         }
 
-        info->depth = info->depth == 0 ? search::MAX_DEPTH : info->depth;
+        info->depth = info->depth == 0 ? search::k_MAX_DEPTH : info->depth;
 
         info->timeset = false;
 

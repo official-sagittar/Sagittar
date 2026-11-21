@@ -64,7 +64,7 @@ namespace sagittar::search {
         MovePickerPhase m_phase{MovePickerPhase::TT_MOVE};
 
         size_t m_index{0};
-        u8     m_index_killers{0};
+        U8     m_index_killers{0};
     };
 
 }

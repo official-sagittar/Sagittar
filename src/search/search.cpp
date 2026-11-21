@@ -9,47 +9,47 @@
 namespace sagittar::search {
 
     Searcher::Searcher() :
-        n_threads(1) {
+        m_n_threads(1) {
         reset();
     }
 
     void Searcher::reset() {
-        workers.clear();
-        tt.clear();
+        m_workers.clear();
+        m_tt.clear();
     }
 
     void Searcher::resetForSearch() {
-        workers.clear();
-        tt.resetForSearch();
+        m_workers.clear();
+        m_tt.resetForSearch();
     }
 
-    void Searcher::setTranspositionTableSize(const std::size_t size) { tt.setSize(size); }
+    void Searcher::setTranspositionTableSize(const std::size_t size) { m_tt.setSize(size); }
 
-    void Searcher::setThreadCount(const std::size_t n) { n_threads = n; }
+    void Searcher::setThreadCount(const std::size_t n) { m_n_threads = n; }
 
     SearchResult Searcher::startSearch(const Position&                          pos,
-                                       std::span<u64>                           key_history,
+                                       std::span<U64>                           key_history,
                                        SearchInfo                               info,
                                        std::function<void(const SearchResult&)> onProgress,
                                        std::function<void(const SearchResult&)> onComplete) {
         setSearchHardBoundTime(&info, pos);
 
-        workers.clear();
-        workers.reserve(n_threads);
+        m_workers.clear();
+        m_workers.reserve(m_n_threads);
 
-        for (size_t i = 0; i < n_threads; i++)
+        for (size_t i = 0; i < m_n_threads; i++)
         {
-            workers.emplace_back(std::make_unique<Worker>(key_history, info, tt));
+            m_workers.emplace_back(std::make_unique<Worker>(key_history, info, m_tt));
         }
 
         std::vector<std::future<SearchResult>> futures;
-        futures.reserve(n_threads);
+        futures.reserve(m_n_threads);
 
-        for (size_t id = 0; id < n_threads; ++id)
+        for (size_t id = 0; id < m_n_threads; ++id)
         {
             futures.emplace_back(std::async(
               std::launch::async, [this, id, &pos, onProgress, onComplete]() -> SearchResult {
-                  Worker& w = *workers[id];
+                  Worker& w = *m_workers[id];
 
                   if (id == 0)
                   {
@@ -59,14 +59,14 @@ namespace sagittar::search {
                   else
                   {
                       // Helper threads
-                      return w.start(pos, [](const auto&) {}, [](const auto&) {});
+                      return w.start(pos, [](const auto&) { }, [](const auto&) { });
                   }
               }));
         }
 
         SearchResult result = futures[0].get();
 
-        for (size_t id = 1; id < n_threads; ++id)
+        for (size_t id = 1; id < m_n_threads; ++id)
         {
             if (futures[id].valid())
             {
@@ -74,18 +74,18 @@ namespace sagittar::search {
             }
         }
 
-        workers.clear();
+        m_workers.clear();
 
         return result;
     }
 
     SearchResult
-    Searcher::startSearch(const Position& pos, std::span<u64> key_history, SearchInfo info) {
-        return startSearch(pos, key_history, info, [](auto&) {}, [](auto&) {});
+    Searcher::startSearch(const Position& pos, std::span<U64> key_history, SearchInfo info) {
+        return startSearch(pos, key_history, info, [](auto&) { }, [](auto&) { });
     }
 
     void Searcher::stopSearch() {
-        for (auto& w : workers)
+        for (auto& w : m_workers)
         {
             if (w)
             {
@@ -94,40 +94,41 @@ namespace sagittar::search {
         }
     }
 
-    Searcher::Worker::Worker(std::span<u64>      key_history_ptr,
+    Searcher::Worker::Worker(std::span<U64>      key_history_ptr,
                              const SearchInfo&   info,
                              TranspositionTable& tt) :
-        info(info),
-        tt(tt) {
-        key_history.reserve(1024);
-        key_history.clear();
-        std::ranges::copy(key_history_ptr, std::back_inserter(key_history));
+        m_info(info),
+        m_tt(tt) {
+        m_key_history.reserve(1024);
+        m_key_history.clear();
+        std::ranges::copy(key_history_ptr, std::back_inserter(m_key_history));
     }
 
     void Searcher::Worker::checkTimeUp() {
-        if (info.timeset && (utils::currtimeInMilliseconds() >= info.stoptime))
+        if (m_info.timeset && (utils::currtimeInMilliseconds() >= m_info.stoptime))
         {
-            should_stop.store(true, std::memory_order_relaxed);
+            m_should_stop.store(true, std::memory_order_relaxed);
         }
     }
 
     bool Searcher::Worker::doMove(Position& pos, const Move& move) {
-        key_history.push_back(pos.key());
+        m_key_history.push_back(pos.key());
         return pos.doMove(move);
     }
 
     void Searcher::Worker::doNullMove(Position& pos) {
-        key_history.push_back(pos.key());
+        m_key_history.push_back(pos.key());
         pos.doNullMove();
     }
 
-    void Searcher::Worker::undoMove() { key_history.pop_back(); }
+    void Searcher::Worker::undoMove() { m_key_history.pop_back(); }
 
-    void Searcher::Worker::undoNullMove() { key_history.pop_back(); }
+    void Searcher::Worker::undoNullMove() { m_key_history.pop_back(); }
 
-    void Searcher::Worker::updateHistory(const Piece p, const Square to, const i32 bonus) {
-        const auto clamped_bonus = std::clamp<i16>(bonus, -MAX_HISTORY, MAX_HISTORY);
-        history[p][to] += clamped_bonus - history[p][to] * std::abs(clamped_bonus) / MAX_HISTORY;
+    void Searcher::Worker::updateHistory(const Piece p, const Square to, const I32 bonus) {
+        const auto clamped_bonus = std::clamp<I16>(bonus, -k_MAX_HISTORY, k_MAX_HISTORY);
+        m_history[p][to] +=
+          clamped_bonus - m_history[p][to] * std::abs(clamped_bonus) / k_MAX_HISTORY;
     }
 
     SearchResult Searcher::Worker::start(const Position&                          pos,
@@ -135,18 +136,18 @@ namespace sagittar::search {
                                          std::function<void(const SearchResult&)> onComplete) {
         SearchResult bestresult{};
 
-        Score alpha = -INF;
-        Score beta  = INF;
+        Score alpha = -k_INF;
+        Score beta  = k_INF;
 
-        for (Depth currdepth = 1; currdepth <= info.depth; currdepth++)
+        for (Depth currdepth = 1; currdepth <= m_info.depth; currdepth++)
         {
-            nodes = 0;
+            m_nodes = 0;
 
-            const u64 starttime = utils::currtimeInMilliseconds();
+            const U64 starttime = utils::currtimeInMilliseconds();
             Score     score     = search<NodeType::ROOT>(pos, currdepth, alpha, beta, 0, true);
-            const u64 time      = utils::currtimeInMilliseconds() - starttime;
+            const U64 time      = utils::currtimeInMilliseconds() - starttime;
 
-            if (should_stop.load(std::memory_order_relaxed))
+            if (m_should_stop.load(std::memory_order_relaxed))
             {
                 break;
             }
@@ -156,8 +157,8 @@ namespace sagittar::search {
             {
                 // We fell outside the window
                 // Try again with a full-width window (and the same depth).
-                alpha = -INF;
-                beta  = INF;
+                alpha = -k_INF;
+                beta  = k_INF;
                 currdepth--;
                 continue;
             }
@@ -170,15 +171,15 @@ namespace sagittar::search {
             SearchResult result{};
 
             result.score = score;
-            if (score > -MATE_VALUE && score < -MATE_SCORE)
+            if (score > -k_MATE_VALUE && score < -k_MATE_SCORE)
             {
                 result.is_mate = true;
-                result.mate_in = (-(score + MATE_VALUE) / 2 - 1);
+                result.mate_in = (-(score + k_MATE_VALUE) / 2 - 1);
             }
-            else if (score > MATE_SCORE && score < MATE_VALUE)
+            else if (score > k_MATE_SCORE && score < k_MATE_VALUE)
             {
                 result.is_mate = true;
-                result.mate_in = ((MATE_VALUE - score) / 2 + 1);
+                result.mate_in = ((k_MATE_VALUE - score) / 2 + 1);
             }
             else
             {
@@ -186,10 +187,10 @@ namespace sagittar::search {
                 result.mate_in = 0;
             }
             result.depth    = currdepth;
-            result.nodes    = nodes;
+            result.nodes    = m_nodes;
             result.time     = time;
-            result.hashfull = tt.hashfull();
-            result.bestmove = pvmove;
+            result.hashfull = m_tt.hashfull();
+            result.bestmove = m_pvmove;
             result.pv       = {result.bestmove};
 
             onProgress(result);
@@ -202,14 +203,14 @@ namespace sagittar::search {
         return bestresult;
     }
 
-    void Searcher::Worker::stop() { should_stop.store(true, std::memory_order_relaxed); }
+    void Searcher::Worker::stop() { m_should_stop.store(true, std::memory_order_relaxed); }
 
     template<Searcher::Worker::NodeType nodeType>
     Score Searcher::Worker::search(const Position& pos,
                                    Depth           depth,
                                    Score           alpha,
                                    Score           beta,
-                                   const i32       ply,
+                                   const I32       ply,
                                    const bool      do_null) {
 
         constexpr bool is_root_node    = (nodeType == NodeType::ROOT);
@@ -218,21 +219,21 @@ namespace sagittar::search {
 
         if constexpr (!is_root_node)
         {
-            if ((nodes & 2047) == 0)
+            if ((m_nodes & 2047) == 0)
             {
                 checkTimeUp();
-                if (should_stop.load(std::memory_order_relaxed))
+                if (m_should_stop.load(std::memory_order_relaxed))
                 {
                     return 0;
                 }
             }
 
-            if (ply >= MAX_DEPTH - 1) [[unlikely]]
+            if (ply >= k_MAX_DEPTH - 1) [[unlikely]]
             {
                 return eval::hce::evaluate(pos);
             }
 
-            if ((do_null && pos.isDrawn(key_history)) || (pos.halfmoves() >= 100))
+            if ((do_null && pos.isDrawn(m_key_history)) || (pos.halfmoves() >= 100))
             {
                 return 0;
             }
@@ -253,17 +254,17 @@ namespace sagittar::search {
         const bool is_critical_node = is_pv_node || is_in_check;
 
         TTData     ttdata;
-        const bool tthit = tt.probe(&ttdata, pos.key());
+        const bool tthit = m_tt.probe(&ttdata, pos.key());
 
         // TT cutoff
         if (!is_pv_node && tthit && ttdata.depth >= depth)
         {
             Score ttscore = ttdata.score;
-            if (ttscore < -MATE_SCORE)
+            if (ttscore < -k_MATE_SCORE)
             {
                 ttscore += ply;
             }
-            else if (ttscore > MATE_SCORE)
+            else if (ttscore > k_MATE_SCORE)
             {
                 ttscore -= ply;
             }
@@ -285,7 +286,7 @@ namespace sagittar::search {
             // Reverse Futility Pruning
             if (depth <= 8)
             {
-                const Score margin = params::rfp_margin() * depth;
+                const Score margin = params::rfpMargin() * depth;
                 if (static_eval >= beta + margin)
                 {
                     return static_eval;
@@ -295,7 +296,7 @@ namespace sagittar::search {
             // Null Move Pruning
             if (do_null && depth >= 3 && !eval::hce::isEndGame(pos))
             {
-                u8 r = 2;
+                U8 r = 2;
                 r += (depth > 7);
                 Position pos_copy = pos;
                 doNullMove(pos_copy);
@@ -311,32 +312,32 @@ namespace sagittar::search {
             // Futility Pruning Decision
             // clang-format off
             if (depth <= 7
-                && alpha < WIN_SCORE
-                && (((static_eval + ((params::futility_margin_m() * depth) + params::futility_margin_c())) <= alpha)))
+                && alpha < k_WIN_SCORE
+                && (((static_eval + ((params::futilityMarginM() * depth) + params::futilityMarginC())) <= alpha)))
             {
                 do_futility_pruning = true;
             }
             // clang-format on
 
             // Internal Iterative Reductions
-            if (depth >= 4 && (!tthit || (ttdata.move == NULL_MOVE)))
+            if (depth >= 4 && (!tthit || (ttdata.move == k_NULL_MOVE)))
             {
                 depth--;
             }
         }
 
-        StackEntry& ss = stack[ply];
+        StackEntry& ss = m_stack[ply];
 
-        Score  best_score = -INF;
+        Score  best_score = -k_INF;
         Move   best_move_so_far;
         TTFlag ttflag            = TTFlag::UPPERBOUND;
-        u32    legal_moves_count = 0;
-        u32    moves_searched    = 0;
+        U32    legal_moves_count = 0;
+        U32    moves_searched    = 0;
 
-        const Move ttmove = is_root_node ? pvmove : tthit ? ttdata.move : Move{};
+        const Move ttmove = is_root_node ? m_pvmove : tthit ? ttdata.move : Move{};
 
-        std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, history, ss.killers[0], ss.killers[1],
+        std::array<ExtMove, k_MOVES_MAX> buffer{};
+        MovePicker move_picker(buffer.data(), pos, ttmove, m_history, ss.killers[0], ss.killers[1],
                                MovegenType::ALL);
         const auto n_moves = move_picker.size();
 
@@ -373,9 +374,9 @@ namespace sagittar::search {
                 // Late Move Pruning
                 if (depth <= 8 && move_piece_type != PieceType::PAWN)
                 {
-                    const u32 LMP_MOVE_CUTOFF =
-                      n_moves * (1 - (params::lmp_treshold_pct - (0.1 * depth)));
-                    if (moves_searched >= LMP_MOVE_CUTOFF)
+                    const U32 lmp_move_cutoff =
+                      n_moves * (1 - (params::g_lmp_treshold_pct - (0.1 * depth)));
+                    if (moves_searched >= lmp_move_cutoff)
                     {
                         undoMove();
                         continue;
@@ -383,9 +384,9 @@ namespace sagittar::search {
                 }
             }
 
-            nodes++;
+            m_nodes++;
 
-            Score score = -INF;
+            Score score = -k_INF;
 
             if (!is_pv_node || moves_searched > 0)
             {
@@ -395,10 +396,11 @@ namespace sagittar::search {
 
                 if (can_reduce)
                 {
-                    const u8 r =
+                    const U8 r =
                       move_is_quite
-                        ? params::lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth]
-                        : params::lmr_r_table_tactical[std::min(moves_searched, 64U)][(int) depth];
+                        ? params::g_lmr_r_table_quiet[std::min(moves_searched, 64U)][(int) depth]
+                        : params::g_lmr_r_table_tactical[std::min(moves_searched, 64U)]
+                                                        [(int) depth];
 
                     score = -search<NodeType::NON_PV>(pos_copy, depth - r, -alpha - 1, -alpha,
                                                       ply + 1, do_null);
@@ -420,7 +422,7 @@ namespace sagittar::search {
 
             undoMove();
 
-            if (should_stop.load(std::memory_order_relaxed))
+            if (m_should_stop.load(std::memory_order_relaxed))
             {
                 return 0;
             }
@@ -454,16 +456,16 @@ namespace sagittar::search {
 
         if (legal_moves_count == 0)
         {
-            return is_in_check ? (-MATE_VALUE + ply) : 0;
+            return is_in_check ? (-k_MATE_VALUE + ply) : 0;
         }
 
-        if (!should_stop.load(std::memory_order_relaxed))
+        if (!m_should_stop.load(std::memory_order_relaxed))
         {
-            tt.store(pos.key(), ply, depth, ttflag, best_score, best_move_so_far);
+            m_tt.store(pos.key(), ply, depth, ttflag, best_score, best_move_so_far);
 
             if constexpr (is_root_node)
             {
-                pvmove = best_move_so_far;
+                m_pvmove = best_move_so_far;
             }
         }
 
@@ -473,13 +475,13 @@ namespace sagittar::search {
     Score Searcher::Worker::quiescencesearch(const Position& pos,
                                              Score           alpha,
                                              Score           beta,
-                                             const i32       ply) {
+                                             const I32       ply) {
         const Score alpha_orig = alpha;
 
-        if ((nodes & 2047) == 0)
+        if ((m_nodes & 2047) == 0)
         {
             checkTimeUp();
-            if (ply > 0 && should_stop.load(std::memory_order_relaxed))
+            if (ply > 0 && m_should_stop.load(std::memory_order_relaxed))
             {
                 return 0;
             }
@@ -487,23 +489,23 @@ namespace sagittar::search {
 
         const bool is_in_check = pos.isInCheck();
 
-        if (ply >= MAX_DEPTH - 1)
+        if (ply >= k_MAX_DEPTH - 1)
         {
             return is_in_check ? 0 : eval::hce::evaluate(pos);
         }
 
         TTData     ttdata;
-        const bool tthit = tt.probe(&ttdata, pos.key());
+        const bool tthit = m_tt.probe(&ttdata, pos.key());
 
         // TT cutoff
         if (tthit)
         {
             Score ttscore = ttdata.score;
-            if (ttscore < -MATE_SCORE)
+            if (ttscore < -k_MATE_SCORE)
             {
                 ttscore += ply;
             }
-            else if (ttscore > MATE_SCORE)
+            else if (ttscore > k_MATE_SCORE)
             {
                 ttscore -= ply;
             }
@@ -520,7 +522,7 @@ namespace sagittar::search {
 
         if (is_in_check)
         {
-            eval = -MATE_VALUE + ply;
+            eval = -k_MATE_VALUE + ply;
         }
         else
         {
@@ -536,17 +538,17 @@ namespace sagittar::search {
         }
 
         Score best_score        = eval;
-        Move  best_move_so_far  = NULL_MOVE;
-        u32   legal_moves_count = 0;
+        Move  best_move_so_far  = k_NULL_MOVE;
+        U32   legal_moves_count = 0;
 
-        const Move        ttmove = tthit ? ttdata.move : NULL_MOVE;
+        const Move        ttmove = tthit ? ttdata.move : k_NULL_MOVE;
         const MovegenType movegen_type =
           is_in_check ? MovegenType::CHECK_EVASIONS : MovegenType::CAPTURES;
 
-        StackEntry& ss = stack[ply];
+        StackEntry& ss = m_stack[ply];
 
-        std::array<ExtMove, MOVES_MAX> buffer{};
-        MovePicker move_picker(buffer.data(), pos, ttmove, history, ss.killers[0], ss.killers[1],
+        std::array<ExtMove, k_MOVES_MAX> buffer{};
+        MovePicker move_picker(buffer.data(), pos, ttmove, m_history, ss.killers[0], ss.killers[1],
                                movegen_type);
 
         while (move_picker.hasNext())
@@ -561,13 +563,13 @@ namespace sagittar::search {
             }
 
             legal_moves_count++;
-            nodes++;
+            m_nodes++;
 
             const Score score = -quiescencesearch(pos_copy, -beta, -alpha, ply + 1);
 
             undoMove();
 
-            if (should_stop.load(std::memory_order_relaxed))
+            if (m_should_stop.load(std::memory_order_relaxed))
             {
                 return 0;
             }
@@ -580,7 +582,7 @@ namespace sagittar::search {
                 best_move_so_far = move;
                 if (score >= beta)
                 {
-                    tt.store(pos.key(), ply, 0, TTFlag::LOWERBOUND, beta, best_move_so_far);
+                    m_tt.store(pos.key(), ply, 0, TTFlag::LOWERBOUND, beta, best_move_so_far);
                     return beta;
                 }
             }
@@ -588,15 +590,15 @@ namespace sagittar::search {
 
         if ((legal_moves_count == 0) && is_in_check)
         {
-            return -MATE_VALUE + ply;
+            return -k_MATE_VALUE + ply;
         }
 
-        if (!should_stop.load(std::memory_order_relaxed))
+        if (!m_should_stop.load(std::memory_order_relaxed))
         {
             const TTFlag flag = (best_score <= alpha_orig) ? TTFlag::UPPERBOUND
                               : (best_score >= beta)       ? TTFlag::LOWERBOUND
                                                            : TTFlag::EXACT;
-            tt.store(pos.key(), ply, 0, flag, best_score, best_move_so_far);
+            m_tt.store(pos.key(), ply, 0, flag, best_score, best_move_so_far);
         }
 
         return best_score;

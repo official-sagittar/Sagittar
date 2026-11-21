@@ -164,12 +164,12 @@ TEST_SUITE("Position") {
     }
 
     TEST_CASE("Position::isDrawn") {
-        std::vector<u64> key_history;
+        std::vector<U64> key_history;
 
         Position pos;
         pos.setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-        const u64 startpos_hash = pos.key();
+        const U64 startpos_hash = pos.key();
 
         key_history.push_back(pos.key());
         bool is_valid = pos.doMove("g1f3");
