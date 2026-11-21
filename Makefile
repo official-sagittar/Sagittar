@@ -20,9 +20,9 @@ else
     EXE_SUFFIX :=
 endif
 
-.PHONY: all release debug test tune openbench tidy clean
+.PHONY: release debug test tune openbench tidy clean
 
-all: release
+.DEFAULT_GOAL := openbench
 
 release:
 	$(CMAKE) -S . -B $(BUILD_ROOT)/Release \
