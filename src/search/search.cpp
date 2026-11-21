@@ -373,8 +373,10 @@ namespace sagittar::search {
                 // Late Move Pruning
                 if (depth <= 8 && move_piece_type != PieceType::PAWN)
                 {
-                    if (moves_searched
-                        >= static_cast<U32>((params::lmpFactor() + depth * depth) / 2))
+                    const int threshold =
+                      (100 * params::lmpBase() + params::lmpDepthScale() * depth * depth) / 200;
+
+                    if (moves_searched >= static_cast<U32>(threshold))
                     {
                         undoMove();
                         continue;

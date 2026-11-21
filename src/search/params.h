@@ -66,7 +66,8 @@ namespace sagittar::search::params {
 
     PARAM(rfpMargin, 51, 50, 1000, 25);
 
-    PARAM(lmpFactor, 3, 1, 5, 1);
+    PARAM(lmpBase, 12, 1, 20, 1);
+    PARAM(lmpDepthScale, 100, 25, 200, 10);
 
     PARAM_CALLBACK(lmrAlphaTactical, 94, 0, 1000, 25, updateLMRTable);
     PARAM_CALLBACK(lmrBetaTactical, 275, 50, 1000, 25, updateLMRTable);
