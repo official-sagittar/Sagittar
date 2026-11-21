@@ -347,7 +347,6 @@ namespace sagittar::search {
         std::array<ExtMove, k_MOVES_MAX> buffer{};
         MovePicker move_picker(buffer.data(), pos, ttmove, m_history, ss.killers[0], ss.killers[1],
                                MovegenType::ALL);
-        const auto n_moves = move_picker.size();
 
         while (move_picker.hasNext())
         {
@@ -387,9 +386,10 @@ namespace sagittar::search {
                     m_instrumentation_store.lmpEligible++;
 #endif
 
-                    const U32 lmp_move_cutoff =
-                      n_moves * (1 - (params::g_lmp_treshold_pct - (0.1 * depth)));
-                    if (moves_searched >= lmp_move_cutoff)
+                    const int threshold =
+                      (100 * params::lmpBase() + params::lmpDepthScale() * depth * depth) / 200;
+
+                    if (moves_searched >= static_cast<U32>(threshold))
                     {
 #ifndef NDEBUG
                         m_instrumentation_store.lmpPruned++;
