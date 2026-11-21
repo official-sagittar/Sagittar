@@ -58,17 +58,15 @@ namespace sagittar::search::params {
     #define PARAM_CALLBACK(name, val, min, max, step, callback) PARAM(name, val, min, max, step)
 #endif
 
-    inline double                             g_lmp_treshold_pct = 0.0;
     inline std::array<std::array<U8, 64>, 64> g_lmr_r_table_tactical{};  // [move][depth]
     inline std::array<std::array<U8, 64>, 64> g_lmr_r_table_quiet{};     // [move][depth]
 
     void init();
-    void updateLMPTresholdPct();
     void updateLMRTable();
 
     PARAM(rfpMargin, 51, 50, 1000, 25);
 
-    PARAM_CALLBACK(lmpTreshold, 9, 1, 9, 1, updateLMPTresholdPct);
+    PARAM(lmpFactor, 3, 1, 5, 1);
 
     PARAM_CALLBACK(lmrAlphaTactical, 94, 0, 1000, 25, updateLMRTable);
     PARAM_CALLBACK(lmrBetaTactical, 275, 50, 1000, 25, updateLMRTable);
